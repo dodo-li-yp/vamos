@@ -1,0 +1,12 @@
+// Modified by Vamos (2026): brand and package migration.
+package com.yongpeng.vamos.core.general
+
+import com.yongpeng.vamos.core.tool.AgentTool
+
+/** 通用工具(不属于哪块屏):等待、回看、问用户、确认、交给用户、处理障碍、没办成就结束、查读知识与技能、按用户要求写下技能、记忆。按发给模型的顺序。 */
+internal object GeneralGroup {
+    val tools: List<AgentTool> = listOf(
+        Wait, ViewPastScreens, ViewUserScreen, AskUser, RequestConfirmation, HandToUser, HandleObstacle, EndNotDone,
+        KnowledgeSearch, KnowledgeRead, SkillSearch, SkillRead, SkillSave, MemorySearch, MemorySave, ProfileEdit, ScheduleTask, SpawnAgent,
+    )
+}

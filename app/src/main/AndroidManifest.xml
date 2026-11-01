@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified by Vamos (2026): brand and package migration. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
@@ -32,7 +33,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <!-- 对话页附件可以拍照(走系统相机),声明用到相机、但不是必需:没有相机的设备照常安装。
-         有的系统按 APK 特征给应用分类,不声明时 Mika 可能被当成游戏、限制刷新率;这条声明要留着 -->
+         有的系统按 APK 特征给应用分类,不声明时 Vamos 可能被当成游戏、限制刷新率;这条声明要留着 -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -76,7 +77,7 @@
     </queries>
 
     <application
-        android:name=".MikaApp"
+        android:name=".VamosApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -88,7 +89,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Mika"
+            android:theme="@style/Theme.Vamos"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -110,7 +111,7 @@
             android:name=".ui.viewer.FileViewerActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|uiMode|density"
             android:exported="false"
-            android:theme="@style/Theme.Mika" />
+            android:theme="@style/Theme.Vamos" />
 
         <!-- 网页接管:把后台的网页标签(同一个 WebView)拿到主屏给用户处理 -->
         <activity
@@ -122,7 +123,7 @@
             android:taskAffinity=""
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- 兼容性自检在 Mika 虚拟屏上操作的测试页。对外开放只为让内置助手(shell)按组件名把它开到 Mika 的屏上:
+        <!-- 兼容性自检在 Vamos 虚拟屏上操作的测试页。对外开放只为让内置助手(shell)按组件名把它开到 Vamos 的屏上:
              调用方必须持有 INTERACT_ACROSS_USERS_FULL,shell 有,普通 App 没有;没有 intent-filter。单独一个任务,不进最近任务 -->
         <activity
             android:name=".selfcheck.SelfCheckTargetActivity"
@@ -134,7 +135,7 @@
             android:windowSoftInputMode="stateHidden" />
 
         <service
-            android:name=".a11y.MikaAccessibilityService"
+            android:name=".a11y.VamosAccessibilityService"
             android:exported="true"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -236,6 +237,13 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".task.TriggerAlarmReceiver" android:exported="false" />
+        <provider
+            android:name=".about.UpdateFilesProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/update_files" />
+        </provider>
     </application>
 
 </manifest>

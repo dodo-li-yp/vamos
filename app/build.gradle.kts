@@ -1,3 +1,6 @@
+// Modified by Vamos (2026): brand and package migration.
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,16 +12,26 @@ val gitHash: String = runCatching {
     providers.exec { commandLine("git", "rev-parse", "--short=7", "HEAD") }.standardOutput.asText.get().trim()
 }.getOrNull()?.takeIf { it.isNotEmpty() } ?: "dev"
 
+val releaseProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+}
+fun signingValue(env: String, key: String): String? = providers.environmentVariable(env).orNull
+    ?: releaseProperties.getProperty(key)
+val releaseStore = signingValue("VAMOS_STORE_FILE", "storeFile")
+val releasePassword = signingValue("VAMOS_STORE_PASSWORD", "storePassword")
+val releaseAlias = signingValue("VAMOS_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingValue("VAMOS_KEY_PASSWORD", "keyPassword")
+
 android {
-    namespace = "com.wangzan101.mika"
+    namespace = "com.yongpeng.vamos"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.wangzan101.mika"
+        applicationId = "com.yongpeng.vamos"
         minSdk = 30
         targetSdk = 35
-        versionCode = 32
-        versionName = "0.1.31"
+        versionCode = 33
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
         // 关于页版本号后的 Beta 标记;出正式版时改成 false
@@ -39,7 +52,19 @@ android {
     // 评测任务集(仓库根目录 eval/tasks)打进测试包的 assets,真机评测跑器从那里读题
     sourceSets.getByName("androidTest").assets.srcDir(rootProject.file("eval/tasks"))
 
+    signingConfigs {
+        if (listOf(releaseStore, releasePassword, releaseAlias, releaseKeyPassword).all { !it.isNullOrBlank() }) {
+            create("vamosRelease") {
+                storeFile = rootProject.file(releaseStore!!)
+                storePassword = releasePassword
+                keyAlias = releaseAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
+        getByName("release") { signingConfig = signingConfigs.findByName("vamosRelease") }
+
         // 看流畅度用的包:和发布版一样不可调试(调试包不做预先编译,界面慢好几倍,手感不作数),
         // 用本机调试签名,能直接覆盖调试包、保留数据;可被性能工具采样。./gradlew :app:assemblePerf
         create("perf") {

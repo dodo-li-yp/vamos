@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
-    <style name="Theme.Mika" parent="@android:style/Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/mika_bg</item>
+    <style name="Theme.Vamos" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/vamos_bg</item>
     </style>
-    <color name="mika_bg">#0E0E10</color>
+    <color name="vamos_bg">#0E0E10</color>
 </resources>

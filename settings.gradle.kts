@@ -1,3 +1,4 @@
+// Modified by Vamos (2026): brand and package migration.
 pluginManagement {
     repositories {
         google()
@@ -12,5 +13,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Mika"
+rootProject.name = "Vamos"
 include(":core", ":app")

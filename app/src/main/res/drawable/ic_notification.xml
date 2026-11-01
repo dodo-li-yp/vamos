@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 通知小图标:Mika 标志(两块圆角方块,底部一道窄桥相连);状态栏只显示形状,颜色由系统决定 -->
+<!-- Modified by Vamos (2026): brand and package migration. -->
+<!-- 通知小图标:Vamos 标志(两块圆角方块,底部一道窄桥相连);状态栏只显示形状,颜色由系统决定 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

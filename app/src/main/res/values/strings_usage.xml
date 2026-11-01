@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
     <string name="usage_24h">24 hours</string>
     <string name="usage_7d">7 days</string>
@@ -8,7 +9,7 @@
     <string name="usage_title">Token usage</string>
     <string name="usage_none">None yet</string>
     <string name="usage_empty_title">No usage in this period</string>
-    <string name="usage_empty_body">Ask Mika to do something and the tokens used will be recorded here.</string>
+    <string name="usage_empty_body">Ask Vamos to do something and the tokens used will be recorded here.</string>
     <string name="usage_note">Numbers are as reported by your providers and stay on this phone only.</string>
     <string name="usage_total">Total</string>
     <string name="usage_trend">Trend</string>

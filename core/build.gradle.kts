@@ -1,3 +1,4 @@
+// Modified by Vamos (2026): brand and package migration.
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
@@ -30,7 +31,7 @@ val knowledgeIndex by tasks.registering(JavaExec::class) {
     inputs.dir(resources.resolve("skills")).withPropertyName("skills")
     outputs.dir(out)
     classpath = sourceSets.main.get().output.classesDirs + configurations.runtimeClasspath.get()
-    mainClass.set("com.wangzan101.mika.core.knowledge.KnowledgeIndex")
+    mainClass.set("com.yongpeng.vamos.core.knowledge.KnowledgeIndex")
     argumentProviders.add(CommandLineArgumentProvider {
         listOf(resources.absolutePath, out.get().file("knowledge/index.json").asFile.absolutePath)
     })
@@ -42,7 +43,7 @@ val updateReadme by tasks.registering(JavaExec::class) {
     group = "documentation"
     description = "重新生成 README.md、docs/readme/README.zh-CN.md 里 generated 标记之间的段落"
     classpath = sourceSets["testFixtures"].runtimeClasspath
-    mainClass.set("com.wangzan101.mika.core.docs.ReadmeSections")
+    mainClass.set("com.yongpeng.vamos.core.docs.ReadmeSections")
     args(rootProject.projectDir.absolutePath)
     outputs.upToDateWhen { false }
 }
@@ -60,7 +61,7 @@ val chatgptSignInCheck by tasks.registering(JavaExec::class) {
     group = "verification"
     description = "用 App 的登录代码对着 OpenAI 走一遍 ChatGPT 登录;-Ptimeout=<秒> -Pmodel=<slug> -Pkeep"
     classpath = chatgptCheck.runtimeClasspath
-    mainClass.set("com.wangzan101.mika.core.chatgpt.check.ChatGptSignInCheckKt")
+    mainClass.set("com.yongpeng.vamos.core.chatgpt.check.ChatGptSignInCheckKt")
     args(listOfNotNull(
         providers.gradleProperty("timeout").orNull?.let { "--timeout=$it" },
         providers.gradleProperty("model").orNull?.let { "--model=$it" },
@@ -83,13 +84,13 @@ tasks.test {
     // updateReadme 先改写 README,同一次构建里测试要读改写后的
     mustRunAfter(updateReadme)
     // 循环场景的消息序列金样;-PupdateSnapshots 时重新生成(见 LoopSnapshot)
-    systemProperty("mika.snapshotDir", file("src/test/resources/loop-snapshots").absolutePath)
+    systemProperty("vamos.snapshotDir", file("src/test/resources/loop-snapshots").absolutePath)
     // 提示词表面(系统提示词、工具定义、反馈文字)的金样;同样用 -PupdateSnapshots 重新生成(见 PromptSurface)
-    systemProperty("mika.promptSurfaceDir", file("src/test/resources/prompt-surface").absolutePath)
+    systemProperty("vamos.promptSurfaceDir", file("src/test/resources/prompt-surface").absolutePath)
     val updateSnapshots = project.hasProperty("updateSnapshots")
     inputs.property("updateSnapshots", updateSnapshots)
     if (updateSnapshots) {
-        systemProperty("mika.updateSnapshots", "true")
+        systemProperty("vamos.updateSnapshots", "true")
         outputs.upToDateWhen { false }
     }
 }
@@ -100,8 +101,8 @@ val cliContractTest by tasks.registering(Test::class) {
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.main.get().output + sourceSets.test.get().runtimeClasspath
     include("**/RemoteCliContractTest*")
-    inputs.dir(rootProject.file("tools/mika/scripts"))
-    systemProperty("mika.python", providers.gradleProperty("mikaPython").getOrElse("python3"))
+    inputs.dir(rootProject.file("tools/vamos/scripts"))
+    systemProperty("vamos.python", providers.gradleProperty("vamosPython").getOrElse("python3"))
 }
 
 // 要 Python 3.10+,不挂在 check 上;需要时显式运行 ./gradlew :core:cliTest
@@ -110,5 +111,5 @@ val cliTest by tasks.registering(Exec::class) {
     description = "CLI 进程、假 ADB、独立 Skill 与真实 HTTP 契约测试 (Python 3.10+)"
     dependsOn(cliContractTest)
     workingDir(rootProject.projectDir)
-    commandLine(providers.gradleProperty("mikaPython").getOrElse("python3"), "-m", "unittest", "discover", "-s", "tools/mika/tests", "-v")
+    commandLine(providers.gradleProperty("vamosPython").getOrElse("python3"), "-m", "unittest", "discover", "-s", "tools/vamos/tests", "-v")
 }

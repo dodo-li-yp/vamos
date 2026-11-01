@@ -1,0 +1,78 @@
+// Modified by Vamos (2026): brand and package migration.
+package com.yongpeng.vamos.voice
+
+import android.speech.SpeechRecognizer
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+class SystemSpeechTest {
+    @Test
+    fun errorCodesMapToFailures() {
+        assertNull(SystemSpeech.failureOf(SpeechRecognizer.ERROR_NO_MATCH))
+        assertNull(SystemSpeech.failureOf(SpeechRecognizer.ERROR_SPEECH_TIMEOUT))
+        assertEquals(SpeechFailure.Busy, SystemSpeech.failureOf(SpeechRecognizer.ERROR_RECOGNIZER_BUSY))
+        assertEquals(SpeechFailure.Network, SystemSpeech.failureOf(SpeechRecognizer.ERROR_NETWORK))
+        assertEquals(SpeechFailure.Network, SystemSpeech.failureOf(SpeechRecognizer.ERROR_NETWORK_TIMEOUT))
+        assertEquals(SpeechFailure.NoPermission, SystemSpeech.failureOf(SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS))
+        assertEquals(SpeechFailure.MicUnavailable, SystemSpeech.failureOf(SpeechRecognizer.ERROR_AUDIO))
+        assertEquals(SpeechFailure.MicUnavailable, SystemSpeech.failureOf(SpeechRecognizer.ERROR_CLIENT))
+    }
+
+    @Test
+    fun silenceFromAServiceThatNeverAnsweredIsNoResponse() {
+        assertEquals(
+            SystemSpeech.Outcome.Fail(SpeechFailure.Unavailable(SpeechEngineSpec.Why.SystemNoResponse)),
+            SystemSpeech.afterSilence(answered = false),
+        )
+        // 回过话的服务只是这一段卡住:按已听到的收尾,不记成不响应
+        assertEquals(SystemSpeech.Outcome.Finish, SystemSpeech.afterSilence(answered = true))
+    }
+
+    @Test
+    fun languageTagsFollowAppLanguage() {
+        assertEquals("zh-CN", SystemSpeech.speechTag(com.yongpeng.vamos.i18n.AppLanguage.SimplifiedChinese, java.util.Locale.US))
+        assertEquals("zh-TW", SystemSpeech.speechTag(com.yongpeng.vamos.i18n.AppLanguage.TraditionalChinese, java.util.Locale.US))
+        assertEquals("en-US", SystemSpeech.speechTag(com.yongpeng.vamos.i18n.AppLanguage.English, java.util.Locale.CHINA))
+        assertEquals("fr-FR", SystemSpeech.speechTag(com.yongpeng.vamos.i18n.AppLanguage.System, java.util.Locale.FRANCE))
+        assertEquals("zh", SystemSpeech.isoCode("zh-TW"))
+        assertEquals("en", SystemSpeech.isoCode("en-US"))
+    }
+
+    @Test
+    fun systemLanguageDropsScriptAndExtensions() {
+        val system = com.yongpeng.vamos.i18n.AppLanguage.System
+        assertEquals("zh-CN", SystemSpeech.speechTag(system, java.util.Locale.forLanguageTag("zh-Hans-CN")))
+        assertEquals("zh-TW", SystemSpeech.speechTag(system, java.util.Locale.forLanguageTag("zh-Hant-TW")))
+        assertEquals("sr-RS", SystemSpeech.speechTag(system, java.util.Locale.forLanguageTag("sr-Latn-RS")))
+        assertEquals("de-DE", SystemSpeech.speechTag(system, java.util.Locale.forLanguageTag("de-DE-u-co-phonebk")))
+        assertEquals("ja", SystemSpeech.speechTag(system, java.util.Locale.forLanguageTag("ja")))
+        val english = com.yongpeng.vamos.i18n.AppLanguage.English
+        assertEquals("en-GB", SystemSpeech.speechTag(english, java.util.Locale.forLanguageTag("en-Latn-GB")))
+    }
+
+    private fun svc(name: String, open: Boolean = true) = RecognizerService("a.b/.$name", open, null)
+
+    /** 只有一个识别服务时它就是默认的:只试默认的,不点名再试一遍白等。 */
+    @Test
+    fun aSingleServiceIsOnlyTriedAsTheDefault() {
+        assertEquals(listOf<String?>(null), SystemSpeech.attempts(listOf(svc("One")), remembered = null))
+        assertEquals(listOf<String?>(null), SystemSpeech.attempts(emptyList(), remembered = null))
+    }
+
+    /** 默认的不回话时,再点名试其余的,对别的 App 开放的在前;总数有上限。 */
+    @Test
+    fun otherServicesFollowTheDefaultOpenOnesFirst() {
+        val services = listOf(svc("Closed", open = false), svc("Open"), svc("Third"))
+        assertEquals(listOf(null, "a.b/.Open", "a.b/.Third"), SystemSpeech.attempts(services, remembered = null))
+        assertEquals(SystemSpeech.MAX_ATTEMPTS, SystemSpeech.attempts(services + svc("Fourth"), null).size)
+    }
+
+    /** 之前点名试通的排最前、不重复;它已经不在手机上了就不管它。 */
+    @Test
+    fun theServiceThatAnsweredBeforeGoesFirst() {
+        val services = listOf(svc("One"), svc("Two"))
+        assertEquals(listOf("a.b/.Two", null, "a.b/.One"), SystemSpeech.attempts(services, remembered = "a.b/.Two"))
+        assertEquals(listOf(null, "a.b/.One", "a.b/.Two"), SystemSpeech.attempts(services, remembered = "a.b/.Gone"))
+    }
+}
