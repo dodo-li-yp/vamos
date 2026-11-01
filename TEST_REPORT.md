@@ -16,12 +16,14 @@
 - Lint：**0 错误，92 警告**。报告中的警告未全部清理，未建立全局 baseline，未关闭错误检查。
 - core 针对性回归：`ConfirmationGateTest` 15 项、`PhoneSetupFlowTest` 28 项、`KnowledgeIndexTest` 6 项，共 **49 项通过、0 失败**；与新增测试合计 **51 项通过**。
 - Lint 首次为 33 错误；修复 Android 12 API 保护、广播注册、受限键盘回调、BOM 字面量等问题，将 19 处已确认赋值的 producer 改为显式 remembered state + keyed effect，并保留取消与资源释放逻辑。
-- WebView 旧版本特性常量保留一处有原因说明的、方法级 `RestrictedApi` 抑制；未使用全局抑制。完整 HTML/XML 报告随交付附件保存。
+- WebView 旧版本特性常量保留一处有原因说明的、方法级 `RestrictedApi` 抑制；未使用全局抑制。完整 HTML/XML 报告保留在 `app/build/reports/lint-results-debug.html` 与 `app/build/reports/lint-results-debug.xml`。
 - 云环境自带 JDK 的 CA 缺失通过 `-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts` 解决；TLS 校验保持开启。依赖缓存补齐后最终检查使用 offline 模式。
 
 ## APK
 
-- 文件：`vamos-1.0.0-debug.apk`（仓库外交付，不提交二进制）。
+- 最终 debug APK 已生成：`app/build/outputs/apk/debug/app-debug.apk`；目标交付名为 `vamos-1.0.0-debug.apk`，不提交二进制。
+- M1 里程碑 APK 暂存于 `work/vamos-m1-debug.apk`。
+- 此云环境不存在聊天指定的 `/codex/browser/projectless/.../output` 目录，且无权限创建 `/codex`，也未提供 sudo。因此未能生成聊天可下载的 APK/报告附件；APK 和完整 Lint 报告保留在上述构建目录，源码和本报告通过 draft PR 交付。
 - applicationId：`com.yongpeng.vamos`，versionName：`1.0.0`，versionCode：**33**（上游为 32）。
 - 大小：103,249,501 字节。
 - SHA-256：`15ff53f3282d04d70924c04f0f66680ca802a3f65db3e59b6623010dfd50cbfe`。
