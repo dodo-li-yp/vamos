@@ -1,146 +1,74 @@
-// Modified by Vamos (2026): brand and package migration.
+// Modified by Vamos (2026): verified cache updates and narrowly scoped system installation.
 package com.yongpeng.vamos.about
 
-import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Environment
+import androidx.core.content.FileProvider
+import com.yongpeng.vamos.BuildConfig
+import com.yongpeng.vamos.core.update.SignedVersion
 import java.io.File
-import java.util.UUID
+import java.util.Base64
 
-enum class DownloadPhase { Idle, Downloading, Paused, Ready, Failed }
-
-data class ApkDownloadState(
-    val phase: DownloadPhase = DownloadPhase.Idle,
-    val bytes: Long = 0,
-    val total: Long = -1,
-) {
-    val percent: Int? get() = if (total > 0) ((bytes.toDouble() / total) * 100).toInt().coerceIn(0, 100) else null
+enum class DownloadPhase { Idle, Downloading, Paused, Verifying, Ready, Failed }
+data class ApkDownloadState(val phase: DownloadPhase = DownloadPhase.Idle, val bytes: Long = 0, val total: Long = -1, val speed: Long = 0, val error: String? = null) {
+    val percent get() = if (total > 0) (bytes.toDouble() * 100 / total).toInt().coerceIn(0,100) else null
 }
-
-/**
- * 系统负责后台下载;只保存任务编号,进程重启后仍能查询、取消或安装。方法在 IO 线程调用。
- * 文件放在本应用的外部专属目录(别的 App 读写不到),同一时间只留一个;换版本、删除、装好后都清掉。
- */
 class ApkUpdater(private val context: Context) {
-    private val manager = context.getSystemService(DownloadManager::class.java)
-    private val prefs = context.getSharedPreferences("apk-update", Context.MODE_PRIVATE)
-    private val directory: File get() = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        ?: error("external files unavailable"), "updates")
-    private val file: File? get() = prefs.getString("file", null)?.let { File(directory, it) }
-
-    fun state(release: ReleaseInfo): ApkDownloadState =
-        if (prefs.getString("url", null) != release.apkUrl) ApkDownloadState() else recorded()
-
-    /** 记下的那个下载任务现在的状态;系统里查不到这个任务算失败。 */
-    private fun recorded(): ApkDownloadState {
-        val id = prefs.getLong("id", -1)
-        manager.query(DownloadManager.Query().setFilterById(id))?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                fun number(column: String) = cursor.getLong(cursor.getColumnIndexOrThrow(column))
-                val phase = when (number(DownloadManager.COLUMN_STATUS).toInt()) {
-                    DownloadManager.STATUS_PENDING, DownloadManager.STATUS_RUNNING -> DownloadPhase.Downloading
-                    DownloadManager.STATUS_PAUSED -> DownloadPhase.Paused
-                    DownloadManager.STATUS_SUCCESSFUL -> if (file?.isFile == true) DownloadPhase.Ready else DownloadPhase.Failed
-                    else -> DownloadPhase.Failed
-                }
-                return ApkDownloadState(phase, number(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR), number(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-            }
-        }
-        return ApkDownloadState(DownloadPhase.Failed)
+    private val prefs = context.getSharedPreferences("cos-update", Context.MODE_PRIVATE)
+    private val directory get() = File(context.cacheDir,"update").apply { mkdirs() }
+    internal fun file(code: Long) = File(directory,"vamos-$code.apk")
+    fun state(release: ReleaseInfo): ApkDownloadState {
+        if (prefs.getLong("code",0) != release.versionCode) return ApkDownloadState()
+        var phase = runCatching { DownloadPhase.valueOf(prefs.getString("phase", "Idle")!!) }.getOrDefault(DownloadPhase.Idle)
+        if (phase in listOf(DownloadPhase.Downloading,DownloadPhase.Verifying) && !UpdateDownloadService.running && System.currentTimeMillis() - prefs.getLong("started",0) > 5000) phase = DownloadPhase.Paused
+        return ApkDownloadState(phase,prefs.getLong("bytes",0),release.apkSize ?: -1,prefs.getLong("speed",0),prefs.getString("error",null))
     }
-
     fun download(release: ReleaseInfo) {
-        val url = requireNotNull(release.apkUrl)
-        ApkIntegrity.requireOfficialUrl(url)
-        if (prefs.getString("url", null) == url && state(release).phase in
-            listOf(DownloadPhase.Downloading, DownloadPhase.Paused, DownloadPhase.Ready)) return
-        cancel()
-        val folder = directory
-        check(folder.mkdirs() || folder.isDirectory)
-        // 进程被杀、记录丢了时留下的旧文件也一并清掉,目录里只留这一次的。
-        folder.listFiles()?.forEach { it.delete() }
-        // remove 的后台清理可能晚于下一次下载,不能复用旧任务的文件名。
-        val target = File(folder, "update-${UUID.randomUUID()}.apk")
-        val request = DownloadManager.Request(Uri.parse(url))
-            .setTitle("Vamos ${release.version}")
-            .setMimeType("application/vnd.android.package-archive")
-            // 只在下载中显示通知:完成后的通知一点就会绕过下面的校验直接打开安装包,所以不留。
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-            .setDestinationUri(Uri.fromFile(target))
-        val id = manager.enqueue(request)
-        if (!prefs.edit().putLong("id", id).putString("url", url).putString("file", target.name).commit()) {
-            manager.remove(id)
-            error("could not save download")
+        val verified = verifiedRelease(context)
+        require(verified == release) { "更新信息已变化，请重新检查" }
+        require(release.versionCode > BuildConfig.VERSION_CODE)
+        require(prefs.getInt("hashFailures-${release.versionCode}",0) < 2) { "此版本已两次校验失败，请重新检查更新或联系发布者" }
+        prefs.edit().putLong("code",release.versionCode).putLong("started",System.currentTimeMillis()).putString("phase",DownloadPhase.Downloading.name).apply()
+        UpdateDownloadService.start(context)
+    }
+    fun pause() = context.startService(Intent(context,UpdateDownloadService::class.java).setAction(UpdateDownloadService.PAUSE))
+    fun cancel() {
+        if (UpdateDownloadService.running) context.startService(Intent(context,UpdateDownloadService::class.java).setAction(UpdateDownloadService.CANCEL))
+        else { directory.listFiles()?.forEach { it.delete() }; prefs.edit().clear().apply() }
+    }
+    fun dropInstalled() {
+        val now = System.currentTimeMillis()
+        directory.listFiles()?.forEach { f ->
+            val code = Regex("vamos-(\\d+)\\.apk.*").matchEntire(f.name)?.groupValues?.get(1)?.toLongOrNull()
+            if (code != null && (code <= BuildConfig.VERSION_CODE || now - f.lastModified() > 7 * 24 * 60 * 60_000L)) f.delete()
         }
     }
-
-    fun cancel() {
-        val id = prefs.getLong("id", -1)
-        if (id != -1L) manager.remove(id)
-        val target = file
-        check(target == null || !target.exists() || target.delete())
-        check(prefs.edit().clear().commit())
-    }
-
-    /** 已经装上(或装了更新的版本)后,下好的安装包没用了:启动时清掉。下载中、暂停、失败的留给关于页处理。 */
-    fun dropInstalled() {
-        val target = file ?: return
-        if (recorded().phase != DownloadPhase.Ready) return
-        val archive = archiveInfo(target, 0)
-        if (archive != null && archive.longVersionCode > installedInfo(0).longVersionCode) return
-        cancel()
-    }
-
-    /**
-     * 只接受本应用、更高版本、同一签名的完整附件;没通过就删掉文件并抛 [ApkRejected]。
-     * 系统安装器之后还会再验签名并要求用户确认。
-     */
     fun installIntent(release: ReleaseInfo): Intent {
-        check(state(release).phase == DownloadPhase.Ready)
-        ApkIntegrity.requireOfficialUrl(requireNotNull(release.apkUrl))
-        val target = requireNotNull(file)
+        require(context.packageManager.canRequestPackageInstalls()) { "需要允许安装未知应用" }
+        require(verifiedRelease(context) == release) { "更新信息校验失败" }
+        val target = file(release.versionCode)
         try {
-            ApkIntegrity.verify(target, release.apkSize, release.apkDigest)
+            ApkIntegrity.verify(target,release.apkSize,release.apkDigest)
             val archive = archiveInfo(target, SIGNING_FLAGS) ?: throw ApkRejected(ApkRejected.Reason.Corrupt)
             val installed = installedInfo(SIGNING_FLAGS)
-            if (archive.packageName != context.packageName || archive.longVersionCode <= installed.longVersionCode) {
-                throw ApkRejected(ApkRejected.Reason.NotNewer)
-            }
-            ApkIntegrity.requireSameSigner(installed.signers(), archive.signers(), archive.signerHistory())
-        } catch (e: ApkRejected) {
-            cancel()
-            throw e
+            if (archive.packageName != context.packageName || archive.longVersionCode != release.versionCode || archive.longVersionCode <= installed.longVersionCode) throw ApkRejected(ApkRejected.Reason.NotNewer)
+            ApkIntegrity.requireSameSigner(installed.signers(),archive.signers(),archive.signerHistory())
+        } catch (e: ApkRejected) { target.delete(); prefs.edit().putString("phase",DownloadPhase.Failed.name).putString("error","安装包校验失败").apply(); throw e }
+        val uri = FileProvider.getUriForFile(context,"${context.packageName}.fileprovider",target)
+        return Intent(Intent.ACTION_VIEW).setDataAndType(uri,"application/vnd.android.package-archive").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    @Suppress("DEPRECATION") private fun archiveInfo(file: File, flags: Int) = context.packageManager.getPackageArchiveInfo(file.path,flags)
+    @Suppress("DEPRECATION") private fun installedInfo(flags: Int) = context.packageManager.getPackageInfo(context.packageName,flags)
+    @Suppress("DEPRECATION") private fun PackageInfo.signers() = (signingInfo?.apkContentsSigners ?: signatures).orEmpty().map { ApkIntegrity.sha256(it.toByteArray()) }.toSet()
+    private fun PackageInfo.signerHistory(): Set<String> = signingInfo?.takeUnless { it.hasMultipleSigners() }?.signingCertificateHistory.orEmpty().map { ApkIntegrity.sha256(it.toByteArray()) }.toSet()
+    companion object {
+        @Suppress("DEPRECATION") private const val SIGNING_FLAGS = PackageManager.GET_SIGNING_CERTIFICATES or PackageManager.GET_SIGNATURES
+        internal fun verifiedRelease(context: Context): ReleaseInfo {
+            val keys = BuildConfig.UPDATE_PUBLIC_KEYS.split(',').filter { it.isNotBlank() }.map { Base64.getDecoder().decode(it.trim()) }
+            val base = File(context.filesDir,"update-v1.json")
+            return Releases.fromManifest(SignedVersion.verify(File(base.path+".raw").readBytes(),File(base.path+".sig").readText(),keys))
         }
-        val uri = manager.getUriForDownloadedFile(prefs.getLong("id", -1)) ?: error("missing APK")
-        return Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-
-    @Suppress("DEPRECATION")
-    private fun archiveInfo(target: File, flags: Int): PackageInfo? =
-        context.packageManager.getPackageArchiveInfo(target.path, flags)
-
-    @Suppress("DEPRECATION")
-    private fun installedInfo(flags: Int): PackageInfo = context.packageManager.getPackageInfo(context.packageName, flags)
-
-    /** 当前签名证书;个别系统读安装包时不给 signingInfo,退回旧字段 signatures。 */
-    @Suppress("DEPRECATION")
-    private fun PackageInfo.signers(): Set<String> =
-        (signingInfo?.apkContentsSigners ?: signatures).orEmpty().map { ApkIntegrity.sha256(it.toByteArray()) }.toSet()
-
-    /** 轮换过签名的包带着历史证书;多个签名者时没有历史。 */
-    private fun PackageInfo.signerHistory(): Set<String> {
-        val info = signingInfo ?: return emptySet()
-        if (info.hasMultipleSigners()) return emptySet()
-        return info.signingCertificateHistory.orEmpty().map { ApkIntegrity.sha256(it.toByteArray()) }.toSet()
-    }
-
-    private companion object {
-        @Suppress("DEPRECATION")
-        const val SIGNING_FLAGS = PackageManager.GET_SIGNING_CERTIFICATES or PackageManager.GET_SIGNATURES
     }
 }

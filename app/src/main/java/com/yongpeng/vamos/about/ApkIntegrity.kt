@@ -17,25 +17,18 @@ class ApkRejected(val reason: Reason) : Exception(reason.name) {
     }
 }
 
-/**
- * 下载地址只接受官方仓库的 HTTPS 发布附件。之后的跳转(到 GitHub 的附件存储)由系统下载服务处理、我们管不到,
- * 所以下载完的文件一律再验:大小与 SHA-256(发布元数据给了才验)、包名、版本号、签名证书。
- */
+/** URL 来自已验签的 COS 清单；安装前再次校验内容、包名、版本和证书。 */
 internal object ApkIntegrity {
-    private val official = "${VamosLinks.RELEASES}/download/".toHttpUrl()
-
     fun requireOfficialUrl(url: String) {
-        val parsed = url.toHttpUrl()
-        require(parsed.isHttps && parsed.host == official.host && parsed.port == 443)
-        require(parsed.username.isEmpty() && parsed.password.isEmpty())
-        require(parsed.encodedPath.startsWith(official.encodedPath))
-        require(parsed.encodedPath.endsWith(".apk", ignoreCase = true))
+        com.yongpeng.vamos.core.update.SignedVersion.requireHttps(url)
+        require(url.toHttpUrl().encodedPath.endsWith(".apk", true))
     }
 
-    /** 给了摘要就必须是 sha256 且对得上;别的写法也算对不上,不放过。 */
+    /** 大小和 SHA-256 均为必填；拒绝不完整或被修改的文件。 */
     fun verify(file: File, size: Long?, digest: String?) {
         corruptUnless(file.isFile && file.length() > 0)
-        if (size != null) corruptUnless(file.length() == size)
+        corruptUnless(size != null && size > 0 && file.length() == size)
+        corruptUnless(digest != null)
         if (digest != null) {
             corruptUnless(digest.matches(Regex("sha256:[0-9a-fA-F]{64}")))
             corruptUnless(sha256(file).equals(digest.substringAfter(':'), ignoreCase = true))

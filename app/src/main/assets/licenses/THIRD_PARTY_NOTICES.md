@@ -223,3 +223,10 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
+
+## EdDSA-Java
+
+- Project: https://github.com/str4d/ed25519-java
+- Artifact: `net.i2p.crypto:eddsa:0.3.0`
+- License: CC0-1.0 (public domain dedication)
+- Usage: Ed25519 verification of the original COS update manifest bytes.

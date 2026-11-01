@@ -11,6 +11,7 @@ kotlin {
 }
 
 dependencies {
+    implementation("net.i2p.crypto:eddsa:0.3.0")
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)

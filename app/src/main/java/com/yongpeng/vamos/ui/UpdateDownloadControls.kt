@@ -9,6 +9,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +48,9 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<Int?>(null) }
     var refresh by remember { mutableIntStateOf(0) }
+    var mobilePrompt by remember { mutableStateOf(false) }
+    var installing by remember { mutableStateOf(false) }
+    val installer = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { installing = false; refresh++ }
 
     fun run(action: suspend () -> Unit) {
         if (busy) return
@@ -73,7 +78,8 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
 
     fun install() = run {
         val intent = withContext(Dispatchers.IO) { updater.installIntent(release) }
-        context.startActivity(intent)
+        installing = true
+        installer.launch(intent)
     }
 
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -84,7 +90,7 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
         try {
             do {
                 state = withContext(Dispatchers.IO) { updater.state(release) }
-                if (state.phase !in listOf(DownloadPhase.Downloading, DownloadPhase.Paused)) break
+                if (state.phase !in listOf(DownloadPhase.Downloading, DownloadPhase.Verifying)) break
                 delay(1000)
             } while (true)
         } catch (e: CancellationException) {
@@ -95,7 +101,11 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
     }
 
     UpdateDownloadActions(state, busy, error,
-        onDownload = { run { withContext(Dispatchers.IO) { updater.download(release) } } },
+        onDownload = {
+            val network = context.getSystemService(android.net.ConnectivityManager::class.java)
+            val wifi = network.getNetworkCapabilities(network.activeNetwork)?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) == true
+            if(wifi) run { withContext(Dispatchers.IO) { updater.download(release) } } else mobilePrompt = true
+        },
         onCancel = { run { withContext(Dispatchers.IO) { updater.cancel() } } },
         onInstall = {
             if (context.packageManager.canRequestPackageInstalls()) install()
@@ -104,6 +114,13 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
             }
         },
     )
+    if(state.phase == DownloadPhase.Downloading) VmButton("暂停", { updater.pause() }, Modifier.fillMaxWidth().padding(top = 8.dp), kind = ButtonKind.Tonal)
+    if(installing) Text("正在系统安装器中安装，完成后数据会保留", style = VmType.Caption)
+    state.error?.let { Text(it, color = VmTheme.colors.accentCinnabar, style = VmType.Body) }
+    if(mobilePrompt) AlertDialog(onDismissRequest = { mobilePrompt = false }, title = { Text("正在使用移动网络") },
+        text = { Text("下载约 ${(release.apkSize ?: 0) / 1024 / 1024} MB，继续会使用移动流量。") },
+        confirmButton = { TextButton({ mobilePrompt = false; run { withContext(Dispatchers.IO) { updater.download(release) } } }) { Text("继续下载") } },
+        dismissButton = { TextButton({ mobilePrompt = false }) { Text("等 Wi-Fi") } })
 }
 
 @Composable
@@ -116,8 +133,9 @@ internal fun UpdateDownloadActions(
     onInstall: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val active = state.phase == DownloadPhase.Downloading || state.phase == DownloadPhase.Paused
+    val active = state.phase == DownloadPhase.Downloading || state.phase == DownloadPhase.Verifying
     val text = when {
+        state.phase == DownloadPhase.Verifying -> "正在校验安装包"
         busy -> stringResource(R.string.about_update_working)
         state.phase == DownloadPhase.Paused -> stringResource(R.string.about_update_paused)
         active -> state.percent?.let { stringResource(R.string.about_update_progress, it) }
@@ -128,10 +146,11 @@ internal fun UpdateDownloadActions(
     }
     VmButton(text, if (state.phase == DownloadPhase.Ready) onInstall else onDownload,
         Modifier.fillMaxWidth().padding(top = 14.dp), enabled = !busy && !active)
-    if (active || state.phase == DownloadPhase.Ready) {
+    if (active || state.phase == DownloadPhase.Ready || state.phase == DownloadPhase.Paused) {
         VmButton(stringResource(R.string.about_update_cancel), onCancel,
             Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.Tonal, enabled = !busy)
     }
+    if(state.total > 0) Text("${state.bytes / 1024 / 1024} / ${state.total / 1024 / 1024} MB · ${state.speed / 1024} KB/s", style = VmType.Caption)
     val note = error ?: if (state.phase == DownloadPhase.Failed) R.string.about_update_error else R.string.about_update_install_hint
     Text(stringResource(note),
         Modifier.padding(top = 8.dp), style = VmType.Caption, color = VmTheme.colors.ink3)

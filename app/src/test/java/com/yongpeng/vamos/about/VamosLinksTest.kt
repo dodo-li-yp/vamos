@@ -52,8 +52,8 @@ class VamosLinksTest {
     @Test
     fun linksPointAtTheRepo() {
         assertEquals("https://github.com/dodo-li-yp/vamos#readme", VamosLinks.README)
-        assertEquals("https://x.com/wangzan101", VamosLinks.X)
+        assertEquals(VamosLinks.REPO, VamosLinks.X)
         assertTrue(VamosLinks.X_GROUP.startsWith("https://x.com/i/chat/group_join/"))
-        assertTrue(VamosLinks.LATEST_RELEASE_API.endsWith("/repos/dodo-li-yp/vamos/releases/latest"))
+        assertTrue(VamosLinks.RELEASES.endsWith("/CHANGES.md"))
     }
 }

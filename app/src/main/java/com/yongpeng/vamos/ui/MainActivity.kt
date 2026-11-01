@@ -286,6 +286,14 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
     val back: () -> Unit = { nav.back() }
     // 聊天页离开组合树时保留列表位置和输入内容，返回设置页等子页面后原样恢复。
     val screenStates = rememberSaveableStateHolder()
+    val updatingBusy by app.taskState.busy.collectAsState()
+    var dismissedUpdate by rememberSaveable { androidx.compose.runtime.mutableLongStateOf(0L) }
+    updateState.update?.takeIf { !updatingBusy && (nav.current != Route.About || it.forceUpdate || BuildConfig.VERSION_CODE < it.minSupportedVersionCode) && (it.versionCode != dismissedUpdate || it.forceUpdate || BuildConfig.VERSION_CODE < it.minSupportedVersionCode) }?.let { releaseInfo ->
+        VmAppUpdatePrompt(releaseInfo,
+            onLater = { dismissedUpdate = releaseInfo.versionCode },
+            onIgnore = { app.updates.ignore(releaseInfo.versionCode) },
+            onExit = { (context as? android.app.Activity)?.finishAffinity() })
+    }
     when (nav.current) {
         Route.PhoneSetup -> PhoneSetupScreen(status, setupRepair, onFix, onboarding = onboarding == OnboardingStep.Phone) {
             phoneSetup.markGuideSeen()

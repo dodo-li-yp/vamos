@@ -10,30 +10,21 @@ import org.junit.rules.TemporaryFolder
 class ApkIntegrityTest {
     @get:Rule val temp = TemporaryFolder()
 
-    @Test fun acceptsOfficialApk() {
-        ApkIntegrity.requireOfficialUrl("https://github.com/dodo-li-yp/vamos/releases/download/v0.2.0/Vamos.apk")
+    @Test fun acceptsAuthenticatedHttpsApkLocation() {
+        ApkIntegrity.requireOfficialUrl("https://example.test/vamos/app.apk")
     }
 
-    @Test fun rejectsUntrustedDownloads() {
-        for (url in listOf(
-            "http://github.com/dodo-li-yp/vamos/releases/download/v0.2.0/Vamos.apk",
-            "https://github.com.evil.test/wangzan101/Vamos/releases/download/v0.2.0/Vamos.apk",
-            "https://github.com/other/Vamos/releases/download/v0.2.0/Vamos.apk",
-            "https://github.com/dodo-li-yp/vamos/releases/download/../../other.apk",
-            "https://github.com/dodo-li-yp/vamos/releases/download/%2e%2e/%2E%2e/%2e%2e/%2e%2e/other/x.apk",
-            "https://objects.githubusercontent.com/wangzan101/Vamos/releases/download/v0.2.0/Vamos.apk",
-            "https://github.com/dodo-li-yp/vamos/releases/download/v0.2.0/Vamos.zip",
-            "https://github.com/dodo-li-yp/vamos/releases/tag/v0.2.0",
-            "https://user:pass@github.com/dodo-li-yp/vamos/releases/download/v0.2.0/Vamos.apk",
-            "https://github.com:8443/wangzan101/Vamos/releases/download/v0.2.0/Vamos.apk",
-        )) rejects { ApkIntegrity.requireOfficialUrl(url) }
+    @Test fun rejectsUnsafeSchemesCredentialsAndNonApks() {
+        for (url in listOf("http://example.test/app.apk", "https://user:pass@example.test/app.apk",
+            "https://example.test/app.apk#fragment", "https://example.test/app.zip"))
+            rejects { ApkIntegrity.requireOfficialUrl(url) }
     }
 
     @Test fun verifiesSizeAndDigestAndRejectsPartialOrModifiedFiles() {
         val file = temp.newFile().apply { writeText("abc") }
         val digest = "sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
         ApkIntegrity.verify(file, 3, digest)
-        ApkIntegrity.verify(file, null, null) // 兼容没有附件摘要的旧发布元数据。
+        rejects { ApkIntegrity.verify(file, null, null) }
         rejects { ApkIntegrity.verify(file, 4, digest) }
         rejects { ApkIntegrity.verify(file, 3, "sha256:bad") }
         rejects { ApkIntegrity.verify(file, 3, "md5:" + "0".repeat(64)) }

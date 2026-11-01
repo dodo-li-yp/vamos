@@ -105,7 +105,7 @@ fun AboutScreen(
             when {
                 update.update != null -> sheet = AboutSheet.Update
                 update.status == CheckStatus.Failed ->
-                    Toast.makeText(context, AboutCopy.OFFLINE_TOAST, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, update.error ?: AboutCopy.OFFLINE_TOAST, Toast.LENGTH_SHORT).show()
                 else -> Toast.makeText(context, AboutCopy.UP_TO_DATE_TOAST, Toast.LENGTH_SHORT).show()
             }
         }
@@ -265,17 +265,10 @@ private fun NotesBox(notes: String) {
 
 @Composable
 private fun VmUpdateDialog(r: ReleaseInfo, current: String, beta: Boolean, onOpenUrl: (String) -> Unit, onDismiss: () -> Unit) {
-    val c = VmTheme.colors
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-        Column(Modifier.fillMaxWidth().background(c.surface, RoundedCornerShape(28.dp)).padding(24.dp)) {
-            Text(AboutCopy.updateTitle(r.version), style = VmType.Title, color = c.textInk)
-            Text(AboutCopy.updateSub(current, beta, r.date), style = VmType.Caption, color = c.textInk2)
-            if (r.notes.isNotBlank()) NotesBox(r.notes)
-            if (r.apkUrl != null) UpdateDownloadControls(r)
-            else VmButton(AboutCopy.UPDATE_DOWNLOAD, { onOpenUrl(r.pageUrl) }, Modifier.fillMaxWidth().padding(top = 16.dp))
-            VmButton("稍后", onDismiss, Modifier.fillMaxWidth().padding(top = 8.dp), kind = ButtonKind.Tonal)
-        }
-    }
+    val context = LocalContext.current
+    VmAppUpdatePrompt(r,onLater = onDismiss,
+        onIgnore = { (context.applicationContext as com.yongpeng.vamos.VamosApp).updates.ignore(r.versionCode); onDismiss() },
+        onExit = { (context as? android.app.Activity)?.finishAffinity() })
 }
 
 @Composable

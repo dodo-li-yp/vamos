@@ -33,6 +33,12 @@ android {
         versionCode = 33
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Production URL/public keys are supplied at build time; no invented live configuration.
+        val updateUrl = providers.gradleProperty("vamosUpdateUrl").getOrElse("https://<bucket>.cos.ap-guangzhou.myqcloud.com/vamos/version.json")
+        val updateKeys = providers.gradleProperty("vamosUpdatePublicKeys").getOrElse("")
+        fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        buildConfigField("String", "UPDATE_MANIFEST_URL", quoted(updateUrl))
+        buildConfigField("String", "UPDATE_PUBLIC_KEYS", quoted(updateKeys))
         buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
         // 关于页版本号后的 Beta 标记;出正式版时改成 false
         buildConfigField("boolean", "BETA", "true")

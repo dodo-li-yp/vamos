@@ -50,6 +50,7 @@ object Licenses {
         }
 
     val ENTRIES = listOf(
+        Entry("EdDSA-Java", "CC0-1.0", "net.i2p.crypto:eddsa:0.3.0，COS 更新清单 Ed25519 验签。https://github.com/str4d/ed25519-java"),
         Entry("Vamos", "Apache-2.0", "Vamos 本身,包括运行环境的启动器、其中的 vamos 命令与技能脚本。许可证全文见本页顶上。"),
         Entry("PRoot", "GPL-2.0-or-later", "运行 Python、Node 等程序用的环境,版本 5.4.0,打了一个补丁(PRoot 退出时结束所有子进程)。$GPL_SOURCE_OFFER"),
         Entry("talloc", "LGPL-3.0-or-later", "版本 2.4.3,未修改,静态链接进 PRoot 程序。可用 tools/sandbox/ 的源码与脚本重新链接。"),
@@ -91,7 +92,7 @@ fun LicensesScreen(onBack: () -> Unit) {
     val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" } + runtime
     SubPage(AboutCopy.LICENSE_TITLE, onBack) {
         Text(noticeText, Modifier.padding(16.dp), style = VmType.Hint, color = VmTheme.colors.ink)
-        Text(thirdPartyText, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
+        Text(thirdPartyText + "\n\n" + remember { context.assets.open("licenses/CC0-1.0.txt").bufferedReader().use { it.readText() } }, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
         if (licenseText.isNotEmpty()) {
             VmGlassCard(Modifier.padding(bottom = 12.dp).testTag("license-text")) {
                 Text(

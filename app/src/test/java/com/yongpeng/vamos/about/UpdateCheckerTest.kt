@@ -1,155 +1,36 @@
-// Modified by Vamos (2026): brand and package migration.
+// Modified by Vamos (2026): signed update checker without network or persistent test keys.
 package com.yongpeng.vamos.about
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
-import okhttp3.mockwebserver.Dispatcher
-import okhttp3.mockwebserver.MockResponse
-import okhttp3.mockwebserver.MockWebServer
-import okhttp3.mockwebserver.RecordedRequest
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import kotlinx.coroutines.test.advanceUntilIdle
+import okhttp3.*
+import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.*
+import org.junit.Assert.*
 import org.junit.rules.TemporaryFolder
+import java.security.*
+import java.util.Base64
 
 class UpdateCheckerTest {
-    @get:Rule val tmp = TemporaryFolder()
-
-    private val server = MockWebServer()
-    private var github: MockResponse = MockResponse().setResponseCode(500)
-    private val hits = mutableListOf<String>()
-    private var clock = 1_000_000_000L
-
-    @Before
-    fun start() {
-        server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse {
-                hits += request.path.orEmpty()
-                return github
-            }
-        }
-        server.start()
+    @get:Rule val temp=TemporaryFolder()
+    @Test fun signedManifestCodeNotVersionNameControlsUpdateAndCache() = runTest {
+        val keys=KeyPairGenerator.getInstance("Ed25519").generateKeyPair()
+        val raw="""{"versionCode":34,"versionName":"0.0.1","apkUrl":"https://updates.invalid/vamos.apk","sha256":"${"a".repeat(64)}","size":10,"force":true,"minSupportedVersionCode":34,"changelog":"fix"}""".toByteArray()
+        val sig=Base64.getEncoder().encodeToString(Signature.getInstance("Ed25519").run { initSign(keys.private);update(raw);sign() })
+        var requests=0
+        val client=OkHttpClient.Builder().addInterceptor { chain -> requests++; Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1).code(200).message("test").body((if(chain.request().url.encodedPath.endsWith(".sig"))sig.toByteArray() else raw).toResponseBody()).build() }.build()
+        val file=temp.root.resolve("update")
+        val checker=UpdateChecker(file,"1.0.0",client,"https://updates.invalid/version.json",{100_000L},this,listOf(keys.public.encoded.takeLast(32).toByteArray()),33)
+        assertTrue(checker.autoCheck());assertNotNull(checker.state.value.update);assertEquals(2,requests)
+        assertFalse(checker.autoCheck());assertEquals(2,requests)
+        val equal=UpdateChecker(temp.root.resolve("same"),"0.0.1",client,"https://updates.invalid/version.json",{100_000L},this,listOf(keys.public.encoded.takeLast(32).toByteArray()),34)
+        equal.check(true);assertNull(equal.state.value.update)
+        file.resolveSibling("update.raw").appendText(" ")
+        val cache=UpdateChecker(file,"1.0.0",client,"https://updates.invalid/version.json",{100_000L},this,listOf(keys.public.encoded.takeLast(32).toByteArray()),33)
+        cache.load();assertNull(cache.state.value.update)
     }
-
-    @After
-    fun stop() = server.shutdown()
-
-    private fun checker(current: String = "0.1.0") = UpdateChecker(
-        tmp.root.resolve("update.json"), current,
-        releaseApi = server.url("/api").toString(),
-        now = { clock },
-    )
-
-    private fun release(tag: String) =
-        MockResponse().setBody("""{"tag_name":"$tag","name":"Vamos $tag","body":"- 新东西","html_url":"https://github.com/dodo-li-yp/vamos/releases/tag/$tag","assets":[]}""")
-
-    @Test
-    fun newerReleaseFromGitHubShowsUpdate() = runTest {
-        github = release("v0.2.0")
-        val c = checker()
-        c.check(manual = true)
-        val s = c.state.value
-        assertEquals(CheckStatus.Done, s.status)
-        assertEquals("0.2.0", s.update?.version)
-        assertTrue(s.hasUpdate)
-        assertEquals(1, s.manualRounds)
-        assertEquals(listOf("/api"), hits)
-        val req = server.takeRequest()
-        assertEquals("application/vnd.github+json", req.getHeader("Accept"))
-        assertTrue(req.getHeader("User-Agent")!!.startsWith("Vamos/"))
-    }
-
-    @Test
-    fun sameVersionIsUpToDate() = runTest {
-        github = release("v0.1.0")
-        val c = checker()
-        c.check(manual = true)
-        assertEquals(CheckStatus.Done, c.state.value.status)
-        assertNull(c.state.value.update)
-        assertEquals("0.1.0", c.state.value.latest?.version)
-    }
-
-    /** GitHub 限流(403)就是这次没查到:只问 GitHub 一次,不去别处找。 */
-    @Test
-    fun gitHubRateLimitIsAFailure() = runTest {
-        github = MockResponse().setResponseCode(403).setBody("""{"message":"API rate limit exceeded"}""")
-        val c = checker()
-        c.check(manual = true)
-        assertEquals(listOf("/api"), hits)
-        assertEquals(CheckStatus.Failed, c.state.value.status)
-        assertNull(c.state.value.update)
-    }
-
-    @Test
-    fun manualFailureIsReported() = runTest {
-        val c = checker()
-        c.check(manual = true)
-        assertEquals(CheckStatus.Failed, c.state.value.status)
-        assertEquals(1, c.state.value.manualRounds)
-        assertNull(c.state.value.update)
-    }
-
-    /** 自动检查失败不改界面上的状态;每次打开都查,只挡住两分钟内连着来的。 */
-    @Test
-    fun autoCheckIsSilentAndRunsOnEveryOpenButNotInBursts() = runTest {
-        val c = checker()
-        assertTrue(c.autoCheck())
-        assertEquals(CheckStatus.Idle, c.state.value.status)
-        assertEquals(0, c.state.value.manualRounds)
-        val before = hits.size
-        clock += UpdateSchedule.MIN_GAP_MS - 1
-        assertFalse(c.autoCheck())
-        assertEquals(before, hits.size)
-        clock += 1
-        github = release("v0.2.0")
-        assertTrue(c.autoCheck())
-        assertEquals("0.2.0", c.state.value.update?.version)
-        assertEquals(CheckStatus.Idle, c.state.value.status)
-    }
-
-    /** 查到的版本存盘:重开 App 不联网也有红点;装上新版后红点消失;上次自动检查的时间也记着。 */
-    @Test
-    fun foundUpdateSurvivesRestart() = runTest {
-        github = release("v0.2.0")
-        checker().autoCheck()
-        github = MockResponse().setResponseCode(500)
-
-        val again = checker()
-        again.load()
-        assertEquals("0.2.0", again.state.value.update?.version)
-        assertFalse("just checked", again.autoCheck())
-
-        val upgraded = checker(current = "0.2.0")
-        upgraded.load()
-        assertNull(upgraded.state.value.update)
-        assertNotNull(upgraded.state.value.latest)
-    }
-
-    /** 同时进来的两次自动检查(查还没完)只真的查一次;隔十分钟再打开照样查。 */
-    @Test
-    fun concurrentAutoChecksHitGitHubOnce() = runTest {
-        github = release("v0.2.0")
-        val c = checker()
-        val ran = listOf(async { c.autoCheck() }, async { c.autoCheck() }).awaitAll()
-        assertEquals(listOf(true, false), ran.sorted().reversed())
-        assertEquals(1, hits.size)
-        clock += 10 * 60 * 1000L
-        assertTrue(c.autoCheck())
-        assertEquals(2, hits.size)
-    }
-
-    @Test
-    fun scheduleRules() {
-        assertTrue(UpdateSchedule.due(null, 5))
-        assertFalse(UpdateSchedule.due(1_000, 1_000 + UpdateSchedule.MIN_GAP_MS - 1))
-        assertTrue(UpdateSchedule.due(1_000, 1_000 + UpdateSchedule.MIN_GAP_MS))
-        assertTrue("clock moved back", UpdateSchedule.due(10_000, 5_000))
+    @Test fun missingConfigurationFailsClosedAndManualCheckHasReason() = runTest {
+        val checker=UpdateChecker(temp.root.resolve("unconfigured"),"1.0.0",releaseApi="https://<bucket>.cos.ap-guangzhou.myqcloud.com/vamos/version.json",scope=this,publicKeys=emptyList())
+        checker.check(true);assertEquals(CheckStatus.Failed,checker.state.value.status);assertNull(checker.state.value.update);assertNotNull(checker.state.value.error)
     }
 }

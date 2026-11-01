@@ -5,12 +5,12 @@ import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.tr
 import java.net.URLEncoder
 
-/** Vamos 对外的地址都在这里:仓库、问题、作者、X 群聊、检查更新用的两个来源。换地址只改这一处。 */
+/** Vamos 对外的地址都在这里:仓库、问题与文档。换地址只改这一处。 */
 object VamosLinks {
     const val REPO = "https://github.com/dodo-li-yp/vamos"
     const val REPO_LABEL = "github.com/dodo-li-yp/vamos"
     const val README = "$REPO#readme"
-    const val RELEASES = "$REPO/releases"
+    const val RELEASES = "$REPO/blob/main/CHANGES.md"
     const val NEW_ISSUE = "$REPO/issues/new"
     const val X = "https://github.com/dodo-li-yp/vamos"
     const val X_HANDLE = "Vamos"
@@ -18,8 +18,6 @@ object VamosLinks {
     /** X 上的 Vamos 交流群:点开即申请加入(不用微信的走这里)。 */
     const val X_GROUP = "https://x.com/i/chat/group_join/g2116500883139862983/xP74Qyff3X"
 
-    /** 检查更新只问 GitHub 发布页(不登录,每小时有次数限制)。 */
-    const val LATEST_RELEASE_API = "https://api.github.com/repos/dodo-li-yp/vamos/releases/latest"
 
     /** 反馈时预先填进问题模板的设备与版本信息。 */
     data class Device(

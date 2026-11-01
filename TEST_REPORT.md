@@ -1,3 +1,14 @@
+## M3 续做：COS 可信更新（2026-11-01）
+
+- 已替换 GitHub Releases 解析/检查与系统 DownloadManager 更新实现；BuildConfig URL 保留 TASK 指定占位，正式公钥为空（支持逗号分隔双公钥）。未配置时 fail closed，手动检查说明缺失配置。
+- 原始 version.json 字节 + 独立 Base64 `.sig` 验签后才解析；versionCode 判新、24 小时检查节流、24 小时缓存重新验签、普通/强制更新与任务忙时延后弹窗。
+- 前台下载服务：HTTPS、Range + 强 ETag/If-Range、200 安全重启、暂停/恢复、速率/进度、三次网络重试、空间检查、SHA 不符删除文件、同版本两次校验失败停止重试。
+- 安装前重新验签缓存并复核 SHA/大小/包名/版本/证书；未知来源授权返回后继续，使用受限 FileProvider + ACTION_VIEW。未发布正式包。
+- `tools/release/make_version_json.py` 接受 APK/离线私钥路径输出原始清单与 detached signature；临时目录生成私钥的签名脚本冒烟测试通过，私钥已删除，没有提交密钥。
+- 六场景：正常清单/签名错误/SHA 错误/Range 续传/强更判定均有离线单测；真实 COS、系统安装与「无安装权限→授权」设备流程尚未测。地址与公钥未提供，未编造线上验收。
+- 验证：`assembleDebug` 通过；`SignedUpdateTest` 8 项、应用 about 包 30 项均通过。修复了旧社交链接测试断言；本段最终 Lint 正在运行，后续记录最终结果。
+- 新增 EdDSA-Java 0.3.0（CC0-1.0），保留原始许可全文。所有旧版未完成描述以最新续做段落为准。
+
 # Vamos 测试报告
 
 ## 续作进展（以下进展优先于后面的首轮基线）
