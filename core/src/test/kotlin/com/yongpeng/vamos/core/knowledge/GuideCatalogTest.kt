@@ -3,8 +3,8 @@ package com.yongpeng.vamos.core.knowledge
 
 import com.yongpeng.vamos.core.tool.execute
 import com.yongpeng.vamos.core.model.Part
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.SandboxStatus
 import com.yongpeng.vamos.core.tool.FakeScreen
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -83,7 +83,7 @@ class GuideCatalogTest {
             ScriptEntry("scripts/login.py", runnable = false, reason = "需要账号授权"),
         )
         val call = Part.ToolCall("v1", "skill_read", """{"name":"report"}""")
-        val r = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, sandbox = sb).execute(call).content.toString()).jsonObject
+        val r = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, files = sb).execute(call).content.toString()).jsonObject
         assertEquals("skills/report", r["scriptSource"]!!.jsonPrimitive.content)
         val scripts = r["scripts"]!!.jsonArray.map { it.jsonObject }
         assertEquals(listOf("true", "false", "false"), scripts.map { it["runnable"]!!.jsonPrimitive.content })
@@ -94,12 +94,12 @@ class GuideCatalogTest {
         assertEquals(1, sb.prepares)
         // 还在准备:不列脚本(清单要等准备好),但工具已提供,附注按可运行脚本给
         sb.status = SandboxStatus.NotInstalled
-        val pending = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, sandbox = sb).execute(call).content.toString()).jsonObject
+        val pending = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, files = sb).execute(call).content.toString()).jsonObject
         assertNull(pending["scripts"])
         assertTrue(pending["content"]!!.jsonPrimitive.content.startsWith(SANDBOX_TOOLS_NOTE))
         // 设备不支持:没有沙箱工具
         sb.status = SandboxStatus.Unsupported("x86")
-        val off = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, sandbox = sb).execute(call).content.toString()).jsonObject
+        val off = Json.parseToJsonElement(toolDispatcher(FakeScreen(), skills = catalog, files = sb).execute(call).content.toString()).jsonObject
         assertNull(off["scripts"])
         assertTrue(off["content"]!!.jsonPrimitive.content.startsWith(UNAVAILABLE_TOOLS_NOTE))
     }

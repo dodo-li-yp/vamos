@@ -15,7 +15,7 @@ import kotlinx.coroutines.cancel
 import com.yongpeng.vamos.core.workspace.WorkspaceFileGate
 import okhttp3.OkHttpClient
 import java.io.File
-import com.yongpeng.vamos.core.workspace.SandboxTree
+import com.yongpeng.vamos.core.workspace.WorkspaceTree
 
 /**
  * 一个任务的内置浏览器:自己的一块后台网页显示、一池标签、网页端口与隔离脚本引擎。
@@ -34,7 +34,7 @@ class WebStack private constructor(
      * 本对话的工作区:[dir] 是宿主目录(work/<对话>,不存在就建,不要求沙箱已安装);
      * 下载写进去、上传从里面读,都经 [gate](打开一次、按句柄核实)。
      */
-    class Workspace(val dir: File, val gate: WorkspaceFileGate, val tree: SandboxTree)
+    class Workspace(val dir: File, val gate: WorkspaceFileGate, val tree: WorkspaceTree)
 
     // 下载在后台进行;任务结束一并取消,没下完的标 cancelled 并删掉半截文件
     private val transfers = CoroutineScope(SupervisorJob() + Dispatchers.IO)

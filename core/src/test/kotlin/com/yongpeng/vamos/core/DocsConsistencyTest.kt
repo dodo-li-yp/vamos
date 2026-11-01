@@ -44,8 +44,8 @@ class DocsConsistencyTest {
     private val sourceNames: Set<String> by lazy { sourceFiles.map { it.nameWithoutExtension }.toSet() }
 
     private fun docs(): List<File> {
-        val list = mutableListOf(File(root, "README.md"), File(root, "eval/README.md"), File(root, "tools/sandbox/README.md"))
-        File(root, "docs").takeIf { it.isDirectory }?.walkTopDown()?.filter { it.isFile && it.extension == "md" }?.let { list += it }
+        val list = mutableListOf(File(root, "README.md"), File(root, "eval/README.md"))
+        File(root, "docs").takeIf { it.isDirectory }?.walkTopDown()?.filter { it.isFile && it.extension == "md" && !it.relativeTo(root).invariantSeparatorsPath.startsWith("docs/vamos/") }?.let { list += it }
         return list.filter { it.isFile }
     }
 

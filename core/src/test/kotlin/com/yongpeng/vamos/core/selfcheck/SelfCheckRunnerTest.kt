@@ -60,7 +60,7 @@ class SelfCheckRunnerTest {
         assertEquals("needs helper (fail)", s.of(SelfCheck.VIRTUAL_DISPLAY).detail)
         assertEquals(SelfCheck.VIRTUAL_DISPLAY, s.of(SelfCheck.APP_LAUNCH).blockedBy)
         // 不靠助手的照跑
-        for (c in listOf(SelfCheck.PERMISSIONS, SelfCheck.BROWSER, SelfCheck.SANDBOX)) assertEquals(c.name, CheckStatus.Pass, s.of(c).status)
+        for (c in listOf(SelfCheck.PERMISSIONS, SelfCheck.BROWSER)) assertEquals(c.name, CheckStatus.Pass, s.of(c).status)
     }
 
     @Test
@@ -96,15 +96,15 @@ class SelfCheckRunnerTest {
         assertEquals(CheckStatus.Fail, b.status)
         assertEquals(Advice.TimedOut, b.advice)
         assertEquals("timed out after 15 s", b.detail)
-        assertEquals(CheckStatus.Pass, s.of(SelfCheck.SANDBOX).status)
+        assertEquals(CheckStatus.Pass, s.of(SelfCheck.BROWSER).status)
     }
 
     @Test
     fun aTimeoutInsideThePortIsAFailureNotACancel() = runTest {
-        val port = FakePort(facts, mapOf(SelfCheck.SANDBOX to { withTimeout(10) { awaitCancellation() } }))
+        val port = FakePort(facts, mapOf(SelfCheck.BROWSER to { withTimeout(10) { awaitCancellation() } }))
         val s = SelfCheckRunner(port, now = { testScheduler.currentTime }).run()
         assertEquals(SelfCheckState.Phase.Done, s.phase)
-        assertEquals(CheckStatus.Fail, s.of(SelfCheck.SANDBOX).status)
+        assertEquals(CheckStatus.Fail, s.of(SelfCheck.BROWSER).status)
         assertEquals(CheckStatus.Pass, s.of(SelfCheck.APP_COPIES).status)
     }
 
@@ -128,7 +128,7 @@ class SelfCheckRunnerTest {
         for (c in listOf(SelfCheck.DEVICE, SelfCheck.PERMISSIONS, SelfCheck.HELPER, SelfCheck.VIRTUAL_DISPLAY)) assertEquals(c.name, CheckStatus.Pass, s.of(c).status)
         assertEquals("timed out after 2 s", s.of(SelfCheck.APP_LAUNCH).detail)
         assertEquals(SelfCheck.APP_LAUNCH, s.of(SelfCheck.SCREEN_READING).blockedBy)
-        for (c in listOf(SelfCheck.MAIN_SCREEN, SelfCheck.BROWSER, SelfCheck.SANDBOX, SelfCheck.APP_COPIES)) {
+        for (c in listOf(SelfCheck.MAIN_SCREEN, SelfCheck.BROWSER, SelfCheck.APP_COPIES)) {
             assertEquals(c.name, CheckStatus.Skipped, s.of(c).status)
             assertEquals(c.name, Advice.OutOfTime, s.of(c).advice)
         }

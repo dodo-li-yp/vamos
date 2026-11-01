@@ -1,0 +1,5 @@
+// Modified by Vamos (2026): brand and package migration.
+package com.yongpeng.vamos.core.workspace
+
+/** 沙箱实现报给工具层的已知错误;[code] 原样成为工具结果的 error(如 sandbox_network_isolation_unavailable)。 */
+class WorkspaceError(val code: String, message: String, val recoverable: Boolean = false) : Exception(message)

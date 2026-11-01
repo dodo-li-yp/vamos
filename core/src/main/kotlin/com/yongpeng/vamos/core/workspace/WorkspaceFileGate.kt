@@ -17,7 +17,7 @@ import java.util.UUID
  * 挡不住。这里每一段都相对上一段已经打开的目录句柄打开、不跟随链接;最后的文件只打开一次,在句柄上核实
  * (实际位置仍在根目录里、是普通文件、只有一个硬链接),之后的读写都在这同一个句柄上。删除也先这样核实。
  *
- * [rel] 是根目录下的相对路径(`/` 分隔);`..`、空字节一律算越界。错误都抛 [SandboxError],消息里不带宿主路径。
+ * [rel] 是根目录下的相对路径(`/` 分隔);`..`、空字节一律算越界。错误都抛 [WorkspaceError],消息里不带宿主路径。
  */
 class WorkspaceFileGate(private val sys: FdSys) {
 
@@ -40,11 +40,11 @@ class WorkspaceFileGate(private val sys: FdSys) {
             val candidate = numbered(name, n)
             try {
                 return candidate to createNew(root, "$dir/$candidate", under = dir)
-            } catch (e: SandboxError) {
+            } catch (e: WorkspaceError) {
                 if (e.code != FILE_EXISTS) throw e
             }
         }
-        throw SandboxError(FILE_EXISTS, "Too many files with this name.", recoverable = true)
+        throw WorkspaceError(FILE_EXISTS, "Too many files with this name.", recoverable = true)
     }
 
     /** 核实是普通文件后才删。 */
@@ -60,7 +60,7 @@ class WorkspaceFileGate(private val sys: FdSys) {
     /** 目录里的名字;目录不存在为空。 */
     fun list(root: File, rel: String): List<String> = try {
         anchored(root, segments(rel), create = false) { _, d -> sys.list(d) }
-    } catch (e: SandboxError) {
+    } catch (e: WorkspaceError) {
         if (e.code == FILE_NOT_FOUND) emptyList() else throw e
     }
 
@@ -109,7 +109,7 @@ class WorkspaceFileGate(private val sys: FdSys) {
         if (segs.isEmpty()) throw outside()
         try {
             anchored(root, segs.dropLast(1), create = false) { rootReal, dir -> removeEntry(dir, segs.last(), rootReal, 0) }
-        } catch (e: SandboxError) {
+        } catch (e: WorkspaceError) {
             if (e.code != FILE_NOT_FOUND) throw e
         }
     }
@@ -201,22 +201,22 @@ class WorkspaceFileGate(private val sys: FdSys) {
         if (!inside(real, rootReal) || real != dir.realPath().trimEnd('/') + "/" + name) throw outside()
         val st = f.stat()
         if (st.kind != FdStat.Kind.FILE) throw notAFile()
-        if (st.nlink != 1L) throw SandboxError(LINKED_FILE, "The file has more than one hard link, so Vamos does not use it; copy it (cp) and use the copy.", recoverable = true)
+        if (st.nlink != 1L) throw WorkspaceError(LINKED_FILE, "The file has more than one hard link, so Vamos does not use it; copy it (cp) and use the copy.", recoverable = true)
         return st
     }
 
-    private fun map(e: FdSysException, dirStep: Boolean): SandboxError = when (e.kind) {
-        FdSysException.Kind.NOT_FOUND -> SandboxError(FILE_NOT_FOUND, "The file does not exist.", recoverable = true)
-        FdSysException.Kind.EXISTS -> SandboxError(FILE_EXISTS, "A file with this name already exists.", recoverable = true)
-        FdSysException.Kind.NOT_DIR -> SandboxError(FILE_NOT_FOUND, "A folder on this path is not a folder.", recoverable = true)
+    private fun map(e: FdSysException, dirStep: Boolean): WorkspaceError = when (e.kind) {
+        FdSysException.Kind.NOT_FOUND -> WorkspaceError(FILE_NOT_FOUND, "The file does not exist.", recoverable = true)
+        FdSysException.Kind.EXISTS -> WorkspaceError(FILE_EXISTS, "A file with this name already exists.", recoverable = true)
+        FdSysException.Kind.NOT_DIR -> WorkspaceError(FILE_NOT_FOUND, "A folder on this path is not a folder.", recoverable = true)
         FdSysException.Kind.LINK ->
-            if (dirStep) SandboxError(NOT_A_FILE, "A folder on this path is a link; Vamos's file tools do not follow links. Use the real path.", recoverable = true)
+            if (dirStep) WorkspaceError(NOT_A_FILE, "A folder on this path is a link; Vamos's file tools do not follow links. Use the real path.", recoverable = true)
             else notAFile()
         FdSysException.Kind.NOT_FILE -> notAFile()
     }
 
-    private fun outside() = SandboxError(OUTSIDE, "The file is outside the allowed folder.", recoverable = true)
-    private fun notAFile() = SandboxError(NOT_A_FILE, "Not a regular file (a directory, link or special file).", recoverable = true)
+    private fun outside() = WorkspaceError(OUTSIDE, "The file is outside the allowed folder.", recoverable = true)
+    private fun notAFile() = WorkspaceError(NOT_A_FILE, "Not a regular file (a directory, link or special file).", recoverable = true)
 
     companion object {
         const val FILE_NOT_FOUND = "file_not_found"
@@ -228,9 +228,9 @@ class WorkspaceFileGate(private val sys: FdSys) {
 
         /** 根目录下的各段;`..`、空字节越界。 */
         fun segments(rel: String): List<String> {
-            if ('\u0000' in rel) throw SandboxError(OUTSIDE, "The path is not allowed.", recoverable = true)
+            if ('\u0000' in rel) throw WorkspaceError(OUTSIDE, "The path is not allowed.", recoverable = true)
             return rel.split('/').filter { it.isNotEmpty() && it != "." }.onEach {
-                if (it == "..") throw SandboxError(OUTSIDE, "The path is not allowed.", recoverable = true)
+                if (it == "..") throw WorkspaceError(OUTSIDE, "The path is not allowed.", recoverable = true)
             }
         }
 

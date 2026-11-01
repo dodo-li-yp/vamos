@@ -1,7 +1,7 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.cap.web
 
-import com.yongpeng.vamos.cap.sandbox.JVM_GATE
+import com.yongpeng.vamos.cap.files.JVM_GATE
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -14,10 +14,8 @@ import com.yongpeng.vamos.core.usage.RunUsageTally
 import com.yongpeng.vamos.core.shell.AccessibilityRepair
 import com.yongpeng.vamos.core.shell.HelperRestart
 import com.yongpeng.vamos.ui.StatusCopy
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
-import com.yongpeng.vamos.cap.sandbox.SandboxState
-import com.yongpeng.vamos.cap.sandbox.AndroidSandbox
-import com.yongpeng.vamos.cap.sandbox.SandboxDirs
+import com.yongpeng.vamos.cap.files.WorkspaceFiles
+import com.yongpeng.vamos.cap.files.WorkspaceDirs
 import com.yongpeng.vamos.chat.SharedFile
 import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
@@ -417,7 +415,7 @@ class TaskRun(
     fun dequeue() { setState(TaskState.Running(0, TaskService.PREPARING)) }
 
     /** 本任务的沙箱:一个任务一份(导出额度按任务算),工作区是本对话的。 */
-    private val sandbox by lazy { AndroidSandbox(service, SandboxState.get(service), onShared = ::addShared) }
+    private val sandbox by lazy { WorkspaceFiles(service, onShared = ::addShared) }
 
     /** 沙箱导出了一个文件(share_file 或 `vamos share`)。 */
     fun addShared(f: SharedFile) = synchronized(service.taskState.shownLock) { _sharedFiles.value = _sharedFiles.value + f }
@@ -601,7 +599,7 @@ class TaskRun(
                 val stack = resources.acquire(Dispatchers.Main, WebStack::close) { WebStack.create(
                         service, key, metrics.widthPixels, metrics.heightPixels, metrics.densityDpi,
                         // 下载、上传走本对话的工作区:只是 App 私有目录里的文件夹,不要求沙箱已装好
-                        workspace = SandboxDirs(service).let { d -> WebStack.Workspace(d.workspace(conversationId), d.gate, d.tree) },
+                        workspace = WorkspaceDirs(service).let { d -> WebStack.Workspace(d.workspace(conversationId), d.gate, d.tree) },
                     ) }
                 webStack = stack
                 // 模型用 web_keep_open 标过的那一页,任务结束时留在后台,记在这一轮名下(对话里那一轮下面显示、关了补一句)
@@ -648,7 +646,7 @@ class TaskRun(
             val userScreens = (service.application as VamosApp).userScreens.source(conversationId)
             val runSpec = RunSpec(RunId(key), goal, conversationId,
                 priorTurns,
-                provenance, if (conditionCheck) setOf("web", "sandbox") else null, readOnly = conditionCheck)
+                provenance, if (conditionCheck) setOf("web", "files") else null, readOnly = conditionCheck)
             val runApproval = approvalControl.start(remote = provenance.origin == RunOrigin.Mcp).also { approval = it }
             val childRunner = if (provenance.origin == RunOrigin.Ui && web != null) ChildAgentRunner(
                 create = { childSpec ->
@@ -656,7 +654,7 @@ class TaskRun(
                         web = web, webPacing = { PagePacing.human() }, webPlacePace = { PlacePace.of(catalog.sitePace(it)) },
                         webIdleScroll = { IdleScroll(Random.Default) },
                         appPacing = { pace.appPacing() }, appPace = { PlacePace.of(catalog.appPace(it)) }, appIdleScroll = { IdleScroll(Random.Default) },
-                        sandbox = sandbox, workspace = { conversationId }, runSpec = childSpec,
+                        files = sandbox, workspace = { conversationId }, runSpec = childSpec,
                         conversationId = conversationId, inlineScreen = speed.inlineScreen,
                         adaptiveVision = speed.adaptiveVision)
                     AgentLoop(model, childTools, SystemPrompt.identity(), maxSteps = childSpec.stepBudget ?: AgentLoop.UNLIMITED_STEPS,
@@ -683,11 +681,7 @@ class TaskRun(
                 // 上传只认本对话工作区里的普通文件(与沙箱同一套路径规则);技能目录、工作区外一律越界
                 workspacePath = web?.let { { p: String -> sandbox.uploadCheck(conversationId, p) } },
                 // 工作区 = 对话:同一对话的追问接着用上一轮的文件,不同对话互不可见
-                sandbox = sandbox, workspace = { conversationId },
-                onSandboxCommand = { sandboxNote(StatusCopy.sandboxCommand(it, sandboxOnline())) },
-                onSandboxProgress = { sandboxNote(StatusCopy.sandboxProgress(it, sandboxOnline())) },
-                onSandboxPreparing = { sandboxNote(StatusCopy.RUNTIME_PREPARING) },
-                onSandboxScript = { sandboxNote(StatusCopy.sandboxScript(sandboxOnline())) },
+                files = sandbox, workspace = { conversationId },
                 imageOps = BitmapImageOps, runSpec = runSpec,
                 userScreens = userScreens,
                 scheduleTrigger = if (provenance.origin == RunOrigin.Ui) { trigger -> TriggerRuntime.schedule(service, trigger) } else null,
@@ -1084,12 +1078,7 @@ class TaskRun(
     }.getOrNull()
 
     /** 沙箱这一步的说明写到任务卡片上(当前这一步的 note)。 */
-    private fun sandboxNote(text: String) {
-        val s = _state.value as? TaskState.Running ?: return
-        publish(s.copy(note = text))
-    }
 
-    private fun sandboxOnline() = (sandbox.status() as? SandboxStatus.Ready)?.network == true
 
     private fun publish(state: TaskState) {
         // 被挪走后到 gate 拦下之前,循环可能还在推理:对外先显示暂停

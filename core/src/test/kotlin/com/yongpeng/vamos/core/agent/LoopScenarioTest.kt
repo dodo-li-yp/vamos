@@ -5,7 +5,7 @@ import com.yongpeng.vamos.core.knowledge.KnowledgeStore
 import com.yongpeng.vamos.core.knowledge.GuideCatalog
 import com.yongpeng.vamos.core.model.Part
 import com.yongpeng.vamos.core.model.Role
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
 import com.yongpeng.vamos.core.uistate.ActionResult
 import com.yongpeng.vamos.core.testing.FakeChatModel
 import com.yongpeng.vamos.core.testing.InterruptibleStream
@@ -113,7 +113,7 @@ class LoopScenarioTest {
             call("web_read_page")
             answer("知乎热榜第一是「今日话题」")
         }
-        val tools = toolDispatcher(FakeScreen(), skills = catalog, web = web, sandbox = FakeSandbox())
+        val tools = toolDispatcher(FakeScreen(), skills = catalog, web = web, files = FakeSandbox())
         val end = loop(main, tools, knowledge = bundled, skills = catalog).run("用网页看一下知乎热榜")
         assertTrue("$end", end is TaskState.Succeeded)
         val refs = main.requests[1].messages.contextBodies(ContextKind.SiteKnowledge)

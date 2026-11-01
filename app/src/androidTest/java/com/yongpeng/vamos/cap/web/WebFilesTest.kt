@@ -22,7 +22,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 import kotlin.coroutines.resume
-import com.yongpeng.vamos.core.workspace.SandboxTree
+import com.yongpeng.vamos.core.workspace.WorkspaceTree
 
 /**
  * 真机测试:网页下载落到工作区的 downloads/,上传只交工作区文件。用本地夹具里的 blob: 下载(不依赖外网);
@@ -45,7 +45,7 @@ class WebFilesTest {
                 .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(instr.context)).build()
             stack = WebStack.create(
                 ctx, "run-files", bounds.width(), bounds.height(), ctx.resources.displayMetrics.densityDpi, listOf(loader),
-                workspace = WebStack.Workspace(ws, com.yongpeng.vamos.cap.sandbox.AndroidFdSys.gate, SandboxTree()),
+                workspace = WebStack.Workspace(ws, com.yongpeng.vamos.cap.files.AndroidFdSys.gate, WorkspaceTree()),
             )
         }
         runBlocking { stack.screen.navigate("https://appassets.androidplatform.net/assets/web-fixtures/files.html", newTab = false) }

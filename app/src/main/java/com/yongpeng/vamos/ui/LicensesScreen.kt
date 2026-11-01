@@ -32,32 +32,10 @@ import com.yongpeng.vamos.ui.theme.VmType
 object Licenses {
     data class Entry(val name: String, val license: String, val note: String)
 
-    const val GPL_SOURCE_OFFER =
-        "PRoot(GPL-2.0-or-later)与 talloc(LGPL-3.0-or-later)以独立程序的形式随 Vamos 安装包发布,Vamos 不链接它们。" +
-            "它们的完整源码、Vamos 打的补丁和编译脚本随每个版本放在 Vamos 的发布页,文件名 vamos-<版本>-gpl-sources.tar.gz;" +
-            "源码仓库的 tools/sandbox/ 里也有源码地址、校验值、补丁与编译脚本,可以自己重新编译。"
-
-    const val RUNTIME_NOTE =
-        "运行 Python、Node 等程序用的系统随 Vamos 安装包发布,来自 Alpine Linux 3.22,下面逐个列出其中的软件包与许可证。" +
-            "其中 GPL、LGPL、MPL 软件包的源码(Alpine 的构建配方与上游源码)同样放在 vamos-<版本>-gpl-sources.tar.gz 里。"
-
-    /** 自带运行环境里的软件包(assets/runtime/packages.json,由 tools/sandbox/build-runtime.py 生成)。 */
-    fun runtimePackages(json: String): List<Entry> =
-        Json.parseToJsonElement(json).jsonObject.getValue("packages").jsonArray.map { e ->
-            val o = e.jsonObject
-            fun f(k: String) = o[k]?.jsonPrimitive?.content.orEmpty()
-            Entry(f("name"), f("license"), "版本 ${f("version")}。${f("url")}")
-        }
-
     val ENTRIES = listOf(
+        Entry("Google ML Kit Text Recognition", "Google APIs / ML Kit terms", "本机 OCR，版本 16.0.1（中文与拉丁文字）。https://developers.google.com/ml-kit/terms"),
         Entry("EdDSA-Java", "CC0-1.0", "net.i2p.crypto:eddsa:0.3.0，COS 更新清单 Ed25519 验签。https://github.com/str4d/ed25519-java"),
-        Entry("Vamos", "Apache-2.0", "Vamos 本身,包括运行环境的启动器、其中的 vamos 命令与技能脚本。许可证全文见本页顶上。"),
-        Entry("PRoot", "GPL-2.0-or-later", "运行 Python、Node 等程序用的环境,版本 5.4.0,打了一个补丁(PRoot 退出时结束所有子进程)。$GPL_SOURCE_OFFER"),
-        Entry("talloc", "LGPL-3.0-or-later", "版本 2.4.3,未修改,静态链接进 PRoot 程序。可用 tools/sandbox/ 的源码与脚本重新链接。"),
-        Entry("Apache Commons Compress", "Apache-2.0", "首次启动时解包自带的运行环境。Copyright 2002-2025 The Apache Software Foundation."),
-        Entry("Apache Commons Codec", "Apache-2.0", "Apache Commons Compress 的依赖。Copyright 2002-2025 The Apache Software Foundation."),
-        Entry("Apache Commons IO", "Apache-2.0", "Apache Commons Compress 的依赖。Copyright 2002-2025 The Apache Software Foundation."),
-        Entry("Apache Commons Lang", "Apache-2.0", "Apache Commons Compress 的依赖。Copyright 2001-2025 The Apache Software Foundation."),
+        Entry("Vamos", "Apache-2.0", "Vamos Android 应用。许可证全文见本页顶上。"),
         Entry("Kotlin 标准库", "Apache-2.0", "kotlin-stdlib 2.1.20 等,以及 JetBrains annotations 23.0.0。https://kotlinlang.org/"),
         Entry("kotlinx.coroutines", "Apache-2.0", "版本 1.9.0。https://github.com/Kotlin/kotlinx.coroutines"),
         Entry("kotlinx.serialization", "Apache-2.0", "版本 1.7.3。https://github.com/Kotlin/kotlinx.serialization"),
@@ -66,8 +44,6 @@ object Licenses {
         Entry("AndroidX(含 Jetpack Compose)", "Apache-2.0", "Compose 1.7.6、Material3 1.3.1、Activity 1.9.3、Lifecycle 2.8.3、Core 1.13.1、WebKit 1.12.1 等界面与系统组件库。https://developer.android.com/jetpack/androidx"),
         Entry("Guava ListenableFuture(由 AndroidX 库引入)", "Apache-2.0", "listenablefuture 1.0。https://github.com/google/guava"),
         Entry("scrcpy", "Apache-2.0", "以 shell 身份取得系统上下文的做法仿照 scrcpy,相关源文件头部保留出处。"),
-        Entry("Alpine Linux", "各软件包各自的许可证", RUNTIME_NOTE),
-        Entry("XZ for Java", "0BSD", "版本 1.10,首次启动时解压自带的运行环境。https://tukaani.org/xz/java.html"),
         Entry("commonmark-java", "BSD-2-Clause", "版本 0.30.1(含表格、删除线扩展),把回答里的 Markdown 解析成结构后显示。Copyright (c) 2015, Atlassian Pty Ltd. https://github.com/commonmark/commonmark-java"),
     )
 }
@@ -85,11 +61,7 @@ fun LicensesScreen(onBack: () -> Unit) {
     }
     val noticeText = remember { context.assets.open("licenses/NOTICE.txt").bufferedReader().use { it.readText() } }
     val thirdPartyText = remember { context.assets.open("licenses/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() } }
-    val runtime = remember {
-        runCatching { context.assets.open("runtime/packages.json").use { Licenses.runtimePackages(it.readBytes().decodeToString()) } }
-            .getOrDefault(emptyList())
-    }
-    val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" } + runtime
+    val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" }
     SubPage(AboutCopy.LICENSE_TITLE, onBack) {
         Text(noticeText, Modifier.padding(16.dp), style = VmType.Hint, color = VmTheme.colors.ink)
         Text(thirdPartyText + "\n\n" + remember { context.assets.open("licenses/CC0-1.0.txt").bufferedReader().use { it.readText() } }, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)

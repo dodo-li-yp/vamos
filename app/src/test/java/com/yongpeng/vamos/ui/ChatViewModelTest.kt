@@ -700,7 +700,7 @@ class ChatViewModelTest {
             sandboxReady = sandbox,
             importAttachments = { id, uris ->
                 imported += id to uris
-                com.yongpeng.vamos.cap.sandbox.ImportResult(listOf("/workspace/inbox/报表 (1).csv" to 2048L), listOf("big.iso"))
+                com.yongpeng.vamos.cap.files.ImportResult(listOf("/workspace/inbox/报表 (1).csv" to 2048L), listOf("big.iso"))
             },
             describeAttachments = { uris -> uris.map { PendingAttachment(it, if (it.endsWith("1")) "报表.csv" else "big.iso", 10L) } },
         ).also { runCurrent() }
@@ -738,7 +738,7 @@ class ChatViewModelTest {
         val vm = ChatViewModel(
             backgroundScope, state, stage, actions, ConversationStore(tmp.newFolder()),
             sandboxReady = MutableStateFlow(true),
-            importAttachments = { _, _ -> com.yongpeng.vamos.cap.sandbox.ImportResult(listOf("/workspace/inbox/a.jpg" to 3L * 1024 * 1024), emptyList()) },
+            importAttachments = { _, _ -> com.yongpeng.vamos.cap.files.ImportResult(listOf("/workspace/inbox/a.jpg" to 3L * 1024 * 1024), emptyList()) },
         ).also { runCurrent() }
         assertTrue(vm.toggleAttachment(PendingAttachment("content://m/1", "a.jpg", 1L)))
         assertTrue(vm.send("", ok))
@@ -750,7 +750,7 @@ class ChatViewModelTest {
         val vm = ChatViewModel(
             backgroundScope, state, stage, actions, ConversationStore(tmp.newFolder()),
             sandboxReady = MutableStateFlow(true),
-            importAttachments = { _, _ -> com.yongpeng.vamos.cap.sandbox.ImportResult(emptyList(), listOf("huge.mov")) },
+            importAttachments = { _, _ -> com.yongpeng.vamos.cap.files.ImportResult(emptyList(), listOf("huge.mov")) },
         ).also { runCurrent() }
         vm.toggleAttachment(PendingAttachment("content://m/1", "huge.mov", 1L))
         vm.send("", ok)

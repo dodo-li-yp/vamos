@@ -9,30 +9,30 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
 
-class SandboxPathsTest {
+class WorkspacePathsTest {
     @Test fun relativeResolvesUnderWorkspace() {
-        assertEquals("/workspace/a/b.txt", SandboxPaths.normalize("a/b.txt"))
-        assertEquals("/workspace/a/b.txt", SandboxPaths.normalize("./a//c/../b.txt"))
-        assertEquals("/workspace/sub/x", SandboxPaths.normalize("x", "/workspace/sub"))
-        assertEquals("/workspace", SandboxPaths.normalize("/workspace/"))
+        assertEquals("/workspace/a/b.txt", WorkspacePaths.normalize("a/b.txt"))
+        assertEquals("/workspace/a/b.txt", WorkspacePaths.normalize("./a//c/../b.txt"))
+        assertEquals("/workspace/sub/x", WorkspacePaths.normalize("x", "/workspace/sub"))
+        assertEquals("/workspace", WorkspacePaths.normalize("/workspace/"))
     }
 
     @Test fun dotDotEscapeRejected() {
-        assertNull(SandboxPaths.normalize("../etc/passwd"))
-        assertNull(SandboxPaths.normalize("/workspace/../etc"))
-        assertNull(SandboxPaths.normalize("/etc/passwd"))
-        assertNull(SandboxPaths.normalize("/workspacex/a"))
-        assertNull(SandboxPaths.normalize("/opt/vamos/skills/../../../root"))
-        assertNull(SandboxPaths.resolveHost(Files.createTempDirectory("r").toFile(), "../x"))
+        assertNull(WorkspacePaths.normalize("../etc/passwd"))
+        assertNull(WorkspacePaths.normalize("/workspace/../etc"))
+        assertNull(WorkspacePaths.normalize("/etc/passwd"))
+        assertNull(WorkspacePaths.normalize("/workspacex/a"))
+        assertNull(WorkspacePaths.normalize("/opt/vamos/skills/../../../root"))
+        assertNull(WorkspacePaths.resolveHost(Files.createTempDirectory("r").toFile(), "../x"))
     }
 
     @Test fun skillsReadableNotWritable() {
-        val p = SandboxPaths.normalize("/opt/vamos/skills/app/x/scripts/a.py")
+        val p = WorkspacePaths.normalize("/opt/vamos/skills/app/x/scripts/a.py")
         assertEquals("/opt/vamos/skills/app/x/scripts/a.py", p)
-        assertFalse(SandboxPaths.isWritable(p!!))
-        assertTrue(SandboxPaths.isWritable(SandboxPaths.normalize("out/a.png")!!))
+        assertFalse(WorkspacePaths.isWritable(p!!))
+        assertTrue(WorkspacePaths.isWritable(WorkspacePaths.normalize("out/a.png")!!))
         // 宿主映射也一样:技能目录只能读
         val sb = FakeSandbox()
         assertNotNull(sb.hostPath("c1", "/opt/vamos/skills/app/x/scripts/a.py", forWrite = false))
@@ -49,11 +49,11 @@ class SandboxPathsTest {
         Files.createSymbolicLink(File(root, "dangling").toPath(), File(outside, "not-yet").toPath())
         Files.createSymbolicLink(File(root, "ok").toPath(), File(root, "inner").toPath())
 
-        assertNull(SandboxPaths.resolveHost(root, "x"))
-        assertNull(SandboxPaths.resolveHost(root, "x/secret"))
+        assertNull(WorkspacePaths.resolveHost(root, "x"))
+        assertNull(WorkspacePaths.resolveHost(root, "x/secret"))
         // 指向外面、目标还不存在的链接:写下去就会落到外面
-        assertNull(SandboxPaths.resolveHost(root, "dangling"))
-        assertEquals(File(root, "inner/f").canonicalFile, SandboxPaths.resolveHost(root, "ok/f"))
-        assertEquals(File(root, "new/file.txt").canonicalFile, SandboxPaths.resolveHost(root, "new/file.txt"))
+        assertNull(WorkspacePaths.resolveHost(root, "dangling"))
+        assertEquals(File(root, "inner/f").canonicalFile, WorkspacePaths.resolveHost(root, "ok/f"))
+        assertEquals(File(root, "new/file.txt").canonicalFile, WorkspacePaths.resolveHost(root, "new/file.txt"))
     }
 }

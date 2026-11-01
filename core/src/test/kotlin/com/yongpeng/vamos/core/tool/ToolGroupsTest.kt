@@ -5,8 +5,8 @@ import com.yongpeng.vamos.core.agent.AgentLoop
 import com.yongpeng.vamos.core.agent.SystemPrompt
 import com.yongpeng.vamos.core.agent.Turn
 import com.yongpeng.vamos.core.assembly.toolDispatcher
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.SandboxStatus
 import com.yongpeng.vamos.core.cap.web.FakeWebPort
 import com.yongpeng.vamos.core.model.Part
 import com.yongpeng.vamos.core.model.ToolSpec
@@ -32,7 +32,7 @@ import org.junit.Test
 class ToolGroupsTest {
     private var seq = 0
     private fun call(name: String, args: String = "{}") = Part.ToolCall("g${++seq}", name, args)
-    private fun all() = toolDispatcher(FakeScreen(), web = FakeWebPort(), sandbox = FakeSandbox(), workspace = { "w" })
+    private fun all() = toolDispatcher(FakeScreen(), web = FakeWebPort(), files = FakeSandbox(), workspace = { "w" })
     private fun names(specs: List<ToolSpec>) = specs.map { it.name }
 
     /** 只聊天时发给模型的:通用工具(接管、报障碍、回看画面不在内)加五个入口。 */
@@ -114,7 +114,7 @@ class ToolGroupsTest {
         val base = collapsed.takeWhile { it.name !in setOf("phone_list_apps", "phone_launch_app") }
         for (l in listOf(web, both, everything)) assertEquals(base, l.take(base.size))
         // 先开网页再开手机,和反过来一样:顺序只看组,不看展开的先后
-        assertEquals(both, toolDispatcher(FakeScreen(), web = FakeWebPort(), sandbox = FakeSandbox(), workspace = { "w" }).also {
+        assertEquals(both, toolDispatcher(FakeScreen(), web = FakeWebPort(), files = FakeSandbox(), workspace = { "w" }).also {
             it.expand("phone"); it.expand("web")
         }.offeredNow())
         // 展开沙箱(排在最后)只在末尾改:前面的手机、网页两组逐字不变
@@ -150,7 +150,7 @@ class ToolGroupsTest {
         val page = com.yongpeng.vamos.core.cap.web.AttachedPage.compose(com.yongpeng.vamos.core.cap.web.AttachedPage.Page("https://shop.example.com/", "店"), "挑一个")
         assertEquals(listOf("web"), all().preload(page, emptyList()))
         // 设备不支持沙箱:不展开
-        val none = toolDispatcher(FakeScreen(), sandbox = FakeSandbox(SandboxStatus.Unsupported("x86")), workspace = { "w" })
+        val none = toolDispatcher(FakeScreen(), files = FakeSandbox(SandboxStatus.Unsupported("x86")), workspace = { "w" })
         assertEquals(emptyList<String>(), none.preload("附件:/workspace/inbox/a.pdf", listOf("sandbox")))
         // 本任务没有的组不展开;什么都没有就都收着
         assertEquals(emptyList<String>(), toolDispatcher(FakeScreen()).preload("看看", listOf("web")))
@@ -173,7 +173,7 @@ class ToolGroupsTest {
 
     @Test fun childAndScheduledRunsUseTheSameLayers() = runTest {
         // 子任务只有网页和(只读的)沙箱:网页一样只给入口,用到才展开;只读的沙箱没有入口(跑命令不给),那一组一开始就展开
-        val child = toolDispatcher(FakeScreen(), web = FakeWebPort(), sandbox = FakeSandbox(), workspace = { "w" },
+        val child = toolDispatcher(FakeScreen(), web = FakeWebPort(), files = FakeSandbox(), workspace = { "w" },
             runSpec = RunSpec(RunId("c"), "查", "t", provenance = RunProvenance(RunOrigin.Child, Attendance.Unattended)))
         val start = names(child.offeredNow())
         assertEquals(listOf("web_navigate", "web_read_page"), start.filter { it.startsWith("web_") || it.startsWith("phone_") })

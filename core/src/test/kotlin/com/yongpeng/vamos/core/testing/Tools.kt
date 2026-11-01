@@ -3,7 +3,7 @@ package com.yongpeng.vamos.core.testing
 
 import com.yongpeng.vamos.core.assembly.knownTools
 import com.yongpeng.vamos.core.assembly.recordedTools
-import com.yongpeng.vamos.core.cap.sandbox.SANDBOX
+import com.yongpeng.vamos.core.cap.files.FILES
 import com.yongpeng.vamos.core.cap.web.WEB
 import com.yongpeng.vamos.core.tool.ToolIndex
 import com.yongpeng.vamos.core.tool.Verb
@@ -22,7 +22,7 @@ internal val BATCHABLE: List<String> get() = TOOLS.names.filter { TOOLS[it]!!.ba
 
 /** 测试用:网页、沙箱一组的工具名。 */
 internal val WEB_TOOLS: Set<String> get() = TOOLS.names.filter { TOOLS[it]!!.capability == WEB }.toSet()
-internal val SANDBOX_TOOLS: Set<String> get() = TOOLS.names.filter { TOOLS[it]!!.capability == SANDBOX }.toSet()
+internal val SANDBOX_TOOLS: Set<String> get() = TOOLS.names.filter { TOOLS[it]!!.capability == FILES }.toSet()
 
 internal const val WEB_SCRIPT_TOOL = "web_script"
 internal const val INTERACT_TOOL = "web_interact"

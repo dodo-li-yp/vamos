@@ -20,7 +20,6 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.yongpeng.vamos.capsule.CapsuleMode
 import com.yongpeng.vamos.core.agent.SpeedFlags
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
 import com.yongpeng.vamos.core.shell.BuiltinShellStatus
 import com.yongpeng.vamos.settings.AccessibilityState
 import com.yongpeng.vamos.settings.Problem
@@ -56,7 +55,6 @@ class SettingsScreenTest {
                 capsuleMode = CapsuleMode.DuringTasks, onOpenCapsule = { opened += "capsule" }, onOpenNotifications = { opened += "notifications" },
                 onOpenMemory = { opened += "memory" },
                 webSitesCount = 3, onOpenWebSites = { opened += "web" },
-                sandbox = SandboxStatus.Ready(network = false), onOpenSandbox = { opened += "sandbox" },
                 routes = 8, onOpenRoutes = { opened += "routes" }, onOpenRecovery = { opened += "recovery" },
                 showDeveloper = showDeveloper, onOpenDeveloper = { opened += "dev" },
                 versionName = "0.1.0", onOpenAbout = { opened += "about" },
@@ -399,60 +397,4 @@ class SettingsScreenTest {
         assertEquals(8, (speed + experimental).map { it.id }.toSet().size)
     }
 
-    private class Calls { var reset = 0; val network = mutableListOf<Boolean>() }
-
-    private fun advanced(status: SandboxStatus, network: Boolean = false, isolationIssue: Boolean = false): Calls {
-        val c = Calls()
-        compose.setContent {
-            Column {
-                AdvancedSection(
-                    status = status, networkAllowed = network, isolationIssue = isolationIssue,
-                    onNetworkChange = { c.network += it }, onReset = { c.reset++ },
-                )
-            }
-        }
-        return c
-    }
-
-    @Test
-    fun unsupportedHidesAdvanced() {
-        advanced(SandboxStatus.Unsupported("此设备不支持(需要 arm64)"))
-        compose.onAllNodesWithText(SandboxCopy.NETWORK_TITLE).assertCountEquals(0)
-        compose.onAllNodesWithText("重置运行环境").assertCountEquals(0)
-    }
-
-    @Test
-    fun advancedHasNoInstallOrSandboxWording() {
-        advanced(SandboxStatus.NotInstalled)
-        compose.onNodeWithText(SandboxCopy.NETWORK_TITLE).assertIsDisplayed()
-        compose.onNodeWithText("重置运行环境").assertIsDisplayed()
-        for (t in listOf("沙箱", "安装沙箱", "软件源", "清空工作区")) compose.onAllNodesWithText(t, substring = true).assertCountEquals(0)
-    }
-
-    @Test
-    fun resetAsksFirst() {
-        val c = advanced(SandboxStatus.Ready(network = false))
-        compose.onNodeWithText("重置运行环境").performClick()
-        assertEquals(0, c.reset)
-        compose.onNodeWithText(SandboxCopy.RESET_BODY).assertIsDisplayed()
-        compose.onNodeWithText("取消").performClick()
-        assertEquals(0, c.reset)
-        compose.onNodeWithText("重置运行环境").performClick()
-        compose.onNodeWithText("重置").performClick()
-        assertEquals(1, c.reset)
-    }
-
-    @Test
-    fun isolationIssueShown() {
-        advanced(SandboxStatus.Ready(network = true), network = true, isolationIssue = true)
-        compose.onNodeWithText(SandboxCopy.NETWORK_EXPLAIN).assertIsDisplayed()
-        compose.onNodeWithText(SandboxCopy.ISOLATION_UNAVAILABLE).assertIsDisplayed()
-    }
-
-    @Test
-    fun networkToggleReportsChange() {
-        val c = advanced(SandboxStatus.Ready(network = false))
-        compose.onNodeWithTag("sandbox-network").performClick()
-        assertTrue(c.network == listOf(true))
-    }
 }

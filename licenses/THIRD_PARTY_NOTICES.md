@@ -8,71 +8,6 @@
   源文件头部保留出处:
   - `app/src/main/java/com/wangzan101/mika/shell/ShellContext.kt`
 
-## Apache Commons Compress
-
-- Project: https://commons.apache.org/
-- Artifact: `org.apache.commons:commons-compress:1.28.0`
-- License: Apache-2.0
-- Usage: 以库的形式依赖,用于流式解包沙箱根文件系统的 tar.gz
-  (`core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/RootfsExtractor.kt`)。
-- NOTICE:
-
-```
-Apache Commons Compress
-Copyright 2002-2025 The Apache Software Foundation
-
-This product includes software developed at
-The Apache Software Foundation (https://www.apache.org/).
-```
-
-## Apache Commons Codec
-
-- Project: https://commons.apache.org/
-- Artifact: `commons-codec:commons-codec:1.19.0`
-- License: Apache-2.0
-- Usage: Apache Commons Compress 的传递依赖。
-- NOTICE:
-
-```
-Apache Commons Codec
-Copyright 2002-2025 The Apache Software Foundation
-
-This product includes software developed at
-The Apache Software Foundation (https://www.apache.org/).
-```
-
-## Apache Commons IO
-
-- Project: https://commons.apache.org/
-- Artifact: `commons-io:commons-io:2.20.0`
-- License: Apache-2.0
-- Usage: Apache Commons Compress 的传递依赖。
-- NOTICE:
-
-```
-Apache Commons IO
-Copyright 2002-2025 The Apache Software Foundation
-
-This product includes software developed at
-The Apache Software Foundation (https://www.apache.org/).
-```
-
-## Apache Commons Lang
-
-- Project: https://commons.apache.org/
-- Artifact: `org.apache.commons:commons-lang3:3.18.0`
-- License: Apache-2.0
-- Usage: Apache Commons Compress 的传递依赖。
-- NOTICE:
-
-```
-Apache Commons Lang
-Copyright 2001-2025 The Apache Software Foundation
-
-This product includes software developed at
-The Apache Software Foundation (https://www.apache.org/).
-```
-
 ## Kotlin 标准库
 
 - Project: https://kotlinlang.org/
@@ -129,65 +64,11 @@ The Apache Software Foundation (https://www.apache.org/).
     `tracing`:1.0.0;`versionedparcelable`:1.1.1;`webkit:webkit`:1.12.1(内置浏览器)
 - Usage: 界面与系统组件库,打进 APK。
 
-## PRoot
-
-- Project: PRoot
-- Copyright: Copyright (C) 2015 STMicroelectronics(作者名单见源码包内 `AUTHORS`)
-- License: GPL-2.0-or-later,全文见 `licenses/GPL-2.0.txt`
-- Source: https://github.com/proot-me/proot/archive/refs/tags/v5.4.0.tar.gz
-- Version: 5.4.0
-- SHA-256 (source archive): 29248aac2a7ce10c3bd5ee5602742ec33b2532310ff9cf73b79f3c133e5a5f68
-- Usage: 独立可执行程序。由 `tools/sandbox/build-native.sh` 从上述源码编译为
-  `app/src/main/jniLibs/arm64-v8a/libproot.so` 与其载入器 `libproot_loader.so`,随 APK 发布;
-  Mika 只以子进程方式运行它,不链接它。源码地址、版本与校验值同时记录在 `tools/sandbox/sources.lock`。
-  `libproot.so` 不内嵌载入器(只嵌空占位),运行时经 `PROOT_LOADER` 使用 `libproot_loader.so`。
-- Modifications: 打了四个补丁,同样以 GPL-2.0-or-later 发布:
-  `tools/sandbox/patches/proot-0001-exitkill.patch`(跟踪选项加上 `PTRACE_O_EXITKILL`:PRoot 退出时内核杀掉所有被跟踪的进程);
-  `tools/sandbox/patches/proot-0002-seccomp-trap-enosys.patch`(被 PRoot 之外的 seccomp 过滤器以 SIGSYS 拦下的系统调用改为返回
-  `-ENOSYS` 并取消信号;arm64 上只带 `AT_EACCESS` 标志的 faccessat2 改发成 faccessat);
-  `tools/sandbox/patches/proot-0003-arm64-new-path-syscalls.patch`(arm64 系统调用号表补上 statx 之后新增的带路径调用:
-  faccessat2、fchmodat2 做路径转换,execveat、openat2、io_uring_setup、新挂载接口与 *xattrat/file_*attr 返回 `-ENOSYS`;
-  并修正调用号查表的越界判断);
-  `tools/sandbox/patches/proot-0004-link2symlink-fstat-nonfile.patch`(link2symlink 扩展在 fstat 管道、套接字等非文件描述符时
-  不再读未初始化的 stat 结构、把成功的调用改成失败)。
-- 附带组件 uthash(BSD 许可证,Copyright (c) Troy D. Hanson):PRoot 源码树以子模块形式引用它,
-  只有 `care` 扩展用到;源码归档里该目录为空,Mika 的编译不包含 `care`,因此 `libproot.so` 里没有 uthash 的代码。
-
-## talloc
-
-- Project: talloc (Samba)
-- Copyright: Copyright (C) Andrew Tridgell 2004;Copyright (C) Stefan Metzmacher 2006
-- License: LGPL-3.0-or-later,全文见 `licenses/LGPL-3.0.txt`;LGPL-3.0 是在 GPL-3.0 之上的附加条款,
-  GPL-3.0 全文见 `licenses/GPL-3.0.txt`
-- Source: https://www.samba.org/ftp/talloc/talloc-2.4.3.tar.gz
-- Version: 2.4.3
-- SHA-256 (source archive): dc46c40b9f46bb34dd97fe41f548b0e8b247b77a918576733c528e83abd854dd
-- Usage: 只编译 `talloc.c`(未修改),静态链接进独立可执行程序 `libproot.so`;Mika 自身不链接它。
-  重新链接所需的全部源码与编译脚本见 `tools/sandbox/`。
-
-## Alpine Linux
-
-- Project: https://alpinelinux.org/
-- Version: 3.22.7(aarch64 最小根文件系统),外加 Python 3.12、Node 22、Pillow、pypdf 及其依赖
-- License: 各软件包各自的许可证(GPL、LGPL、MIT、BSD、MPL 等);逐个软件包的名称、版本与许可证见
-  `app/src/main/assets/runtime/packages.json`,App 的「开源许可」页也逐个列出
-- Usage: **随 APK 发布**,文件 `app/src/main/assets/runtime/rootfs.tar.xz`,由 `tools/sandbox/build-runtime.py`
-  按 `tools/sandbox/runtime/sources.lock` 从 Alpine 官方源取得并核对签名后生成;Mika 只以子进程方式运行其中的程序,不链接它们。
-  GPL/LGPL/MPL 软件包的对应源码(Alpine 的构建配方与上游源码)随每个版本放进 `mika-<版本>-gpl-sources.tar.gz`,
-  做法见 `tools/sandbox/README.md`。
-
 ## Guava ListenableFuture(由 AndroidX 库引入)
 
 - Project: https://github.com/google/guava
 - Artifact: `com.google.guava:listenablefuture:1.0` — Apache-2.0(依 Maven POM)
 - Usage: 作为库依赖使用,未修改其代码。
-
-## XZ for Java
-
-- Project: https://tukaani.org/xz/java.html
-- Version: 1.10(org.tukaani:xz)
-- License: 0BSD(BSD Zero Clause License);Copyright (C) The XZ for Java authors and contributors
-- Usage: 首次启动时解压自带的运行环境。
 
 ## commonmark-java
 
@@ -230,3 +111,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - Artifact: `net.i2p.crypto:eddsa:0.3.0`
 - License: CC0-1.0 (public domain dedication)
 - Usage: Ed25519 verification of the original COS update manifest bytes.
+
+## Google ML Kit Text Recognition
+
+- Artifacts: `com.google.mlkit:text-recognition:16.0.1` and `text-recognition-chinese:16.0.1` with their Google SDK dependencies.
+- License: Google APIs Terms of Service / ML Kit terms (not GPL).
+- Terms: https://developers.google.com/ml-kit/terms
+- Usage: existing on-device OCR; bundled Chinese/Latin recognition models and native OCR pipeline. Not introduced as an analytics or crash-reporting SDK.

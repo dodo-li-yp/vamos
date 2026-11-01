@@ -24,7 +24,7 @@ abstract class WorkspaceFileGateContract {
     protected val secret by lazy { File(tmp, "secret").apply { mkdirs(); File(this, "key.txt").writeText("private") } }
     protected val gate by lazy { WorkspaceFileGate(sys) }
 
-    protected fun code(block: () -> Unit): String = try { block(); fail("expected a refusal"); "" } catch (e: SandboxError) { e.code }
+    protected fun code(block: () -> Unit): String = try { block(); fail("expected a refusal"); "" } catch (e: WorkspaceError) { e.code }
     protected fun link(at: File, to: File) { Files.createSymbolicLink(at.toPath(), to.toPath()) }
     /** 系统不让建硬链接时跳过这条测试。 */
     protected fun hardLink(at: File, to: File) {

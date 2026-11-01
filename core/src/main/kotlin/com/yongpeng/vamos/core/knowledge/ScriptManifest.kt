@@ -4,7 +4,7 @@ package com.yongpeng.vamos.core.knowledge
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import com.yongpeng.vamos.core.workspace.SandboxPaths
+import com.yongpeng.vamos.core.workspace.WorkspacePaths
 
 /** 技能脚本清单(`scripts/manifest.json`)里的一项;[file] 是技能目录下的相对路径。 */
 @Serializable
@@ -41,7 +41,7 @@ object ScriptManifest {
 
     private fun safe(rel: String): Boolean {
         if (rel.isBlank() || rel.startsWith("/")) return false
-        val base = "${SandboxPaths.SKILLS}/x"
-        return SandboxPaths.normalize(rel, base)?.startsWith("$base/") == true
+        val base = "${WorkspacePaths.SKILLS}/x"
+        return WorkspacePaths.normalize(rel, base)?.startsWith("$base/") == true
     }
 }

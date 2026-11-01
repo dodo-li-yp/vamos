@@ -1,8 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.cap.web
 
-import com.yongpeng.vamos.core.workspace.SandboxError
-import com.yongpeng.vamos.core.workspace.SandboxPaths
+import com.yongpeng.vamos.core.workspace.WorkspaceError
+import com.yongpeng.vamos.core.workspace.WorkspacePaths
 import com.yongpeng.vamos.core.workspace.WorkspaceFileGate
 import java.io.File
 import java.util.UUID
@@ -32,9 +32,9 @@ class UploadStaging(
         var total = 0L
         try {
             for ((i, p) in paths.withIndex()) {
-                val rel = SandboxPaths.normalize(p)?.takeIf(SandboxPaths::isWritable)?.removePrefix(SandboxPaths.WORKSPACE)?.trimStart('/')
+                val rel = WorkspacePaths.normalize(p)?.takeIf(WorkspacePaths::isWritable)?.removePrefix(WorkspacePaths.WORKSPACE)?.trimStart('/')
                     ?.takeIf { it.isNotEmpty() } ?: return refuse(dir, "path_outside_workspace", p)
-                val g = try { gate.openRead(workspaceDir, rel) } catch (e: SandboxError) { return refuse(dir, codeOf(e), p) }
+                val g = try { gate.openRead(workspaceDir, rel) } catch (e: WorkspaceError) { return refuse(dir, codeOf(e), p) }
                 g.use {
                     if (g.size > maxFileBytes || total + g.size > maxTotalBytes) return refuse(dir, FILE_TOO_LARGE, p)
                     // 每个文件一层目录:不同目录里的同名文件各自保留原名
@@ -77,7 +77,7 @@ class UploadStaging(
         return Result.Refused(error, path)
     }
 
-    private fun codeOf(e: SandboxError) = when (e.code) {
+    private fun codeOf(e: WorkspaceError) = when (e.code) {
         WorkspaceFileGate.OUTSIDE -> "path_outside_workspace"
         WorkspaceFileGate.LINKED_FILE -> WorkspaceFileGate.LINKED_FILE
         else -> "file_not_found"

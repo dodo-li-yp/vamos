@@ -25,9 +25,9 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.yongpeng.vamos.cap.sandbox.SandboxDirs
+import com.yongpeng.vamos.cap.files.WorkspaceDirs
 import com.yongpeng.vamos.chat.AttachFilesProvider
-import com.yongpeng.vamos.core.workspace.SandboxPaths
+import com.yongpeng.vamos.core.workspace.WorkspacePaths
 import com.yongpeng.vamos.ui.viewer.FileViewer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -78,7 +78,7 @@ object AttachFiles {
 
     /** 工作区里的路径(`/workspace/inbox/…`)换成相对工作区的路径;不在工作区里为 null。 */
     fun relative(path: String): String? =
-        path.removePrefix(SandboxPaths.WORKSPACE + "/").takeIf { it != path && it.isNotEmpty() }
+        path.removePrefix(WorkspacePaths.WORKSPACE + "/").takeIf { it != path && it.isNotEmpty() }
 
     /**
      * 点开已发出的附件:从对话工作区(经文件闸门)复制一份到缓存里的 viewing/(先清掉上一次的),
@@ -92,7 +92,7 @@ object AttachFiles {
                 val root = File(context.cacheDir, "attach/viewing")
                 root.deleteRecursively()
                 val f = File(root, UUID.randomUUID().toString().take(8) + "/" + name).apply { parentFile?.mkdirs() }
-                val dirs = SandboxDirs(context)
+                val dirs = WorkspaceDirs(context)
                 dirs.gate.openRead(dirs.workspace(conversationId), rel).use { g -> f.outputStream().use { g.input().copyTo(it) } }
                 f
             }.getOrNull()
@@ -189,7 +189,7 @@ private class StoredAttachImages(private val context: Context) : AttachImages {
 
     private fun sentBytes(image: AttachImage.Sent): ByteArray? {
         val rel = AttachFiles.relative(image.path) ?: return null
-        val dirs = SandboxDirs(context)
+        val dirs = WorkspaceDirs(context)
         return dirs.gate.openRead(dirs.workspace(image.conversationId), rel).use { f ->
             if (f.size > MAX_BYTES) null else f.read(0, f.size.toInt())
         }

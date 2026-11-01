@@ -9,16 +9,12 @@ import android.net.Uri
 import android.util.Log
 import com.yongpeng.vamos.chat.ConversationDeleter
 import com.yongpeng.vamos.chat.ConversationStore
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
-import com.yongpeng.vamos.cap.sandbox.AndroidSandbox
-import com.yongpeng.vamos.cap.sandbox.Attachments
+import com.yongpeng.vamos.cap.files.WorkspaceFiles
+import com.yongpeng.vamos.cap.files.Attachments
 import com.yongpeng.vamos.ui.AttachFiles
-import com.yongpeng.vamos.cap.sandbox.ShareExporter
+import com.yongpeng.vamos.cap.files.ShareExporter
 import com.yongpeng.vamos.cap.web.WebFiles
-import com.yongpeng.vamos.cap.sandbox.RuntimePreparer
-import com.yongpeng.vamos.cap.sandbox.SandboxDirs
-import com.yongpeng.vamos.cap.sandbox.SandboxState
-import com.yongpeng.vamos.cap.sandbox.SkillsSync
+import com.yongpeng.vamos.cap.files.WorkspaceDirs
 import com.yongpeng.vamos.capsule.AppForeground
 import com.yongpeng.vamos.capsule.CapsuleController
 import com.yongpeng.vamos.confirm.ConfirmationNotifier
@@ -56,8 +52,8 @@ import kotlinx.coroutines.withContext
 import com.yongpeng.vamos.cap.web.cdp.WebDevtools
 import com.yongpeng.vamos.cap.web.WebOwner
 import com.yongpeng.vamos.cap.web.SiteRegistry
-import com.yongpeng.vamos.cap.sandbox.SandboxOwner
-import com.yongpeng.vamos.core.workspace.SandboxTree
+import com.yongpeng.vamos.cap.files.WorkspaceOwner
+import com.yongpeng.vamos.core.workspace.WorkspaceTree
 import com.yongpeng.vamos.task.TaskEnvironment
 import com.yongpeng.vamos.task.ResourceScheduler
 import com.yongpeng.vamos.task.RemoteTaskHub
@@ -68,7 +64,7 @@ import com.yongpeng.vamos.task.TriggerRuntime
  * App 容器:进程里共用的服务都在这里建一份,经各自的 Owner 接口交给安卓入口(界面、服务、广播、provider),
  * 其余代码经构造参数拿到。助手进程(HelperMain、ShellService)没有这个对象,不用这里的任何服务。
  */
-class VamosApp : Application(), WebOwner, SandboxOwner, TaskEnvironment.Owner, PhoneServices.Owner,
+class VamosApp : Application(), WebOwner, WorkspaceOwner, TaskEnvironment.Owner, PhoneServices.Owner,
     MemoryRuntime.Owner, ProviderStore.Owner, FileRouteStore.Owner, TaskRecovery.Owner {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -161,13 +157,12 @@ class VamosApp : Application(), WebOwner, SandboxOwner, TaskEnvironment.Owner, P
     override val webSites: SiteRegistry by lazy { SiteRegistry(java.io.File(filesDir, "web")) }
 
     /** `files/sandbox/` 的树锁:安装、重置、命令、下载、附件都在它的许可里写。 */
-    override val sandboxTree = SandboxTree()
+    override val workspaceTree = WorkspaceTree()
 
     /** 任务从 App 拿的模型来源、评测钩子、屏幕画面的开关。 */
     override val tasks = TaskEnvironment()
 
     /** 沙箱状态:安装服务更新的,设置页与 Agent 看到的是同一份。 */
-    override val sandboxState: SandboxState by lazy { SandboxState(this) }
 
     /** 对话记录:整个进程一份,任务服务、聊天界面、结果卡片的按钮共用。 */
     val conversations: ConversationStore by lazy { ConversationStore(this) }
@@ -182,7 +177,7 @@ class VamosApp : Application(), WebOwner, SandboxOwner, TaskEnvironment.Owner, P
             removeSchedule = { TriggerRuntime.remove(app, it) },
             deleteWorkspace = { id ->
                 // 工作区里有附件、用户发来的屏幕、任务写的文件;沙箱里的命令碰得到这里,按句柄删、不跟进链接,和重置互斥
-                val dirs = SandboxDirs(app)
+                val dirs = WorkspaceDirs(app)
                 dirs.tree.shared { withContext(Dispatchers.IO) { dirs.gate.deleteTree(dirs.work, dirs.workspace(id).name) } }
             },
         )
@@ -262,15 +257,14 @@ class VamosApp : Application(), WebOwner, SandboxOwner, TaskEnvironment.Owner, P
             learning = AppLearningActions(app, memory),
             memoryItems = memory.items(),
             // 附件进对话的工作区,不需要运行环境已准备好:设备支持就给附件按钮
-            sandboxReady = SandboxState.get(app).status.map { it !is SandboxStatus.Unsupported }
-                .stateIn(scope, SharingStarted.Eagerly, SandboxState.get(app).status.value !is SandboxStatus.Unsupported),
+            sandboxReady = kotlinx.coroutines.flow.MutableStateFlow(true),
             sharedFiles = taskState.sharedFiles,
             activities = taskState.activities,
             steers = taskState.steers,
             summarizing = taskState.summarizing,
             importAttachments = { id, uris ->
-                val sandbox = AndroidSandbox(app, SandboxState.get(app))
-                val dirs = SandboxDirs(app)
+                val sandbox = WorkspaceFiles(app)
+                val dirs = WorkspaceDirs(app)
                 Attachments.importInto(app, uris.map(Uri::parse), dirs.workspace(id), dirs.gate, dirs.tree, sandbox::freeBytes) { sandbox.workspaceBytes(id) }
             },
             describeAttachments = { uris -> AttachFiles.describe(app, uris) },
@@ -306,16 +300,8 @@ class VamosApp : Application(), WebOwner, SandboxOwner, TaskEnvironment.Owner, P
         // 上次导出写到一半被杀留下的空壳条目
         scope.launch { runCatching { ShareExporter(this@VamosApp).cleanPending() } }
         // 上次进程留下的网页上传副本
-        scope.launch { runCatching { WebFiles.clearStale(this@VamosApp, SandboxDirs(this@VamosApp).gate) } }
+        scope.launch { runCatching { WebFiles.clearStale(this@VamosApp, WorkspaceDirs(this@VamosApp).gate) } }
         // 更新已经装上后,关于页下好的安装包
         scope.launch(Dispatchers.IO) { runCatching { com.yongpeng.vamos.about.ApkUpdater(this@VamosApp).dropInstalled() } }
-        // 运行环境没准备好(首次启动、Vamos 升级后)就在后台准备,不联网、对用户不可见
-        RuntimePreparer.ensure(this)
-        // 沙箱就绪(启动时已就绪,或刚装好)就把技能目录核对一次:App 更新带来的脚本马上能用
-        scope.launch {
-            SandboxState.get(this@VamosApp).status.first { it is SandboxStatus.Ready }
-            val state = SandboxState.get(this@VamosApp)
-            runCatching { SkillsSync.sync(SandboxDirs(this@VamosApp)) { state.status.value is SandboxStatus.Ready } }
-        }
     }
 }

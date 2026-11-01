@@ -78,7 +78,6 @@ object SelfCheckCopy {
             SelfCheck.STAYS_ALIVE -> R.string.selfcheck_check_alive
             SelfCheck.MAIN_SCREEN -> R.string.selfcheck_check_main
             SelfCheck.BROWSER -> R.string.selfcheck_check_browser
-            SelfCheck.SANDBOX -> R.string.selfcheck_check_sandbox
             SelfCheck.APP_COPIES -> R.string.selfcheck_check_copies
         },
     )

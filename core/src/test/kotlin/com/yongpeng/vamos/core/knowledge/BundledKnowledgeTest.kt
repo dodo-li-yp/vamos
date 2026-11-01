@@ -10,7 +10,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import com.yongpeng.vamos.core.agent.GuideRecommender
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
 import com.yongpeng.vamos.core.tool.FakeScreen
 import java.io.File
 import com.yongpeng.vamos.core.assembly.toolDispatcher
@@ -101,7 +101,7 @@ class BundledKnowledgeTest {
 
     @Test fun onlyAppSiteAndSkillKindsAnywhere() {
         assertEquals(setOf("app", "site", "skill"), catalog.rows.map { it.kind }.toSet())
-        val defs = toolDispatcher(FakeScreen(), skills = catalog, sandbox = FakeSandbox()).definitions().joinToString("\n")
+        val defs = toolDispatcher(FakeScreen(), skills = catalog, files = FakeSandbox()).definitions().joinToString("\n")
         val index = File(GuideCatalog::class.java.classLoader.getResource(KnowledgeIndex.RESOURCE)!!.toURI()).readText()
         val lines = GuideRecommender.index(catalog, "帮我回消息,顺便查下天气").orEmpty()
         for (text in listOf(defs, index, lines)) for (old in listOf("domain:", "domains/", "domain/", "\"domain\"", "device:", "devices/", "\"base\"")) {

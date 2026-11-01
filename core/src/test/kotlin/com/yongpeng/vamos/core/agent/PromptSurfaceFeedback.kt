@@ -8,8 +8,8 @@ import com.yongpeng.vamos.core.memory.UserUtterances
 import com.yongpeng.vamos.core.model.ModelReply
 import com.yongpeng.vamos.core.model.Part
 import com.yongpeng.vamos.core.model.StopReason
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.SandboxStatus
 import com.yongpeng.vamos.core.uistate.ActionResult
 import com.yongpeng.vamos.core.uistate.ScreenCheck
 import com.yongpeng.vamos.core.uistate.ScreenDiagnosis
@@ -133,7 +133,7 @@ internal object PromptSurfaceFeedback {
         add("skill save missing section", withSkills, "skill_save",
             """{"markdown":"---\nname: order-coffee\ndisplay: 点咖啡\ndescription: 点咖啡时用\n---\n## 入口\n打开 App","quote":"帮我建一个技能"}""")
 
-        val notReady = toolDispatcher(FakeScreen(), sandbox = FakeSandbox(SandboxStatus.NotInstalled), workspace = { "w" })
+        val notReady = toolDispatcher(FakeScreen(), files = FakeSandbox(SandboxStatus.NotInstalled), workspace = { "w" })
         add("sandbox not ready", notReady, "run_command", """{"command":"ls"}""")
 
         out += "read refuses a write" to phone.executeRead(call("phone_tap", """{"x":1,"y":1}""")).content.toString()

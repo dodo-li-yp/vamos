@@ -7,7 +7,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import com.yongpeng.vamos.core.cap.web.DownloadAddressPolicy
-import com.yongpeng.vamos.cap.sandbox.JVM_GATE
+import com.yongpeng.vamos.cap.files.JVM_GATE
 import okhttp3.Dns
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
@@ -26,7 +26,7 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
-import com.yongpeng.vamos.core.workspace.SandboxTree
+import com.yongpeng.vamos.core.workspace.WorkspaceTree
 
 class WebDownloadsTest {
     @get:Rule val tmp = TemporaryFolder()
@@ -40,7 +40,7 @@ class WebDownloadsTest {
         if (url.startsWith(server.url("/").toString())) null else DownloadAddressPolicy.refusal(url)
 
     private fun downloads(maxBytes: Long = 1L shl 20, maxFiles: Int = 50, maxTotalBytes: Long = 1L shl 30, timeoutMs: Long = 60_000) = WebDownloads(
-        ws, JVM_GATE, SandboxTree(), OkHttpClient(), cookies = { url -> cookieCalls += url; "sid=abc" }, scope = scope, maxBytes = maxBytes,
+        ws, JVM_GATE, WorkspaceTree(), OkHttpClient(), cookies = { url -> cookieCalls += url; "sid=abc" }, scope = scope, maxBytes = maxBytes,
         maxFiles = maxFiles, maxTotalBytes = maxTotalBytes, timeoutMs = timeoutMs, addressRefusal = ::allowServer, dns = Dns.SYSTEM)
 
     @Before
@@ -158,7 +158,7 @@ class WebDownloadsTest {
     fun pageFallbackOnlyForTlsFailures() {
         val host = "127.0.0.1"
         val local = { url: String -> if (url.toHttpUrlOrNull()?.host in setOf(host, server.url("/").host)) null else DownloadAddressPolicy.refusal(url) }
-        val d = WebDownloads(ws, JVM_GATE, SandboxTree(), OkHttpClient(), { null }, scope, addressRefusal = local, dns = Dns.SYSTEM)
+        val d = WebDownloads(ws, JVM_GATE, WorkspaceTree(), OkHttpClient(), { null }, scope, addressRefusal = local, dns = Dns.SYSTEM)
         var asked = 0
         val viaPage: suspend (Long) -> Pair<ByteArray, String?>? = { asked++; "%PDF".toByteArray() to "application/pdf" }
         // 一个只回明文的端口:用 https 连它是握手失败
@@ -195,7 +195,7 @@ class WebDownloadsTest {
         val data = d.dataUrl("data:text/plain;base64,aGVsbG8=", "attachment; filename=\"hi.txt\"")
         assertEquals("/workspace/downloads/hi.txt", data)
         assertEquals("hello", File(ws, "downloads/hi.txt").readText())
-        val big = WebDownloads(ws, JVM_GATE, SandboxTree(), OkHttpClient(), { null }, scope, maxBlobBytes = 4)
+        val big = WebDownloads(ws, JVM_GATE, WorkspaceTree(), OkHttpClient(), { null }, scope, maxBlobBytes = 4)
         val refused = big.save("blob:x", null, null, ByteArray(10))
         assertEquals("too_large", big.list().single { it.file == refused }.error)
     }
@@ -260,7 +260,7 @@ class WebDownloadsTest {
 
     @Test
     fun privateAddressesAreNotFetchedAtAll() {
-        val d = WebDownloads(ws, JVM_GATE, SandboxTree(), OkHttpClient(), { null }, scope)
+        val d = WebDownloads(ws, JVM_GATE, WorkspaceTree(), OkHttpClient(), { null }, scope)
         for (u in listOf("http://127.0.0.1:${server.port}/x", "http://localhost:${server.port}/x", "http://10.0.0.2/x", "http://[::1]/x")) {
             d.start(u, "UA", null, null, null)
             assertEquals(u, "blocked_address", d.list().last().error)
@@ -302,7 +302,7 @@ class WebDownloadsTest {
 
     @Test
     fun dataUrlLengthCheckedBeforeDecoding() {
-        val d = WebDownloads(ws, JVM_GATE, SandboxTree(), OkHttpClient(), { null }, scope, maxBlobBytes = 30)
+        val d = WebDownloads(ws, JVM_GATE, WorkspaceTree(), OkHttpClient(), { null }, scope, maxBlobBytes = 30)
         d.dataUrl("data:text/plain;base64," + "A".repeat(100), null)
         assertEquals("too_large", d.list().last().error)
         d.dataUrl("data:text/plain," + "a".repeat(100), null)

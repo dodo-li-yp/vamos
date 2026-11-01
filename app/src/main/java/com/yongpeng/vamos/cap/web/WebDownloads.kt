@@ -1,10 +1,10 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.cap.web
 
-import com.yongpeng.vamos.core.workspace.SandboxTree
+import com.yongpeng.vamos.core.workspace.WorkspaceTree
 import android.util.Log
 import com.yongpeng.vamos.core.workspace.GatedFile
-import com.yongpeng.vamos.core.workspace.SandboxError
+import com.yongpeng.vamos.core.workspace.WorkspaceError
 import com.yongpeng.vamos.core.workspace.WorkspaceFileGate
 import com.yongpeng.vamos.core.cap.web.DownloadAddressPolicy
 import com.yongpeng.vamos.core.cap.web.DownloadInfo
@@ -45,7 +45,7 @@ class WebDownloads(
     private val workspaceDir: File,
     private val gate: WorkspaceFileGate,
     /** 工作区所在那棵树的锁:下载落盘在它的许可里写。 */
-    private val tree: SandboxTree,
+    private val tree: WorkspaceTree,
     http: OkHttpClient,
     private val cookies: (String) -> String?,
     private val scope: CoroutineScope,
@@ -92,7 +92,7 @@ class WebDownloads(
 
     /**
      * 页面给下载起的名字(`<a download>`)只在页面里,下载监听拿不到:先用 [pageName] 问页面,问到(或问不到)后交给 [then] 登记。
-     * 问名字的这一会儿也算下载已开始,[awaitNamed] 等它们登记完。[then] 在写 `files/sandbox/` 的许可里跑(见 SandboxTree)。
+     * 问名字的这一会儿也算下载已开始,[awaitNamed] 等它们登记完。[then] 在写 `files/sandbox/` 的许可里跑(见 WorkspaceTree)。
      */
     fun withPageName(pageName: suspend () -> String?, then: (String?) -> Unit) {
         naming.incrementAndGet()
@@ -323,7 +323,7 @@ class WebDownloads(
         val opened = try {
             workspaceDir.mkdirs()
             gate.createNumbered(workspaceDir, DIR, name, MAX_SAME_NAME)
-        } catch (e: SandboxError) {
+        } catch (e: WorkspaceError) {
             null
         } catch (e: IOException) {
             null

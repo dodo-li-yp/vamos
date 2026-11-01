@@ -30,10 +30,10 @@ private const val SKILL_FILE = "SKILL.md"
 /** 文档可能提到本机没有的工具;在注入和 knowledge_read / skill_read 的边界处提醒。 */
 const val UNAVAILABLE_TOOLS_NOTE = "(Note: scripts mentioned in the text and tools this phone does not have are not available; use only the tools in your tool list.)"
 /** 设备支持沙箱时的附注:技能脚本按清单可以跑。 */
-const val SANDBOX_TOOLS_NOTE = "(Note: scripts marked runnable can be run with run_bundled_script; other scripts and tools this phone does not have are not available.)"
+const val SANDBOX_TOOLS_NOTE = "(No executable scripts or Linux runtime are available in Vamos V1.)"
 
 /** 注入参考资料、knowledge_read / skill_read 时的附注,按沙箱工具是否提供。 */
-fun toolsNote(sandboxAvailable: Boolean): String = if (sandboxAvailable) SANDBOX_TOOLS_NOTE else UNAVAILABLE_TOOLS_NOTE
+fun toolsNote(workspaceAvailable: Boolean): String = if (workspaceAvailable) SANDBOX_TOOLS_NOTE else UNAVAILABLE_TOOLS_NOTE
 const val VIEW_LIMIT = 12_000
 const val FIND_LIMIT = 10
 /** 任务开始按任务文字给 App/站点知识索引的得分门槛:名称/显示名/别名至少部分对上。 */

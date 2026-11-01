@@ -191,23 +191,4 @@ object StatusCopy {
      * 任务卡片上跑命令这一步的说明:「正在处理文件:<命令前 40 字>」,联网时注明「可联网」。
      * 运行环境对用户不可见,字面上不说沙箱。
      */
-    fun sandboxCommand(command: String, network: Boolean): String = sandboxLine(tr(R.string.sandbox_command_prefix), command, 40, network)
-
-    /** 跑技能脚本时:「正在运行脚本」。 */
-    fun sandboxScript(network: Boolean): String = tr(R.string.sandbox_script) + if (network) " · $SANDBOX_ONLINE" else ""
-
-    /** 命令里 `vamos progress` 报的进度。 */
-    fun sandboxProgress(text: String, network: Boolean): String = sandboxLine("", text, 60, network)
-
-    val SANDBOX_ONLINE: String get() = tr(R.string.sandbox_online)
-
-    /** 工具在等运行环境准备好时。 */
-    val RUNTIME_PREPARING: String get() = tr(R.string.runtime_preparing)
-
-    private fun sandboxLine(prefix: String, text: String, max: Int, network: Boolean): String {
-        // 和 `vamos progress` 一样去掉控制字符、零宽与改写方向的字符,卡片上显示的就是实际的命令
-        val one = com.yongpeng.vamos.cap.sandbox.BridgeProtocol.cleanProgress(text.replace(Regex("\\s+"), " "))
-        val cut = if (one.codePointCount(0, one.length) > max) one.substring(0, one.offsetByCodePoints(0, max)) + "…" else one
-        return prefix + cut + if (network) " · $SANDBOX_ONLINE" else ""
-    }
 }

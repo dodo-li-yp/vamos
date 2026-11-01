@@ -5,10 +5,8 @@ import com.yongpeng.vamos.ChineseUi
 import com.yongpeng.vamos.DeviceTaskState
 import android.app.UiAutomation
 import kotlinx.coroutines.runBlocking
-import com.yongpeng.vamos.cap.sandbox.ShareExporter
-import com.yongpeng.vamos.cap.sandbox.SandboxState
-import com.yongpeng.vamos.cap.sandbox.SandboxDirs
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
+import com.yongpeng.vamos.cap.files.ShareExporter
+import com.yongpeng.vamos.cap.files.WorkspaceDirs
 import com.yongpeng.vamos.core.agent.Turn
 import com.yongpeng.vamos.chat.ConversationStore
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -222,7 +220,7 @@ class ChatScreenDeviceTest {
     /** 附件按钮只在沙箱就绪时出现。 */
     @Test
     fun attachButtonOnlyWhenSandboxReady() {
-        val ready = SandboxState.get(context).status.value is SandboxStatus.Ready
+        val ready = true
         compose.waitForIdle()
         val nodes = compose.onAllNodesWithContentDescription("添加附件").fetchSemanticsNodes()
         assertEquals("sandbox ready=$ready", ready, nodes.isNotEmpty())
@@ -231,10 +229,10 @@ class ChatScreenDeviceTest {
     /** 文件卡片显示名字和大小;点开文本文件进 App 里的查看页(不再交给系统选 App),看得到文件内容,返回回到对话。 */
     @Test
     fun fileCardOpens() {
-        val ws = SandboxDirs(context).workspace("card-device-test").apply { mkdirs() }
+        val ws = WorkspaceDirs(context).workspace("card-device-test").apply { mkdirs() }
         val f = File(ws, "card.txt").apply { writeText("hello") }
         val name = "vamos-card-${System.currentTimeMillis()}.txt"
-        val card = runBlocking { com.yongpeng.vamos.cap.sandbox.AndroidFdSys.gate.openRead(ws, f.name).use { ShareExporter(context).export(it, name) } }
+        val card = runBlocking { com.yongpeng.vamos.cap.files.AndroidFdSys.gate.openRead(ws, f.name).use { ShareExporter(context).export(it, name) } }
         val store = ConversationStore(context)
         val id = store.newConversation()
         store.append(id, Turn("导出", "好了", "succeeded"), listOf(card))

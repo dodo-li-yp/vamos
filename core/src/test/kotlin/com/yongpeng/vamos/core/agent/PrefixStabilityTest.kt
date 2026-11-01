@@ -3,8 +3,8 @@ package com.yongpeng.vamos.core.agent
 
 import com.yongpeng.vamos.core.model.Capabilities
 import com.yongpeng.vamos.core.model.OpenAiCompatModel
-import com.yongpeng.vamos.core.cap.sandbox.CommandResult
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.CommandResult
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
 import com.yongpeng.vamos.core.uistate.ScreenPort
 import com.yongpeng.vamos.core.testing.Screen
 import com.yongpeng.vamos.core.testing.ScriptedScreen
@@ -131,7 +131,7 @@ class PrefixStabilityTest {
         val mainModel = main.model(s.vision, s.contextTokens)
         val lightModel = light?.model(false, s.contextTokens)
         runTest {
-            AgentLoop(mainModel, toolDispatcher(port, sandbox = sb, workspace = { "w" }, inlineScreen = s.inline, visionEnabled = s.vision),
+            AgentLoop(mainModel, toolDispatcher(port, files = sb, workspace = { "w" }, inlineScreen = s.inline, visionEnabled = s.vision),
                 SystemPrompt.identity(), STEPS + 5, clock = { 0L }, zone = ZoneOffset.UTC,
                 flags = SpeedFlags(inlineScreen = s.inline, lightSteps = s.light), router = lightModel?.let { ModelRouter(mainModel, it) },
             ).run("把每一屏都看一遍", if (s.prior.isEmpty()) emptyList() else listOf(Turn("上一轮", "好", "succeeded", groups = s.prior))).also { assertTrue("$it", it is TaskState.Succeeded) }

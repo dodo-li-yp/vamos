@@ -25,10 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.yongpeng.vamos.BuildConfig
-import com.yongpeng.vamos.cap.sandbox.SandboxState
 import com.yongpeng.vamos.capsule.CapsuleMode
 import com.yongpeng.vamos.core.agent.SpeedFlags
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
 import com.yongpeng.vamos.core.model.ModelRole
 import com.yongpeng.vamos.core.shell.BuiltinShellStatus
 import com.yongpeng.vamos.record.RunStore
@@ -65,7 +63,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** 设置里能进入的子页面;[Home] 是设置首页。 */
-private enum class SettingsPage { Home, Confirmation, Usage, PhoneOps, DuringWork, Capsule, Language, Notifications, WebSites, Sandbox, Routes, Recovery, SelfCheck, ComputerAccess, Developer, RunStats }
+private enum class SettingsPage { Home, Confirmation, Usage, PhoneOps, DuringWork, Capsule, Language, Notifications, WebSites, Routes, Recovery, SelfCheck, ComputerAccess, Developer, RunStats }
 
 /**
  * 设置页:总状态卡 + 基本 / 隐私与数据 / 高级 / 关于四组。各子页面在这里切换(返回键先回首页),
@@ -114,7 +112,6 @@ fun SettingsScreen(
     var routeCount by remember { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) { routeCount = withContext(Dispatchers.IO) { runCatching { routeStore.count() }.getOrNull() } }
-    val sandboxStatus by remember { SandboxState.get(context) }.status.collectAsState()
     val mcp = remember { (context.applicationContext as com.yongpeng.vamos.VamosApp).mcp }
     val mcpNetworkOn by mcp.settings.enabled.collectAsState()
     val mcpUsbOn by mcp.usb.enabled.collectAsState()
@@ -165,10 +162,9 @@ fun SettingsScreen(
             language = language, onOpenLanguage = { page = SettingsPage.Language },
             onOpenMemory = onOpenMemory,
             webSitesCount = webSites?.sites?.size, onOpenWebSites = { page = SettingsPage.WebSites },
-            sandbox = null, onOpenSandbox = { page = SettingsPage.Sandbox },
             routes = routeCount, onOpenRoutes = { page = SettingsPage.Routes },
             onOpenRecovery = { page = SettingsPage.Recovery },
-            computerAccess = null, onOpenComputerAccess = { page = SettingsPage.ComputerAccess },
+            computerAccess = if (com.yongpeng.vamos.BuildConfig.ENABLE_COMPUTER_ACCESS) mcpOn else null, onOpenComputerAccess = { page = SettingsPage.ComputerAccess },
             showDeveloper = showDeveloper, onOpenDeveloper = { page = SettingsPage.Developer },
             versionName = BuildConfig.VERSION_NAME, updateVersion = updateVersion, onOpenAbout = onOpenAbout,
         )
@@ -190,7 +186,6 @@ fun SettingsScreen(
         SettingsPage.Capsule -> CapsuleScreen(capsuleMode, onMode = { flags.setCapsuleMode(it); capsuleMode = it }, onBack = toHome)
         // 没有数据时首页不显示入口,走不到这一页
         SettingsPage.WebSites -> webSites?.let { WebSitesScreen(it, onBack = toHome) }
-        SettingsPage.Sandbox -> SandboxScreen(onBack = toHome)
         SettingsPage.Routes -> RoutesScreen(
             routeCount,
             onClear = { scope.launch { routeCount = withContext(Dispatchers.IO) { routeStore.clear(); routeStore.count() } } },
@@ -256,8 +251,6 @@ fun SettingsContent(
     onOpenMemory: (() -> Unit)? = null,
     webSitesCount: Int? = null,
     onOpenWebSites: () -> Unit = {},
-    sandbox: SandboxStatus? = null,
-    onOpenSandbox: () -> Unit = {},
     /** 已记住的操作路线条数;为空(还没读出来)时不显示这一行。 */
     routes: Int? = null,
     onOpenRoutes: () -> Unit = {},
@@ -323,18 +316,13 @@ fun SettingsContent(
             }
         }
 
-        val sandboxRow = sandbox?.takeIf { it !is SandboxStatus.Unsupported }
         val recoveryRow = status.sdkInt >= Prerequisites.MIN_SDK
-        if (sandboxRow != null || routes != null || recoveryRow || computerAccess != null || showDeveloper) {
+        if (routes != null || recoveryRow || computerAccess != null || showDeveloper) {
             GroupLabel(stringResource(R.string.settings_advanced))
             GroupCard {
                 var first = true
                 fun take(): Boolean = first.also { first = false }
-                if (sandboxRow != null) {
-                    VmListItem(VamosIcons.Terminal, stringResource(R.string.settings_sandbox), first = take(), onClick = onOpenSandbox) {
-                        RowValue(sandboxValue(sandboxRow)); RowChevron()
-                    }
-                }
+
                 routes?.let {
                     VmListItem(VamosIcons.Route, stringResource(R.string.settings_routes), first = take(), onClick = onOpenRoutes) { RowValue(trPlural(R.plurals.settings_count_routes, it)); RowChevron() }
                 }
@@ -371,12 +359,6 @@ private fun PhoneOpsPill(status: SystemStatus) {
     }
 }
 
-private fun sandboxValue(s: SandboxStatus): String = when (s) {
-    is SandboxStatus.Ready -> tr(R.string.sandbox_ready)
-    is SandboxStatus.Installing -> tr(R.string.sandbox_preparing)
-    is SandboxStatus.Broken -> tr(R.string.pill_needs_attention)
-    else -> tr(R.string.sandbox_not_prepared)
-}
 
 /**
  * 页面顶上的总状态:一切正常是「一切就绪」;否则变成第一个问题的提示,带修复按钮。

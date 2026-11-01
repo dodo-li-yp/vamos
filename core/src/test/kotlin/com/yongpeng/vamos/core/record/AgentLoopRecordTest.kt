@@ -255,8 +255,8 @@ class AgentLoopRecordTest {
 
     // 新记录里每条进账的观察都记下了:离线重建的账本和运行时的一模一样(读界面、动作带回的界面、命令输出、工具事实)
     @Test fun recordedObservationsRebuildTheSameLedger() {
-        val sb = com.yongpeng.vamos.core.cap.sandbox.FakeSandbox().apply {
-            next = { r -> com.yongpeng.vamos.core.cap.sandbox.CommandResult(0, false, false, 10, "共 42 行 ${r.argv}", 0, false) }
+        val sb = com.yongpeng.vamos.core.cap.files.FakeSandbox().apply {
+            next = { r -> com.yongpeng.vamos.core.cap.files.CommandResult(0, false, false, 10, "共 42 行 ${r.argv}", 0, false) }
         }
         val m = FakeModel(
             reply(call("phone_observe")),
@@ -266,7 +266,7 @@ class AgentLoopRecordTest {
             com.yongpeng.vamos.core.testing.answerReply("共 42 行"),
         )
         val sink = ListSink()
-        val tools = toolDispatcher(FakeScreen(), true, inlineScreen = true, sandbox = sb, workspace = { "w" })
+        val tools = toolDispatcher(FakeScreen(), true, inlineScreen = true, files = sb, workspace = { "w" })
         kotlinx.coroutines.runBlocking { AgentLoop(m, tools, "BASE", sink = sink).run("数一下行数") }
         val live = kotlinx.coroutines.runBlocking { tools.evidence(fresh = false) }.ledger.all
         assertTrue(live.size >= 3)

@@ -26,13 +26,9 @@ import com.yongpeng.vamos.cap.phone.display.LazyAgentDisplay
 import com.yongpeng.vamos.cap.phone.setup.DeveloperSettings
 import com.yongpeng.vamos.cap.phone.shell.ShellBinding
 import com.yongpeng.vamos.cap.phone.shell.ShellService
-import com.yongpeng.vamos.cap.sandbox.AndroidSandbox
-import com.yongpeng.vamos.cap.sandbox.SandboxState
 import com.yongpeng.vamos.cap.web.WebHost
 import com.yongpeng.vamos.cap.web.WebScreen
 import com.yongpeng.vamos.cap.web.WebTabPool
-import com.yongpeng.vamos.core.cap.sandbox.CommandResult
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
 import com.yongpeng.vamos.core.selfcheck.Advice
 import com.yongpeng.vamos.core.selfcheck.CheckOutcome
 import com.yongpeng.vamos.core.selfcheck.DeviceFacts
@@ -57,7 +53,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 /**
  * 兼容性自检的安卓实现。手机这几项走任务用的同一套:进程里共用的那条助手连接([PhoneServices.sharedShell])、
  * [AgentDisplay] 建屏、[AndroidScreen] 打开页面、读屏、点按、打字、滚动、返回;网页走内置浏览器的 [WebScreen];
- * 沙箱走 [AndroidSandbox]。只碰 Vamos 自己的自检页和系统设置(只打开、不点),不改设置、不联网。
+ * 沙箱走 [WorkspaceFiles]。只碰 Vamos 自己的自检页和系统设置(只打开、不点),不改设置、不联网。
  * 报告里的事实只写状态和数字,不写别的 App 的包名、账号和用户的内容。
  * [status] 是界面那边此刻的系统状态(无障碍、通知、内置助手)。
  */
@@ -105,7 +101,6 @@ class AndroidSelfCheck(context: Context, private val status: () -> SystemStatus)
         SelfCheck.STAYS_ALIVE -> staysAlive()
         SelfCheck.MAIN_SCREEN -> mainScreen()
         SelfCheck.BROWSER -> browser()
-        SelfCheck.SANDBOX -> sandbox()
         SelfCheck.APP_COPIES -> appCopies()
     }
 
@@ -386,40 +381,6 @@ class AndroidSelfCheck(context: Context, private val status: () -> SystemStatus)
         val clicked = poll { "Clicked 1" in w.screen.readPage(MAX_CHARS, 0, scrollLazy = false).text }
         return if (clicked) CheckOutcome.pass("local page loaded, text read, button tap verified")
         else CheckOutcome.fail("text read; button tap did not change the page", Advice.WebFailed)
-    }
-
-    // ---------- 11 沙箱 ----------
-
-    private suspend fun sandbox(): CheckOutcome {
-        val state = SandboxState.get(app)
-        when (val st = state.status.value) {
-            is SandboxStatus.Unsupported -> return CheckOutcome.skipped("not supported on ${Build.SUPPORTED_ABIS.firstOrNull() ?: "this device"}", Advice.SandboxUnsupported)
-            is SandboxStatus.Ready -> Unit
-            // 不为自检现装运行环境(要好几分钟)
-            else -> return CheckOutcome.partial("runtime not prepared (${st.javaClass.simpleName})", Advice.SandboxNotPrepared)
-        }
-        val box = AndroidSandbox(app, state)
-        // 命令出错(比如断网过滤装不上被拒)照实记下;取消照常往外抛
-        suspend fun run(argv: List<String>): Result<CommandResult> = try {
-            Result.success(box.run(SANDBOX_WORKSPACE, argv, null, COMMAND_MS) {})
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-        val echo = run(listOf("sh", "-c", "echo ok"))
-        val echoOk = echo.getOrNull()?.let { it.exitCode == 0 && it.output.trim() == "ok" } == true
-        val py = run(listOf("python3", "-c", "print(1+1)"))
-        val pyOk = py.getOrNull()?.let { it.exitCode == 0 && it.output.trim() == "2" } == true
-        fun what(r: Result<CommandResult>) = r.fold(
-            { if (it.timedOut) "timed out" else "exit ${it.exitCode}, ${it.durationMs} ms" }, { "error ${it.javaClass.simpleName}" },
-        )
-        val detail = "echo ${if (echoOk) "ok" else "failed"} (${what(echo)}), python3 ${if (pyOk) "ok" else "failed"} (${what(py)})"
-        return when {
-            echoOk && pyOk -> CheckOutcome.pass(detail)
-            echoOk -> CheckOutcome.partial(detail, Advice.SandboxFailed)
-            else -> CheckOutcome.fail(detail, Advice.SandboxFailed)
-        }
     }
 
     // ---------- 12 另一份 App ----------

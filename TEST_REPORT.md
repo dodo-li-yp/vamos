@@ -1,3 +1,61 @@
+## M4 续做：移除 Linux 与保留文件能力（2026-11-01）
+
+- 已删除 PRoot/talloc native 库、Alpine/rootfs 资源、运行器 C 代码、沙箱服务/桥接/准备流程、shell/脚本执行工具与提示词、构建脚本及运行时专用测试。
+- 附件、网页上传/下载及导出保留，改用 `WorkspaceFiles` / `WorkspacePort` Kotlin 普通工作区；共享树锁、文件句柄边界、符号链接/硬链接防护仍保留。原 App/网站知识与文本技能索引保留，PDF 脚本提取随 Linux 删除，二进制内容不能冒充已读取。
+- Commons Compress 与 XZ 依赖、GPL 许可随已移除组件清理（根 LICENSE/NOTICE 不变）；许可页增加现有 OCR 的实际依赖说明。没有加入崩溃/统计 SDK。
+- CLI/MCP 代码保留，`ENABLE_COMPUTER_ACCESS=false` 隐藏设置入口；原设置持久化默认关闭。README 改为 Vamos 构建、签名、更新和范围说明。
+- `assembleDebug` 通过；核心：9 项文件工具 + 12 项文件关口 + 8 项可信更新；应用：6 项实际工作区边界契约 + 3 项附件命名 + 5 项 APK 校验 + 1 项许可列表，合计 **44 项通过、0 失败**（修复残留的已删除命令测试后重跑）。本段 Lint 正在运行，最后汇总结果。
+- M3 最终 `assembleDebug :app:lintDebug` 已通过：**0 错误、96 警告、6 信息**（M2 基线 92 警告；无新增错误）。
+- M4 APK 暂测 87,394,088 字节，相比移除前 103,249,501 字节下降约 **15.36%**。上游正式测试包未提供，这是同构建环境移除前后比较，不声称为上游发布包实测差异。
+- APK 实测无 proot/talloc/rootfs/vamosrun/脚本资源。剩余 native：各 arm64-v8a/armeabi-v7a/x86/x86_64 的 `libandroidx.graphics.path.so` 与 `libmlkit_google_ocr_pipeline.so`，分别为 AndroidX 图形及现有 Google ML Kit OCR；完整 assets 清单如下。
+
+```text
+lib/arm64-v8a/libandroidx.graphics.path.so
+lib/arm64-v8a/libmlkit_google_ocr_pipeline.so
+lib/armeabi-v7a/libandroidx.graphics.path.so
+lib/armeabi-v7a/libmlkit_google_ocr_pipeline.so
+lib/x86/libandroidx.graphics.path.so
+lib/x86/libmlkit_google_ocr_pipeline.so
+lib/x86_64/libandroidx.graphics.path.so
+lib/x86_64/libmlkit_google_ocr_pipeline.so
+assets/licenses/Apache-2.0.txt
+assets/licenses/CC0-1.0.txt
+assets/licenses/NOTICE.txt
+assets/licenses/THIRD_PARTY_NOTICES.md
+assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_rpn_gcn.binarypb
+assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_ti_rpn_gcn.binarypb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc/optical/assets.extra/LabelMap.pb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc/optical/conv_model.fb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc/optical/lstm_model.fb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc_cpu.binarypb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/assets.extra/LabelMap.pb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/conv_model.fb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc/optical/lstm_model.fb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Latn_ctc_cpu.binarypb
+assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/tflite_langid.tflite
+assets/mlkit-google-ocr-models/gocr/layout/line_clustering_custom_ops/model.tflite
+assets/mlkit-google-ocr-models/gocr/layout/line_splitting_custom_ops/model.tflite
+assets/mlkit-google-ocr-models/taser/detector/region_proposal_text_detector_tflite_vertical_mbv2_v1.bincfg
+assets/mlkit-google-ocr-models/taser/detector/rpn_text_detector_mobile_space_to_depth_quantized_mbv2_v1.tflite
+assets/mlkit-google-ocr-models/taser/rpn_text_detection_tflite_mobile_mbv2.binarypb
+assets/mlkit-google-ocr-models/taser/segmenter/tflite_script_detector_0.3.bincfg
+assets/mlkit-google-ocr-models/taser/segmenter/tflite_script_detector_0.3.conv_model
+assets/mlkit-google-ocr-models/taser/segmenter/tflite_script_detector_0.3.lstm_model
+assets/mlkit-google-ocr-models/taser/taser_script_identification_tflite_mobile.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrchinese_and_latin_mbv2_aksara_layout_gcn_mobile_engine.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrchinese_and_latin_mbv2_aksara_layout_gcn_mobile_engine_ti.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrchinese_and_latin_mbv2_aksara_layout_gcn_mobile_recognizer.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrchinese_and_latin_mbv2_aksara_layout_gcn_mobile_runner.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrchinese_and_latin_mbv2_aksara_layout_gcn_mobile_runner_ti.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_engine.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_engine_ti.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_recognizer.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_runner.binarypb
+assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_runner_ti.binarypb
+assets/selfcheck/page.html
+assets/web/page.js
+```
+
 ## M3 续做：COS 可信更新（2026-11-01）
 
 - 已替换 GitHub Releases 解析/检查与系统 DownloadManager 更新实现；BuildConfig URL 保留 TASK 指定占位，正式公钥为空（支持逗号分隔双公钥）。未配置时 fail closed，手动检查说明缺失配置。

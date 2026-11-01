@@ -9,8 +9,8 @@ import com.yongpeng.vamos.core.memory.UserUtterances
 import com.yongpeng.vamos.core.model.ModelReply
 import com.yongpeng.vamos.core.model.Part
 import com.yongpeng.vamos.core.model.StopReason
-import com.yongpeng.vamos.core.cap.sandbox.FakeSandbox
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
+import com.yongpeng.vamos.core.cap.files.FakeSandbox
+import com.yongpeng.vamos.core.cap.files.SandboxStatus
 import com.yongpeng.vamos.core.testing.PromptSurface
 import com.yongpeng.vamos.core.tool.FakeScreen
 import com.yongpeng.vamos.core.tool.ToolDispatcher
@@ -42,17 +42,17 @@ class PromptSurfaceTest {
         "phone" to Combo({ toolDispatcher(FakeScreen()) }),
         "phone-inline-batch" to Combo({ toolDispatcher(FakeScreen(), inlineScreen = true) }, SpeedFlags(inlineScreen = true, batchSteps = true)),
         "phone-web" to Combo({ toolDispatcher(FakeScreen(), web = FakeWebPort()) }),
-        "phone-sandbox-offline" to Combo({ toolDispatcher(FakeScreen(), sandbox = FakeSandbox(), workspace = { "w" }) }),
+        "phone-sandbox-offline" to Combo({ toolDispatcher(FakeScreen(), files = FakeSandbox(), workspace = { "w" }) }),
         "phone-web-sandbox-online" to Combo({
-            toolDispatcher(FakeScreen(), web = FakeWebPort(), sandbox = FakeSandbox(SandboxStatus.Ready(network = true)), workspace = { "w" })
+            toolDispatcher(FakeScreen(), web = FakeWebPort(), files = FakeSandbox(SandboxStatus.Ready(network = true)), workspace = { "w" })
         }),
-        "phone-sandbox-preparing" to Combo({ toolDispatcher(FakeScreen(), sandbox = FakeSandbox(SandboxStatus.NotInstalled), workspace = { "w" }) }),
+        "phone-sandbox-preparing" to Combo({ toolDispatcher(FakeScreen(), files = FakeSandbox(SandboxStatus.NotInstalled), workspace = { "w" }) }),
         "everything" to MemoryStore(Mem(), clock = { 1L }, ids = { "m" }).let { mem ->
             Combo({
                 toolDispatcher(
                     FakeScreen(), visionEnabled = true, skills = GuideCatalog.loadBundled(), vision = VisionService(says(), JvmTestImageOps),
                     web = FakeWebPort(), inlineScreen = true, deepLinks = true,
-                    memory = mem, utterances = UserUtterances(), sandbox = FakeSandbox(SandboxStatus.Ready(network = false)), workspace = { "w" },
+                    memory = mem, utterances = UserUtterances(), files = FakeSandbox(SandboxStatus.Ready(network = false)), workspace = { "w" },
                     personalSkills = com.yongpeng.vamos.core.skills.InMemoryPersonalSkills(),
                 )
             }, SpeedFlags(inlineScreen = true, batchSteps = true, deepLinks = true), mem)

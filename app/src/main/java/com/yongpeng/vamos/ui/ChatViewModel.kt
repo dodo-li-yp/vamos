@@ -11,7 +11,7 @@ import com.yongpeng.vamos.chat.ConversationStore
 import com.yongpeng.vamos.chat.CurrentChat
 import com.yongpeng.vamos.chat.DeleteImpact
 import com.yongpeng.vamos.chat.SharedFile
-import com.yongpeng.vamos.cap.sandbox.ImportResult
+import com.yongpeng.vamos.cap.files.ImportResult
 import com.yongpeng.vamos.confirm.ConfirmationCopy
 import com.yongpeng.vamos.confirm.ConfirmationNotifier
 import com.yongpeng.vamos.core.agent.AttachmentLines

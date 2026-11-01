@@ -82,9 +82,9 @@ internal object RecordedVerifications {
         fun clip(t: String) = if (t.length <= OUTPUT_CHARS) t else t.take(OUTPUT_CHARS * 3 / 4) + "\n" + t.takeLast(OUTPUT_CHARS / 4)
         val screens = before(events, v, f).filterIsInstance<RunEvent.Observed>().filter { it.kind == "read" }.map { it.text }.takeLast(RECENT)
         val web = results.filter { RECORDED_TOOLS.verb(it.tool) in WEB_READS }.map { text(it).take(WEB_CHARS) }.takeLast(RECENT)
-        val sandbox = results.filter { RECORDED_TOOLS.verb(it.tool) in SANDBOX }.map { clip(text(it)) }.takeLast(OUTPUTS)
+        val files = results.filter { RECORDED_TOOLS.verb(it.tool) in SANDBOX }.map { clip(text(it)) }.takeLast(OUTPUTS)
         val facts = results.filter { RECORDED_TOOLS.verb(it.tool) in FACTS }.map { clip(text(it)) }.takeLast(OUTPUTS * 2)
-        return (screens + web + sandbox + facts).filter { it.isNotBlank() }
+        return (screens + web + files + facts).filter { it.isNotBlank() }
     }
 
     private const val RECENT = 3

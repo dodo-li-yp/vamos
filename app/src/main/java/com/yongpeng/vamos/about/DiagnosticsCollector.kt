@@ -18,8 +18,6 @@ import com.yongpeng.vamos.cap.phone.shell.ShellService
 import com.yongpeng.vamos.cap.phone.shell.adb.AndroidAdb
 import com.yongpeng.vamos.cap.phone.setup.DeveloperSettings
 import com.yongpeng.vamos.cap.phone.setup.PairingChannel
-import com.yongpeng.vamos.cap.sandbox.SandboxState
-import com.yongpeng.vamos.core.cap.sandbox.SandboxStatus
 import com.yongpeng.vamos.core.model.ModelRole
 import com.yongpeng.vamos.core.shell.PairingDiscovery
 import com.yongpeng.vamos.core.shell.PermissionCommands
@@ -69,7 +67,7 @@ object DiagnosticsCollector {
             app = DiagnosticsSnapshot.App(BuildConfig.VERSION_NAME, BuildConfig.GIT_HASH, installer(app), language(app)),
             device = DiagnosticsSnapshot.Device(
                 Build.MANUFACTURER, Build.MODEL, Build.VERSION.RELEASE, Build.VERSION.SDK_INT, Build.SUPPORTED_ABIS.toList(),
-                sandbox(SandboxState.get(app).status.value),
+                "Removed in Vamos V1",
             ),
             setup = inputs,
             phone = DiagnosticsSnapshot.Phone(
@@ -122,13 +120,6 @@ object DiagnosticsCollector {
         return "${AppLanguage.current(context).name} ($shown)"
     }
 
-    private fun sandbox(s: SandboxStatus): String = when (s) {
-        is SandboxStatus.Unsupported -> "Unsupported: ${s.reason}"
-        is SandboxStatus.Installing -> "Installing ${s.percent}%"
-        is SandboxStatus.Ready -> "Ready"
-        is SandboxStatus.Broken -> "Broken: ${s.reason}"
-        SandboxStatus.NotInstalled -> "NotInstalled"
-    }
 
     private fun channel(context: Context, id: String): Int? =
         runCatching { context.getSystemService(NotificationManager::class.java).getNotificationChannel(id)?.importance }.getOrNull()

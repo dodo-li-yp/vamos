@@ -2,7 +2,7 @@
 package com.yongpeng.vamos.chat
 
 import android.content.Context
-import com.yongpeng.vamos.cap.sandbox.SandboxDirs
+import com.yongpeng.vamos.cap.files.WorkspaceDirs
 import com.yongpeng.vamos.core.userscreen.CapturedScreen
 import com.yongpeng.vamos.core.userscreen.UserScreen
 import com.yongpeng.vamos.core.userscreen.UserScreenJson
@@ -16,8 +16,8 @@ import java.util.UUID
  * 对话的工作区删掉时一起没了;沙箱里的命令也读得到这张图。读写都经工作区的文件闸门(沙箱里的命令换成链接也读写不到别处),
  * 写时拿着树锁的许可(和重置互斥)。
  */
-class UserScreenFiles(private val dirs: SandboxDirs) {
-    constructor(context: Context) : this(SandboxDirs(context))
+class UserScreenFiles(private val dirs: WorkspaceDirs) {
+    constructor(context: Context) : this(WorkspaceDirs(context))
 
     /** 存进对话 [conversationId],返回带编号的说明。 */
     suspend fun save(conversationId: String, shot: CapturedScreen): UserScreen = dirs.tree.shared {

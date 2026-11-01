@@ -6,10 +6,10 @@ import com.yongpeng.vamos.core.agent.DO_STEPS_TOOL
 import com.yongpeng.vamos.core.cap.phone.AppPacing
 import com.yongpeng.vamos.core.cap.phone.PHONE
 import com.yongpeng.vamos.core.cap.phone.PhoneCapability
-import com.yongpeng.vamos.core.cap.sandbox.SandboxCapability
-import com.yongpeng.vamos.core.cap.sandbox.SANDBOX
-import com.yongpeng.vamos.core.cap.sandbox.SandboxGroup
-import com.yongpeng.vamos.core.cap.sandbox.SandboxPort
+import com.yongpeng.vamos.core.cap.files.WorkspaceCapability
+import com.yongpeng.vamos.core.cap.files.FILES
+import com.yongpeng.vamos.core.cap.files.WorkspaceGroup
+import com.yongpeng.vamos.core.cap.files.WorkspacePort
 import com.yongpeng.vamos.core.cap.web.WEB
 import com.yongpeng.vamos.core.cap.web.WebCapability
 import com.yongpeng.vamos.core.cap.web.WebGroup
@@ -86,17 +86,9 @@ fun toolDispatcher(
     /** 本次任务所在的对话;记进记忆的出处。 */
     conversationId: String? = null,
     /** Linux 沙箱;设备支持时提供沙箱工具(没准备好时工具调用会等它)。 */
-    sandbox: SandboxPort? = null,
+    files: WorkspacePort? = null,
     /** 本次任务的工作区(对话 ID)。 */
     workspace: () -> String = { "default" },
-    /** 沙箱开始跑一条命令或脚本时(任务卡片显示「沙箱:…」)。 */
-    onSandboxCommand: (String) -> Unit = {},
-    /** 沙箱里 `vamos progress` 报的进度。 */
-    onSandboxProgress: (String) -> Unit = {},
-    /** 沙箱工具在等运行环境准备好(任务卡片显示「正在准备」)。 */
-    onSandboxPreparing: () -> Unit = {},
-    /** 开始跑技能脚本时;不给就按 [onSandboxCommand] 报。 */
-    onSandboxScript: ((String) -> Unit)? = null,
     /** 发给主模型的图统一编码用;为空时原样发。 */
     imageOps: ImageOps? = vision?.ops,
     /** 开局约束允许的能力；旧调用方不传时仍得到今天的工具。 */
@@ -123,9 +115,8 @@ fun toolDispatcher(
             override fun open(spec: RunSpec) = WebCapability(web, workspacePath, webPacing(), webPlacePace, webIdleScroll())
         },
         object : CapabilityProvider {
-            override val id = SANDBOX
-            override fun open(spec: RunSpec) = SandboxCapability(sandbox, workspace, visionEnabled,
-                onSandboxCommand, onSandboxProgress, onSandboxPreparing, onSandboxScript)
+            override val id = FILES
+            override fun open(spec: RunSpec) = WorkspaceCapability(files, workspace, visionEnabled)
         },
     ) + mcpServers.map(::McpClientProvider)
     return RunAssembler(providers).assemble(runSpec, config, stableRefs, FORMER_PREFIX, RENAMED, RETIRED, MOVED)
@@ -150,7 +141,6 @@ private val RENAMED = mapOf("web_wait_for" to "browser_wait") +
 private val MOVED: Map<String, List<String>> = mapOf(
     "find_skills" to listOf("knowledge_search", "skill_search"),
     "skill_view" to listOf("knowledge_read", "skill_read"),
-    "run_script" to listOf("run_bundled_script"),
     "report_barrier" to listOf("handle_obstacle"),
     "report_failure" to listOf("end_not_done"),
     "request_input" to listOf("ask_user"),
@@ -173,7 +163,7 @@ fun recordedTools(): ToolIndex = legacyNames().let { legacy -> ToolIndex(allTool
 
 /** Vamos 所有可能提供的工具,按发给模型的顺序。 */
 internal fun allTools(): List<AgentTool> =
-    GeneralGroup.tools + PhoneCapability.tools() + WebGroup.tools + SandboxGroup.tools
+    GeneralGroup.tools + PhoneCapability.tools() + WebGroup.tools + WorkspaceGroup.tools
 
 /** Vamos 所有可能提供的工具的声明。 */
 fun knownTools(): ToolIndex = ToolIndex(allTools())

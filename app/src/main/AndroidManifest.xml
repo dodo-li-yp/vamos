@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- 用户在关于页下载新版后，交给系统安装器确认覆盖安装。 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
-    <!-- 沙箱联网时读当前网络的 DNS 服务器 -->
+    <!-- 更新下载前检查 Wi-Fi / 移动网络状态 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -182,10 +182,6 @@
         </service>
 
         <!-- 后台准备运行环境(解出随 APK 自带的根文件系统),只在准备期间运行 -->
-        <service
-            android:name=".sandbox.SandboxService"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
 
         <!-- 网页上传:把暂存的上传文件以只读 content:// 地址交给内置浏览器的文件选择框,不对外导出。
              FileProvider 要求 grantUriPermissions=true,否则进程启动时就抛异常;

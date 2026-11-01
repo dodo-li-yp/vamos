@@ -26,8 +26,6 @@ enum class SelfCheck(val key: String, val timeoutMs: Long) {
     MAIN_SCREEN("main screen", 5_000),
     /** 内置浏览器打开一页本地网页(不联网),读出文字、点一下按钮再核对。 */
     BROWSER("browser", 15_000),
-    /** 沙箱里跑 `echo ok` 和一行 Python(只在 arm64 上;运行环境没准备好算部分可用,不现装)。 */
-    SANDBOX("sandbox", 20_000),
     /** 能打开里面 App 的另一份用户(分身、工作资料)有几份;只数,不列 App,私密空间不算。 */
     APP_COPIES("app copies", 10_000),
     ;
@@ -38,7 +36,7 @@ enum class SelfCheck(val key: String, val timeoutMs: Long) {
     /** 先要过的几项。 */
     val needs: List<SelfCheck>
         get() = when (this) {
-            DEVICE, PERMISSIONS, BROWSER, SANDBOX -> emptyList()
+            DEVICE, PERMISSIONS, BROWSER -> emptyList()
             HELPER -> listOf(DEVICE)
             VIRTUAL_DISPLAY -> listOf(HELPER)
             APP_LAUNCH -> listOf(PERMISSIONS, VIRTUAL_DISPLAY)
