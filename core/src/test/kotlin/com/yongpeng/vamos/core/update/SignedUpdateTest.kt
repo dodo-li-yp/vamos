@@ -74,4 +74,30 @@ class SignedUpdateTest {
         val download=ResumableDownload(client { assertEquals("bytes=100-",it.header("Range")); response(it,200,bytes,"\"new\"") })
         assertEquals(ResumableDownload.Result.Ready,download.download(version(),target)); assertArrayEquals(bytes,target.readBytes())
     }
+    @Test fun truncatedResponseResumesInsteadOfDeletingPartialDownload() {
+        val target=temp.root.resolve("truncated.apk"); var requests=0
+        val http=client { request ->
+            requests++
+            if(requests==1) response(request,200,bytes.copyOfRange(0,20000))
+            else {
+                assertEquals("bytes=20000-",request.header("Range"))
+                response(request,206,bytes.copyOfRange(20000,bytes.size),range="bytes 20000-${bytes.lastIndex}/${bytes.size}")
+            }
+        }
+        assertEquals(ResumableDownload.Result.Ready,ResumableDownload(http).download(version(),target))
+        assertEquals(2,requests);assertArrayEquals(bytes,target.readBytes())
+    }
+    @Test fun malformedRangeEndRestartsSafely() {
+        val target=temp.root.resolve("range.apk");var requests=0
+        temp.root.resolve("range.apk.part").writeBytes(bytes.copyOfRange(0,100))
+        temp.root.resolve("range.apk.etag").writeText("\"v1\"")
+        val http=client { request ->
+            requests++
+            if(requests==1) response(request,206,bytes.copyOfRange(100,bytes.size),range="bytes 100-99/${bytes.size}")
+            else {assertNull(request.header("Range"));response(request,200,bytes)}
+        }
+        assertEquals(ResumableDownload.Result.Ready,ResumableDownload(http).download(version(),target))
+        assertEquals(2,requests)
+    }
+
 }

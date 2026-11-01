@@ -3,12 +3,12 @@
 <resources>
     <string name="about_tagline">Your personal assistant on your phone, getting things done for you</string>
     <string name="about_check">Check for updates</string>
-    <string name="about_check_sub">Get new versions from GitHub Releases</string>
+    <string name="about_check_sub">Get new versions from COS</string>
     <string name="about_check_sub_new">New version available</string>
     <string name="about_up_to_date">Up to date</string>
     <string name="about_up_to_date_toast">You’re on the latest version</string>
-    <string name="about_offline">Can’t reach GitHub</string>
-    <string name="about_offline_toast">Can’t reach GitHub right now. Try again later.</string>
+    <string name="about_offline">Can’t reach COS</string>
+    <string name="about_offline_toast">Can’t reach COS right now. Try again later.</string>
     <string name="about_changelog">Release notes</string>
     <string name="about_changelog_sub">What changed in each version</string>
     <string name="about_changelog_empty">No release notes yet. Go online and tap “Check for updates”.</string>
@@ -35,7 +35,7 @@
     <string name="about_repo_sub">%1$s · stars welcome</string>
     <string name="about_guide">Guide &amp; how to contribute</string>
     <string name="about_guide_sub">Getting started; add app knowledge even without coding</string>
-    <string name="about_data_note">What you send Vamos — messages, screen content and screenshots — goes only to the model provider you set up. Vamos has no servers of its own and collects none of your data; checking for updates only contacts GitHub.</string>
+    <string name="about_data_note">What you send Vamos — messages, screen content and screenshots — goes only to the model provider you set up. Vamos has no servers of its own and collects none of your data; checking for updates only contacts COS.</string>
     <string name="about_license_link">Apache-2.0 license</string>
     <string name="about_author">Made by Vamos team · © 2026</string>
     <string name="about_license_title">Apache-2.0 License</string>

@@ -33,6 +33,7 @@ class UpdateChecker(
     private val _state = MutableStateFlow(UpdateState()); val state = _state.asStateFlow()
     private val mutex = Mutex()
     private var lastAttempt: Long? = null
+    private var verifiedAt: Long? = null
     private var ignored: Long = 0
     private var loaded = false
     fun autoCheckInBackground() { scope.launch { delay(3000); autoCheck() } }
@@ -43,7 +44,11 @@ class UpdateChecker(
         if (due) check(false)
         return due
     }
-    fun ignore(versionCode: Long) { ignored = versionCode; scope.launch { mutex.withLock { saveState(); _state.update { it.copy(update = null) } } } }
+    fun ignore(versionCode: Long) { scope.launch { mutex.withLock {
+        val release = _state.value.update ?: return@withLock
+        if (release.versionCode != versionCode || release.forceUpdate || currentCode < release.minSupportedVersionCode) return@withLock
+        ignored = versionCode; saveState(); _state.update { it.copy(update = null) }
+    } } }
     suspend fun check(manual: Boolean) = mutex.withLock {
         loadLocked()
         if (manual) _state.update { it.copy(status = CheckStatus.Checking, error = null) }
@@ -54,13 +59,20 @@ class UpdateChecker(
             val sig = get("$releaseApi.sig", 4096).decodeToString()
             val v = SignedVersion.verify(raw, sig, publicKeys)
             val r = Releases.fromManifest(v)
-            _state.update { it.copy(latest = r, update = r.takeIf { v.newerThan(currentCode) && (manual || ignored != v.versionCode || v.mandatoryFor(currentCode)) }, status = CheckStatus.Done, error = null) }
-            file.parentFile?.mkdirs(); File(file.path + ".raw").writeBytes(raw); File(file.path + ".sig").writeText(sig)
+            file.parentFile?.mkdirs()
+            File(file.path + ".raw").writeBytes(raw)
+            File(file.path + ".sig").writeText(sig)
+            verifiedAt = now()
             saveState()
+            // Expose the update only after its verified cache is ready for download/installation.
+            _state.update { it.copy(latest = r, update = r.takeIf { v.newerThan(currentCode) && (manual || ignored != v.versionCode || v.mandatoryFor(currentCode)) }, status = CheckStatus.Done, error = null) }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
+            runCatching { android.util.Log.w("VamosUpdate", if(e.message?.contains("更新信息校验失败") == true) "更新信息签名无效" else "更新检查失败") }
             // Automatic failures never open a prompt. A manual check gets a short, non-sensitive reason.
-            _state.update { it.copy(status = CheckStatus.Failed, error = if (manual) (if (e is IllegalArgumentException) e.message else "暂时无法检查更新") else null) }
+            _state.update {
+                val cacheValid = verifiedAt?.let { at -> now() - at in 0 until UpdateSchedule.MIN_GAP_MS } == true
+                it.copy(latest = it.latest.takeIf { cacheValid }, update = it.update.takeIf { cacheValid }, status = CheckStatus.Failed, error = if (manual) (if (e is IllegalArgumentException) e.message else "暂时无法检查更新") else null) }
         } finally { if(manual) _state.update { it.copy(manualRounds = it.manualRounds + 1) } }
     }
     private fun get(url: String, max: Int): ByteArray {
@@ -77,13 +89,13 @@ class UpdateChecker(
     }
     private fun loadLocked() {
         if(loaded) return; loaded = true
-        runCatching { val lines = file.readLines(); lastAttempt = lines.getOrNull(0)?.toLongOrNull(); ignored = lines.getOrNull(1)?.toLongOrNull() ?: 0 }
-        if (lastAttempt?.let { now() - it in 0 until UpdateSchedule.MIN_GAP_MS } == true) runCatching {
+        runCatching { val lines = file.readLines(); lastAttempt = lines.getOrNull(0)?.toLongOrNull(); ignored = lines.getOrNull(1)?.toLongOrNull() ?: 0; verifiedAt = lines.getOrNull(2)?.toLongOrNull() }
+        if (verifiedAt?.let { now() - it in 0 until UpdateSchedule.MIN_GAP_MS } == true) runCatching {
             val v = SignedVersion.verify(File(file.path + ".raw").readBytes(), File(file.path + ".sig").readText(), publicKeys)
             val r = Releases.fromManifest(v)
             _state.value = UpdateState(r, r.takeIf { v.newerThan(currentCode) && (ignored != v.versionCode || v.mandatoryFor(currentCode)) })
         }
     }
-    private fun saveState() { file.parentFile?.mkdirs(); val tmp = File(file.path + ".tmp"); tmp.writeText("${lastAttempt ?: 0}\n$ignored\n"); kotlin.check(tmp.renameTo(file)) }
+    private fun saveState() { file.parentFile?.mkdirs(); val tmp = File(file.path + ".tmp"); tmp.writeText("${lastAttempt ?: 0}\n$ignored\n${verifiedAt ?: 0}\n"); kotlin.check(tmp.renameTo(file)) }
     companion object { fun defaultClient() = OkHttpClient.Builder().connectTimeout(10,TimeUnit.SECONDS).readTimeout(15,TimeUnit.SECONDS).callTimeout(30,TimeUnit.SECONDS).followSslRedirects(false).build() }
 }

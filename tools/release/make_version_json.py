@@ -28,6 +28,14 @@ def main():
         parser.error("APK URL must be HTTPS without credentials or fragment")
     if not 0 <= args.min_supported_version_code <= args.version_code or args.version_code <= 0:
         parser.error("invalid version codes")
+    outputs = {args.output.resolve(), args.output.with_name(args.output.name + ".sig").resolve()}
+    inputs = {args.apk.resolve(), args.private_key.resolve(), args.changelog.resolve()}
+    if outputs & inputs:
+        parser.error("output paths must not overwrite the APK, private key or changelog")
+    if not args.apk.is_file() or args.apk.stat().st_size <= 0:
+        parser.error("APK must be a nonempty file")
+    if not args.version_name.strip():
+        parser.error("version name must not be empty")
     key = serialization.load_pem_private_key(args.private_key.read_bytes(), password=None)
     if not isinstance(key, Ed25519PrivateKey):
         parser.error("private key must be Ed25519")

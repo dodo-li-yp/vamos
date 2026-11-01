@@ -16,11 +16,11 @@ class ResumableDownload(private val client: OkHttpClient) {
         SignedVersion.requireHttps(v.apkUrl)
         val part = File(destination.path + ".part"); val etag = File(destination.path + ".etag")
         destination.parentFile?.mkdirs()
-        require(v.size <= Long.MAX_VALUE / 2 && destination.parentFile!!.usableSpace >= v.size * 2) { "存储空间不足，请清理后重试" }
         if (destination.exists()) {
             if (verified(destination, v)) return Result.Ready
             destination.delete()
         }
+        require(v.size <= Long.MAX_VALUE / 2 && destination.parentFile!!.usableSpace >= v.size * 2) { "存储空间不足，请清理后重试" }
         for (attempt in 0..3) {
             try {
                 if (paused()) return Result.Paused
@@ -34,8 +34,9 @@ class ResumableDownload(private val client: OkHttpClient) {
                     if (response.code !in listOf(200, 206)) throw IOException("HTTP ${response.code}")
                     val returnedTag = response.header("ETag")
                     if (response.code == 206) {
-                        val range = response.header("Content-Range").orEmpty()
-                        if (offset == 0L || returnedTag != tag || !range.startsWith("bytes $offset-") || !range.endsWith("/${v.size}")) {
+                        val range = Regex("bytes (\\d+)-(\\d+)/(\\d+)").matchEntire(response.header("Content-Range").orEmpty())
+                        val bounds = range?.groupValues?.drop(1)?.map { it.toLongOrNull() }
+                        if (offset == 0L || returnedTag != tag || bounds != listOf(offset, v.size - 1, v.size)) {
                             part.delete(); etag.delete(); throw IOException("Invalid resume response")
                         }
                     } else offset = 0
@@ -56,11 +57,13 @@ class ResumableDownload(private val client: OkHttpClient) {
                         }
                     }
                 }
+                if (part.length() < v.size) throw IOException("Incomplete APK response")
                 if (!verified(part, v)) throw SecurityException("安装包校验失败")
                 check(part.renameTo(destination)); etag.delete(); return Result.Ready
             } catch (_: Paused) { return Result.Paused
             } catch (e: SecurityException) { part.delete(); etag.delete(); destination.delete(); throw e
             } catch (e: IOException) {
+                if (paused()) return Result.Paused
                 if (attempt == 3) throw e
                 Thread.sleep(500L shl attempt)
             }
