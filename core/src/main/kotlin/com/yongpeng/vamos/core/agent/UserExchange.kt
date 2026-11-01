@@ -207,12 +207,17 @@ internal class UserExchange(
         setState(TaskState.WaitingConfirmation(r))
         emit(event(null))
         // 没人回答(不在手机旁)就按不同意,绝不自动同意
-        val timeout = if (provenance.attendance == Attendance.Reachable) confirmTimeoutMs ?: 15 * 60_000L else confirmTimeoutMs
+        val timeout = (confirmTimeoutMs ?: 60_000L).coerceAtMost(60_000L)
         val answer = try {
             if (announce(ask) == DeliveryState.Failed) null
             else if (timeout == null) pending.await() else withTimeoutOrNull(timeout) { pending.await() }
         } finally { confirmationReply = null; resolve(ask) }
-        val choice = answer ?: ConfirmChoice.Deny
+        if (answer == null) {
+            g.decide(ConfirmChoice.Deny, step)
+            emit(event("timed_out"))
+            throw kotlinx.coroutines.CancellationException("Confirmation timed out; action rejected and task stopped")
+        }
+        val choice = answer
         g.decide(choice, step)
         setState(running)
         emit(event(when {

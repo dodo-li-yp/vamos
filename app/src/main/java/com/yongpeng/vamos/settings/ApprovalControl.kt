@@ -6,21 +6,22 @@ import com.yongpeng.vamos.core.gate.ConfirmationGate
 
 /**
  * 一个任务自己的审批设置:自主与否是开工时取全局的,之后跟着开发者选项里的「自主模式」变([set])。
- * 询问时只有付款先问;自主时连付款也不问。
+ * 询问时敏感操作按类别确认;自主模式也必须按确认规则询问。
  */
-class RunApproval(startAutonomous: Boolean) : ApprovalSettings {
+class RunApproval(startAutonomous: Boolean, private val rules: () -> com.yongpeng.vamos.core.action.ConfirmationRules = { com.yongpeng.vamos.core.action.ConfirmationRules() }) : ApprovalSettings {
     /** 开工时就是自主:这个任务没有确认关卡,也不给 request_confirmation;中途关掉自主留给下一个任务。 */
     val startedAutonomous: Boolean = startAutonomous
     @Volatile private var auto = startAutonomous
 
     override fun autonomous(): Boolean = auto
+    override fun confirmationRules() = rules()
 
     fun set(autonomous: Boolean) {
         auto = autonomous
     }
 
     /** 这个任务(和它的子任务)用的付款确认关卡:开工时是询问才有,每次一份新的。 */
-    fun gate(): ConfirmationGate? = if (startedAutonomous) null else ConfirmationGate()
+    fun gate(): ConfirmationGate = ConfirmationGate()
 }
 
 /**
@@ -35,7 +36,7 @@ class ApprovalControl(private val store: ApprovalStore) {
      * 付款这一步在这类任务里永远不做(审批判定对非手机发起的一律拒绝),远端没有办法让它放行。
      */
     @Synchronized fun start(remote: Boolean = false): RunApproval =
-        if (remote) RunApproval(false) else RunApproval(store.autonomous.value).also { runs += it }
+        if (remote) RunApproval(false) else RunApproval(store.autonomous.value) { store.rules.value }.also { runs += it }
 
     @Synchronized fun end(run: RunApproval) {
         runs -= run

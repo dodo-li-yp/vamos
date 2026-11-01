@@ -59,14 +59,6 @@ class ConfirmDecision(
     /** 判定放在锁屏等待之后:按此刻重新读的一屏判。 */
     suspend fun judge(tool: String, args: JsonObject, origin: Origin): Decision {
         outwardSite = null
-        if (autonomous || approvals.autonomous()) {
-            val target = tools.gateTarget(tool)
-            if (IrreversibleDetector.needsCheck(target, args)) {
-                val aim = tools.interfaces.actionTarget(tools.declared(tool), args)
-                outwardSite = outward(IrreversibleDetector.classify(target, aim.args, aim.aimed), aim.aimed)
-            }
-            return Decision.Clear
-        }
         val policy = origin.policy
         val target = tools.gateTarget(tool)
         // 这一步落在哪里由界面一侧给出;点看图找到的 @vN 时参数已换成它登记的坐标和找的文字
@@ -76,7 +68,6 @@ class ConfirmDecision(
         tools.approvalRisk(tool)?.let { declared ->
             return approve(tool, checked, origin, null, declared, null, null, null) ?: Decision.Clear
         }
-        if (confirmations == null && !policy.judgeWithoutGate) return Decision.Clear
         val verb = tools.verb(tool)
         val typing = if (verb == Verb.TypeText) (args["text"] as? JsonPrimitive)?.contentOrNull else null
         // 没有可判的不可逆字样的动作(一般改动、界面间移动)不花钱,不用问
@@ -86,7 +77,10 @@ class ConfirmDecision(
         if (ownApp(tool, args, fresh)) return Decision.OwnApp
         // 复看确认过的所见文字(@vN 才有):读屏里没有文字时(自绘界面)付款的同意按它核对象
         val seen = aim.seen
-        val hit = IrreversibleDetector.classify(target, checked, snap, fresh)
+        val hit = IrreversibleDetector.classify(target, checked, snap, fresh) ?: (fresh ?: snap)?.let { screen ->
+            if (ClassifiedRisk.changesState(verb) && screen.packageName?.let { it == "com.android.settings" || it.endsWith(".settings") } == true)
+                Irreversible(IrrevAction.other, ClassifiedRisk.target(verb, checked, screen)?.name.orEmpty()) else null
+        }
         val risk = risks.assess(verb, hit) { fresh ?: snap }
         outwardSite = outward(hit, fresh ?: snap)
         approve(tool, checked, origin, hit, risk, fresh ?: snap, typing, seen)?.let { return it }
@@ -119,7 +113,7 @@ class ConfirmDecision(
         fun audit(decision: String) {
             if (decision != "allowed" || risk.level.outward || risk.payment) recorder?.approval(origin, tool, asked, risk, decision)
         }
-        when (ApprovalPolicy.decide(risk, provenance)) {
+        when (ApprovalPolicy.decide(risk, provenance, approvals.confirmationRules())) {
             Approval.Allow -> return null.also { audit("allowed") }
             Approval.Deny -> return Decision.Denied.also { audit("denied") }
             Approval.Ask -> Unit

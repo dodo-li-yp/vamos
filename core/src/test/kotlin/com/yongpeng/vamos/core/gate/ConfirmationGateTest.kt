@@ -132,9 +132,9 @@ class ConfirmationGateTest {
     }
 
     // I1 / M2
-    @Test fun paymentNeverApprovedAndDeclinedKindNotAskedAgain() {
+    @Test fun paymentCannotReuseAnotherApprovalAndDeclinedKindNotAskedAgain() {
         val g = ConfirmationGate()
-        assertEquals(DeclareResult.Unsupported, g.declare(req(IrrevAction.pay, "com.a"), "com.a"))
+        assertEquals(DeclareResult.Pending, g.declare(req(IrrevAction.pay, "com.a"), "com.a"))
         assertEquals(DeclareResult.Pending, g.declare(req(IrrevAction.send, "com.a"), "com.a"))
         g.decide(false)
         assertEquals(DeclareResult.Declined, g.declare(req(IrrevAction.send, "com.a", target = "李四"), "com.a"))

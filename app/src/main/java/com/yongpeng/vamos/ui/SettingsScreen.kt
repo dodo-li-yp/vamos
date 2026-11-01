@@ -65,7 +65,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** 设置里能进入的子页面;[Home] 是设置首页。 */
-private enum class SettingsPage { Home, Usage, PhoneOps, DuringWork, Capsule, Language, Notifications, WebSites, Sandbox, Routes, Recovery, SelfCheck, ComputerAccess, Developer, RunStats }
+private enum class SettingsPage { Home, Confirmation, Usage, PhoneOps, DuringWork, Capsule, Language, Notifications, WebSites, Sandbox, Routes, Recovery, SelfCheck, ComputerAccess, Developer, RunStats }
 
 /**
  * 设置页:总状态卡 + 基本 / 隐私与数据 / 高级 / 关于四组。各子页面在这里切换(返回键先回首页),
@@ -159,6 +159,7 @@ fun SettingsScreen(
             usageTokens = usageWeek, onOpenUsage = { page = SettingsPage.Usage },
             onOpenPhoneOps = { page = SettingsPage.PhoneOps },
             onOpenDuringWork = { page = SettingsPage.DuringWork },
+            onOpenConfirmation = { page = SettingsPage.Confirmation },
             capsuleMode = capsuleMode, onOpenCapsule = { page = SettingsPage.Capsule },
             onOpenNotifications = { notificationsFrom = SettingsPage.Home; page = SettingsPage.Notifications },
             language = language, onOpenLanguage = { page = SettingsPage.Language },
@@ -171,6 +172,7 @@ fun SettingsScreen(
             showDeveloper = showDeveloper, onOpenDeveloper = { page = SettingsPage.Developer },
             versionName = BuildConfig.VERSION_NAME, updateVersion = updateVersion, onOpenAbout = onOpenAbout,
         )
+        SettingsPage.Confirmation -> ConfirmationRulesScreen((context.applicationContext as com.yongpeng.vamos.VamosApp).approvals, onAutonomous, toHome)
         SettingsPage.Usage -> UsageScreen(usage, store.providers, onBack = toHome)
         SettingsPage.PhoneOps -> PhoneOpsScreen(
             status, androidRelease, onProblem,
@@ -243,6 +245,7 @@ fun SettingsContent(
     onOpenUsage: () -> Unit = {},
     onOpenPhoneOps: () -> Unit = {},
     onOpenDuringWork: () -> Unit = {},
+    onOpenConfirmation: () -> Unit = {},
     /** 悬浮胶囊此刻的选择,写在「悬浮胶囊」一行的右边。 */
     capsuleMode: CapsuleMode = CapsuleMode.DEFAULT,
     onOpenCapsule: () -> Unit = {},
@@ -288,6 +291,7 @@ fun SettingsContent(
                 PhoneOpsPill(status)
                 RowChevron()
             }
+            VmListItem(VamosIcons.Shield, "执行模式与确认规则", "支付锁定 · 五类确认", onClick = onOpenConfirmation) { RowChevron() }
             VmListItem(VamosIcons.Moon, stringResource(R.string.settings_during_work), stringResource(R.string.settings_during_work_sub), onClick = onOpenDuringWork) { RowChevron() }
             VmListItem(VamosIcons.Message, CapsuleSettingsCopy.TITLE, CapsuleSettingsCopy.SUBTITLE, onClick = onOpenCapsule) {
                 RowValue(CapsuleSettingsCopy.label(capsuleMode))

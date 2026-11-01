@@ -39,7 +39,15 @@ object ClassifiedRisk : RiskJudge {
         if (hit == null) return Risk(level)
         val payment = hit.action == IrrevAction.pay || hit.action == IrrevAction.order ||
             hit.action != IrrevAction.send && screen()?.elements?.any { !it.editable && AMOUNT.containsMatchIn(it.name) } == true
-        return Risk(level, payment)
+        val category = when {
+            payment -> SensitiveCategory.Payment
+            hit.action == IrrevAction.delete -> SensitiveCategory.Delete
+            hit.action == IrrevAction.send && Regex("发布|发表|post|publish", RegexOption.IGNORE_CASE).containsMatchIn(hit.matched) -> SensitiveCategory.Publish
+            hit.action == IrrevAction.send -> SensitiveCategory.Message
+            hit.action == IrrevAction.submit -> SensitiveCategory.Publish
+            else -> SensitiveCategory.Settings
+        }
+        return Risk(level, payment, category)
     }
 
     /** 动作落在哪个元素上:带编号的按编号找,打字落在有焦点的输入框,坐标点击取包含该点的最小元素。 */

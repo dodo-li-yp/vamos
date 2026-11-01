@@ -266,7 +266,7 @@ class TaskRun(
         val t = takeover
         when {
             t != null -> scope.launch { t.cancel() }
-            running != null -> inbox.cancel()
+            running != null -> { running.cancel(); inbox.cancel() }
             else -> {
                 // 刚从队里放出来、协程还没挂上时点的取消:挂上时立即取消
                 cancelRequested = true
@@ -717,7 +717,7 @@ class TaskRun(
                 maxSteps = env.evalHooks.maxSteps ?: AgentLoop.UNLIMITED_STEPS,
                 reviewFinalAnswer = false,
                 inputTimeoutMs = TaskService.INPUT_TIMEOUT_MS,
-                // 询问 / 自主:询问时只有花钱的一步先问(有确认关卡和 request_confirmation);自主时连付款也不问。
+                // 询问 / 自主:询问时只有花钱的一步先问(有确认关卡和 request_confirmation);自主模式也必须按确认规则询问。
                 // 开工时询问、中途换成自主的,下一步起不再问;开工时自主的,换成询问留给下一个任务
                 confirmations = runApproval.gate(),
                 approvals = runApproval,

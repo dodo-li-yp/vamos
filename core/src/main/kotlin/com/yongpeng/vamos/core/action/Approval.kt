@@ -16,7 +16,31 @@ enum class ActionRisk { Read, Change, External, Irreversible, Unknown;
 }
 
 /** [payment] 为 true 时这一步要花钱(付款、下单,或屏上有应付金额时的对外动作):询问时只有它先问用户。 */
-data class Risk(val level: ActionRisk, val payment: Boolean = false)
+enum class SensitiveCategory { Payment, Message, Delete, Settings, Publish }
+
+data class Risk(val level: ActionRisk, val payment: Boolean = false, val category: SensitiveCategory? = null)
+
+data class ConfirmationRules(
+    val message: Boolean = true,
+    val delete: Boolean = true,
+    val settings: Boolean = true,
+    val publish: Boolean = true,
+) {
+    fun requires(category: SensitiveCategory): Boolean = when(category) {
+        SensitiveCategory.Payment -> true
+        SensitiveCategory.Message -> message
+        SensitiveCategory.Delete -> delete
+        SensitiveCategory.Settings -> settings
+        SensitiveCategory.Publish -> publish
+    }
+    fun with(category: SensitiveCategory, enabled: Boolean): ConfirmationRules = when(category) {
+        SensitiveCategory.Payment -> this
+        SensitiveCategory.Message -> copy(message = enabled)
+        SensitiveCategory.Delete -> copy(delete = enabled)
+        SensitiveCategory.Settings -> copy(settings = enabled)
+        SensitiveCategory.Publish -> copy(publish = enabled)
+    }
+}
 
 /** 用户在确认卡片上的选择:同意这一次,或不同意。 */
 enum class ConfirmChoice { Once, Deny;
@@ -26,11 +50,13 @@ enum class ConfirmChoice { Once, Deny;
 
 /** 询问 / 自主:此刻是不是自主模式(中途换成自主时,正在跑的任务从下一步起照它)。由设置提供,测试里换成固定值。 */
 fun interface ApprovalSettings {
-    /** 自主模式:连付款也不先问。 */
+    /** 自主模式:支付始终确认，其余遵循类别规则。 */
     fun autonomous(): Boolean
 
+    fun confirmationRules(): ConfirmationRules = ConfirmationRules()
+
     companion object {
-        /** 询问(默认):只有付款先问。 */
+        /** 询问(默认):敏感操作按类别确认。 */
         val ASK = ApprovalSettings { false }
     }
 }
@@ -46,9 +72,19 @@ sealed interface Approval {
 
 /** 审批判定:纯函数。只有付款要问;问不到人(无人值守、子任务)或不在手机上(渠道、定时、MCP 发起的)时付款不做。 */
 object ApprovalPolicy {
-    fun decide(risk: Risk, run: RunProvenance = RunProvenance()): Approval = when {
-        !risk.payment -> Approval.Allow
+    fun decide(risk: Risk, run: RunProvenance = RunProvenance(), rules: ConfirmationRules = ConfirmationRules()): Approval = when {
+        !required(risk, rules) -> Approval.Allow
         run.attendance == Attendance.Unattended || run.origin != RunOrigin.Ui -> Approval.Deny
         else -> Approval.Ask
+    }
+    private fun required(risk: Risk, rules: ConfirmationRules): Boolean {
+        if (risk.payment) return true
+        val category = risk.category ?: when(risk.level) {
+            ActionRisk.External -> SensitiveCategory.Publish
+            ActionRisk.Irreversible -> SensitiveCategory.Delete
+            ActionRisk.Unknown -> SensitiveCategory.Settings
+            else -> return false
+        }
+        return rules.requires(category)
     }
 }

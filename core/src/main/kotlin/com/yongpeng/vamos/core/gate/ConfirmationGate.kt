@@ -47,7 +47,6 @@ class ConfirmationGate {
     private val declined = mutableSetOf<Pair<IrrevAction, String>>()
 
     @Synchronized fun declare(req: ConfirmationRequest, foregroundApp: String?): DeclareResult {
-        if (req.action == IrrevAction.pay) return DeclareResult.Unsupported
         if (req.action to req.app in declined) return DeclareResult.Declined
         if (foregroundApp == null || foregroundApp != req.app) return DeclareResult.Mismatch
         pending = req
@@ -80,13 +79,12 @@ class ConfirmationGate {
         grant = null
         val r = g.request
         val reason = when {
-            hit.action == IrrevAction.pay -> "payment is never approved here"
             step - g.step > MAX_STEPS -> "the approval expired ($MAX_STEPS steps)"
             hit.action != r.action -> "approved ${r.action.name} but this step is ${hit.action.name}"
             screen?.packageName == null || screen.packageName != r.app -> "approved in ${r.app} but the screen shows ${screen?.packageName ?: "unknown"}"
             !targetShown(r, screen) && !(textless(screen) && seenShows(r, seen)) -> "the target \"${r.target}\" is not shown " + (if (r.action == IrrevAction.send) "in the title area" else "on the screen")
             r.action == IrrevAction.send && !contentMatches(r.content, screen, typing) && !(textless(screen) && seenShows(r, seen)) -> "the text to send is not exactly what was approved"
-            !amountShown(r.amount, screen, hit.matched) -> "the approved amount ${r.amount ?: "(none)"} is not on the screen"
+            (r.action == IrrevAction.pay || r.action == IrrevAction.order) && !amountShown(r.amount, screen, hit.matched) -> "the approved amount ${r.amount ?: "(none)"} is not on the screen"
             else -> return Permit.Allowed
         }
         return Permit.Mismatch(reason)

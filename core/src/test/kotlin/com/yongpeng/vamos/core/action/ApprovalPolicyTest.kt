@@ -8,9 +8,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ApprovalPolicyTest {
-    @Test fun onlyPaymentAsks() {
+    @Test fun sensitiveRiskAsksByDefault() {
         for (level in ActionRisk.entries) {
-            assertEquals("$level", Approval.Allow, ApprovalPolicy.decide(Risk(level)))
+            assertEquals("$level", if (level.outward) Approval.Ask else Approval.Allow, ApprovalPolicy.decide(Risk(level)))
             assertEquals("$level payment", Approval.Ask, ApprovalPolicy.decide(Risk(level, payment = true)))
         }
     }
@@ -19,7 +19,7 @@ class ApprovalPolicyTest {
         for (origin in RunOrigin.entries) for (attendance in Attendance.entries) for (level in ActionRisk.entries) {
             val run = RunProvenance(origin, attendance)
             // 不花钱的:谁发起、人在不在都直接做
-            assertEquals("$origin $attendance $level", Approval.Allow, ApprovalPolicy.decide(Risk(level), run))
+            assertEquals("$origin $attendance $level", if (!level.outward) Approval.Allow else if (origin == RunOrigin.Ui && attendance != Attendance.Unattended) Approval.Ask else Approval.Deny, ApprovalPolicy.decide(Risk(level), run))
             // 花钱的:只有手机上发起、人在场时问;问不到的(渠道、定时、MCP、子任务、无人值守)不做
             val expected = if (origin == RunOrigin.Ui && attendance != Attendance.Unattended) Approval.Ask else Approval.Deny
             assertEquals("$origin $attendance $level payment", expected, ApprovalPolicy.decide(Risk(level, payment = true), run))

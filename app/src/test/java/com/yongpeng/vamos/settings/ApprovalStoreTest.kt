@@ -27,6 +27,19 @@ class ApprovalStoreTest {
         assertFalse("mode" in f.readText() || "grants" in f.readText())
     }
 
+    @Test fun categoryRulesPersistAndPaymentCannotBeDisabled() {
+        val file = tmp.root.resolve("rules.json")
+        val store = ApprovalStore(file)
+        val control = ApprovalControl(store)
+        val run = control.start()
+        for (category in com.yongpeng.vamos.core.action.SensitiveCategory.entries) {
+            store.setRule(category, false)
+            val expected = category == com.yongpeng.vamos.core.action.SensitiveCategory.Payment
+            org.junit.Assert.assertEquals(expected, run.confirmationRules().requires(category))
+            org.junit.Assert.assertEquals(expected, ApprovalStore(file).rules.value.requires(category))
+        }
+    }
+
     private fun control() = ApprovalControl(ApprovalStore(tmp.root.resolve("a.json")))
 
     @Test fun autonomousIsOffByDefaultAndSurvivesARestart() {
@@ -40,7 +53,7 @@ class ApprovalStoreTest {
         assertFalse(ApprovalStore(f).autonomous.value)
     }
 
-    @Test fun runsInAskHaveAGateAndRunsInAutonomousDoNot() {
+    @Test fun runsAlwaysHaveAGateIncludingAutonomous() {
         val c = control()
         val ask = c.start()
         assertFalse(ask.startedAutonomous)
@@ -50,7 +63,7 @@ class ApprovalStoreTest {
         val auto = c.start()
         assertTrue(auto.startedAutonomous)
         assertTrue(auto.autonomous())
-        assertNull(auto.gate())
+        assertNotNull(auto.gate())
     }
 
     @Test fun remoteRunsAlwaysAskAndIgnoreTheSwitch() {

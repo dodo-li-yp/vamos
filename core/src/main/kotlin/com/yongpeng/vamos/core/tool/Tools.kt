@@ -71,7 +71,7 @@ val FAILURE_SUBTYPES = listOf("blocked", "login_incomplete", "captcha_incomplete
 /** request_confirmation 的 target/content 截短到这么长(模型写的,界面要原样显示)。 */
 const val CONFIRM_FIELD_MAX = 200
 /** request_confirmation 接受的动作;付款走 hand_to_user。 */
-val CONFIRM_ACTIONS = IrrevAction.entries.filter { it != IrrevAction.pay }.map { it.name }
+val CONFIRM_ACTIONS = IrrevAction.entries.map { it.name }
 val BARRIER_KINDS = listOf("popup", "login", "captcha", "access_blocked", "payment")
 val TAKEOVER_REASONS = listOf("captcha", "login", "access_blocked", "payment", "decision", "other")
 /** 技能文档里常见的接管原因说法与改名前的原因,照这里换成上面的原因,导入的文档、存下的技能不用改。 */

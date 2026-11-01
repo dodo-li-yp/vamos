@@ -870,7 +870,7 @@ private fun StatusCard(
                 if (options.isEmpty()) CardButton(stringResource(R.string.action_cancel_task), onClick = vm::cancel)
             }
         }
-        // 只有花钱的操作要你同意,每次只同意这一次
+        // 敏感操作需要你同意,每次只同意这一次
         is ExchangeStatus.NeedsConfirmation -> androidx.compose.runtime.key(status.key) {
             com.yongpeng.vamos.ui.components.VmConfirmSheet(status.title, status.body,
                 onDeny = { vm.decline(status.key) }, onAllow = { vm.approve(status.key) })
