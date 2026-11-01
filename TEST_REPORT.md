@@ -1,25 +1,106 @@
-## M2 界面与停止控制续做（待最终验证）
+# Vamos V1 开发与测试报告
 
-- 本段保存：看门狗 `pauseControl` 取消重试并保留配对身份；共用连接拒绝关闭状态下重新获取；启动和开机恢复尊重持久化关闭设置。设置新增「一键关闭手机控制」。新增关闭后不自动重连、显式重试可恢复的核心测试。
-- 配对：六位 PIN 装饰输入、当前步骤高亮、完成勾动效、右上跳过及跳过说明面板。
-- 执行：卡片内 132×240dp 真实后台帧预览、任务时间线语义色与停止中反馈；预览可展开，避免与收起浮窗重复。
-- 确认：104×180dp 真实截图（缺失明确提示）、共享绝对截止时间、超时停止及重新发起确认入口。重新发起不复用旧授权。
-- 字体/通用状态：Noto Serif SC 500/600 字重 UI 子集（约 1.3MB）、OFL 全文；玻璃背景 24dp 模糊与 Android 11 回退；空状态、骨架、更新百分比/进度条与暂停样式。法律文件明确为待提供占位。
-- 恢复普通文件关口与导出的设备测试；增加日夜组件截图夹具（仅视觉状态，不代表实际执行成功）。
-- 验证状态：本段尚未通过最终检查。最近构建在 SettingsScreen 缺少 padding 导入处失败，现已补齐；需要一次增量编译及必要回归。上一段 M4 编译与 44 项回归通过；随后 Lint 曾报 3 个 SuspiciousIndentation 错误，分析期间源文件正在修改，需稳定源码后重新验证，不能沿用 M3 的通过结果。
-- 软件模拟器曾启动框架但安装时 system_server 重启，未获得有效应用截图、未完成安装验收。按最新要求停止反复运行模拟器，保留逐屏截图与真机验收为未完成。
-- COS 地址与正式公钥继续保留占位；没有提交任何私钥、API Key、token 或 COS 写入凭据。
+日期：2026-11-01。分支 `v1-dev`，draft PR [#1](https://github.com/dodo-li-yp/vamos/pull/1)。本报告替代旧的阶段性未完成列表；历史结果可在 Git 提交中查看。仅使用 debug 签名，尚未达到正式发布验收。
 
-## M4 续做：移除 Linux 与保留文件能力（2026-11-01）
+## 完成情况
 
-- 已删除 PRoot/talloc native 库、Alpine/rootfs 资源、运行器 C 代码、沙箱服务/桥接/准备流程、shell/脚本执行工具与提示词、构建脚本及运行时专用测试。
-- 附件、网页上传/下载及导出保留，改用 `WorkspaceFiles` / `WorkspacePort` Kotlin 普通工作区；共享树锁、文件句柄边界、符号链接/硬链接防护仍保留。原 App/网站知识与文本技能索引保留，PDF 脚本提取随 Linux 删除，二进制内容不能冒充已读取。
-- Commons Compress 与 XZ 依赖、GPL 许可随已移除组件清理（根 LICENSE/NOTICE 不变）；许可页增加现有 OCR 的实际依赖说明。没有加入崩溃/统计 SDK。
-- CLI/MCP 代码保留，`ENABLE_COMPUTER_ACCESS=false` 隐藏设置入口；原设置持久化默认关闭。README 改为 Vamos 构建、签名、更新和范围说明。
-- `assembleDebug` 通过；核心：9 项文件工具 + 12 项文件关口 + 8 项可信更新；应用：6 项实际工作区边界契约 + 3 项附件命名 + 5 项 APK 校验 + 1 项许可列表，合计 **44 项通过、0 失败**（修复残留的已删除命令测试后重跑）。本段 Lint 正在运行，最后汇总结果。
-- M3 最终 `assembleDebug :app:lintDebug` 已通过：**0 错误、96 警告、6 信息**（M2 基线 92 警告；无新增错误）。
-- M4 APK 暂测 87,394,088 字节，相比移除前 103,249,501 字节下降约 **15.36%**。上游正式测试包未提供，这是同构建环境移除前后比较，不声称为上游发布包实测差异。
-- APK 实测无 proot/talloc/rootfs/vamosrun/脚本资源。剩余 native：各 arm64-v8a/armeabi-v7a/x86/x86_64 的 `libandroidx.graphics.path.so` 与 `libmlkit_google_ocr_pipeline.so`，分别为 AndroidX 图形及现有 Google ML Kit OCR；完整 assets 清单如下。
+| 里程碑 | 源码完成项 | 验收边界 |
+|---|---|---|
+| M1 | 品牌、包名/namespace/AIDL/目录迁移为 Vamos / com.yongpeng.vamos；V 图标；保留 LICENSE/NOTICE，修改声明与许可页 | 编译/资源扫描通过；真实并存安装与启动验收未完成 |
+| M2 确认与停止 | 五类确认逐项持久化，支付永久开启；自主/远程模式仍受规则约束；目标/内容/金额绑定、单次授权；通知/胶囊/音量组合停止；关闭控制时暂停看门狗并阻止共用连接重新获取，保留配对身份 | 安全回归结果见下；≤1 秒停止和释放虚拟屏需要真机测量 |
+| M2 界面 | 日夜 token、Noto Serif SC 标题子集、玻璃/24dp 模糊与 Android 11 回退；引导/法律占位/权限、模型配置、配对清单/PIN/跳过说明、任务卡/时间线/真实预览、确认截图/60 秒倒计时/超时重启、更新状态、设置、空状态和骨架 | 未获得有效应用截图；不能宣称与 57 屏逐屏像素验收通过 |
+| M3 | 删除 GitHub Releases 更新；COS 清单原始字节 Ed25519 验签、双公钥、缓存与节流、HTTPS/ETag/Range 续传、SHA/大小校验、强更、安装权限与 FileProvider 安装、离线签名脚本 | 正式地址与公钥未提供；线上 COS 和系统安装六场景仍需设备验收 |
+| M4 | 删除 Linux/PRoot/talloc/Alpine、native 运行器、脚本执行工具/桥接/准备服务；保留安全 Kotlin 工作区、附件/上传下载/导出；清理 Compress/XZ、许可及 README；CLI/MCP UI 默认关闭 | APK 清单及针对性回归见下；未引入独立崩溃/统计 SDK |
+
+主要提交：`532a4b3` 五类确认；`393f605` COS 更新；`db53ed2` Linux 移除；`8737ff4` 看门狗暂停、PIN、预览等界面改动。后续修复包含后台确认超时回显、完整 60 秒计时、配对等待 10 秒提供人工确认。
+
+## M2 设计覆盖与限制
+
+| 设计组 | 当前实现 |
+|---|---|
+| 01 引导 | 欢迎、法律阅读/勾选、六类权限说明；三份法律文件明确为待提供占位，未编造正式条款 |
+| 02 模型 | DeepSeek deepseek-flash 默认推荐、原生看图 caps、看图默认用主模型；通义 qwen3.7-plus 备选；Key 后四位/显示切换；其余厂商与 ChatGPT/xAI/OpenRouter 登录保留 |
+| 03 配对 | 六步真实状态清单、当前/完成/失败/连接态、六位 PIN；10 秒后人工确认；常驻跳过及二次说明；国产 ROM 图文延期 |
+| 04 对话/执行 | VmDrawer、任务卡、语义色时间线、132×240dp 实际帧预览，可展开；停止中反馈；通知、胶囊和音量停止入口 |
+| 05 确认 | 104×180dp 真实帧（无帧明确提示）、五类规则、不可从遮罩/返回关闭、60 秒环、最后 10 秒加粗、超时拒绝并停止；重新确认重新发起任务，不复用旧授权 |
+| 06 更新 | 普通/强制提示、移动流量确认、百分比/8dp 进度条/速度、暂停续传、校验/错误、未知来源授权返回安装、安装中反馈 |
+| 07 其他 | 浏览器、定时、记忆/技能、自检、设置/确认规则/关于/许可、胶囊使用统一主题；一键关闭控制保留配对信息 |
+| 08 通用 | 空状态、骨架、未配置/未配对提示及已有错误反馈；仍需逐屏检查长文本、字号、触控区和各状态布局 |
+
+新增截图夹具 `VmDesignScreenshotsTest` 仅用于生产 Compose 组件的日夜渲染，不能代替实际任务、支付或下载成功的证明。当前没有输出有效应用截图。逐屏位置、动画、日夜对照和无障碍触控验收仍未完成，因此 M2 不标记为最终验收完成。
+
+## 环境与测试
+
+- Linux 云环境；JDK 17、Gradle 8.11.1、Android SDK 36 / build-tools 34.0.0；minSdk 30 / targetSdk 35。
+- 无真机。曾尝试 Android 11 x86_64 软件模拟器；无 KVM，框架启动缓慢，安装时出现 system_server 重启/DeadSystemException 和 Broken pipe。未将其误报为 Vamos 崩溃或安装成功。按最新要求已停止模拟器。
+- 为节省资源，使用单 worker、进程内 Kotlin 编译及缓存；稳定源码后统一检查，不反复运行模拟器。
+- 常规构建命令仍为 `./gradlew assembleDebug`；云环境额外设置 JAVA_HOME、ANDROID_HOME、GRADLE_USER_HOME 和系统 CA trustStore，TLS 校验保持开启。
+
+本次统一命令包含 `assembleDebug :app:lintDebug :core:test :app:testDebugUnitTest :app:assembleDebugAndroidTest`，附下列针对性测试过滤器及 `--offline`，**BUILD SUCCESSFUL**（12m13s；未重跑模拟器）。
+
+- debug APK 编译：通过。
+- Lint：**0 错误、127 警告、6 信息**。之前三个缩进错误未再出现；未使用全局 baseline 或关闭错误检查。警告尚未全部清理，主要类型：UnusedResources 48, ApplySharedPref 17, StringFormatCount 10, ModifierParameter 7。
+- 核心：**83 项通过，0 失败/错误/跳过**。
+- 应用：**49 项通过，0 失败/错误/跳过**，合计 **132 项**。
+- 设备测试 APK：编译通过，**未执行设备测试**，截图夹具未运行。
+- `git diff --check`、APK `apksigner verify`、`aapt dump badging`：通过。
+
+核心测试：
+
+| 套件 | 通过项数 |
+|---|---:|
+| ToolDispatcherSandboxTest | 9 |
+| BuiltinShellEngineTest | 34 |
+| VamosConfirmationTest | 3 |
+| ConfirmationGateTest | 15 |
+| SignedUpdateTest | 8 |
+| ApprovalPolicyTest | 2 |
+| WorkspaceFileGateTest | 12 |
+
+应用测试：
+
+| 套件 | 通过项数 |
+|---|---:|
+| VamosMilestoneTest | 2 |
+| DiagnosticsTest | 14 |
+| ReleasesTest | 1 |
+| AppVersionTest | 4 |
+| ApprovalStoreTest | 7 |
+| AttachmentsNamingTest | 3 |
+| LicensesTest | 1 |
+| VamosLinksTest | 4 |
+| WorkspaceContractTest | 6 |
+| ApkIntegrityTest | 5 |
+| UpdateCheckerTest | 2 |
+
+
+早期 M3 签名脚本使用临时目录生成测试密钥完成冒烟验证，临时私钥已删除；没有将测试私钥作为 App 默认配置。没有声称完整上游测试集、真实模型 API/OAuth 或真机任务测试全部通过。
+
+## 更新六场景
+
+| 场景 | 已有证据 | 仍需验收 |
+|---|---|---|
+| 正常更新 | 签名清单、versionCode 判新、下载 hash/大小单测 | COS 公网到安装器全链路 |
+| 签名错误 | 篡改/错误签名/缺公钥拒绝，验签先于 JSON 解析 | 设备提示与联网场景 |
+| SHA 错误 | 校验失败删除文件，不进入安装态；同版本两次失败停止重试 | 设备界面与重试操作 |
+| 断点续传 | 强 ETag + Range/If-Range、200 重启、错误 206 拒绝、暂停续传单测 | 网络切换/后台进程终止 |
+| 强制更新 | versionCode/force/minSupported 判定单测；不可返回/遮罩关闭，执行中延后弹窗 | 设备交互 |
+| 无安装权限 | 授权检查、设置页与返回后安装入口已接通 | 系统授权页、安装成功/取消、包名/证书冲突的设备流程 |
+
+## APK 与合规
+
+- 当前 APK：`app/build/outputs/apk/debug/app-debug.apk`；交付副本 `work/vamos-1.0.0-debug.apk`（忽略文件，不提交二进制）。
+- 大小：**91,436,095 字节**；SHA-256：`9388b54f76945072791fd14cee5ca7c0630d3fdb1e11ba3b7c8d4cc48763b517`。
+- 比移除 Linux 前同环境 debug APK 的 103,249,501 字节下降 **11.44%**。这是移除前后比较；上游正式测试包未提供，不声称已实测上游发布包体积。
+- 实测无 proot/talloc/rootfs/vamosrun/可执行脚本资源。剩余 native 为 AndroidX 图形与现有本地 ML Kit OCR，各组件许可已列明。
+
+- applicationId / FileProvider：`com.yongpeng.vamos` / `com.yongpeng.vamos.fileprovider`；versionName `1.0.0`，versionCode `33`。
+- 根 LICENSE 与基线 e17d308 SHA-256 一致：`cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`；NOTICE 原文保留并追加 `Modified by 永鹏 / Vamos, 2026`。
+- `rg -i mika app/src/main/res`：0 命中。上游署名和 Apache 全文保留在开源许可材料；修改文件清单见 MODIFIED_FILES.md。
+- EdDSA-Java：CC0-1.0；Noto Serif SC：SIL OFL 1.1，保留全文，UI 字形子集总计约 1.3MB；其他字形由 Android 回退字体补足。现有 Google ML Kit OCR 许可也已列明。
+- 当前云环境没有可写的聊天附件输出目录；APK 保留在构建目录及忽略的 work/ 下，未作为二进制提交或发布到 Releases。
+
+### 最终 APK 内 native / assets 清单
 
 ```text
 lib/arm64-v8a/libandroidx.graphics.path.so
@@ -33,7 +114,6 @@ lib/x86_64/libmlkit_google_ocr_pipeline.so
 assets/licenses/Apache-2.0.txt
 assets/licenses/CC0-1.0.txt
 assets/licenses/NOTICE.txt
-assets/licenses/THIRD_PARTY_NOTICES.md
 assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_rpn_gcn.binarypb
 assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_ti_rpn_gcn.binarypb
 assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc/optical/assets.extra/LabelMap.pb
@@ -66,142 +146,16 @@ assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layou
 assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_runner_ti.binarypb
 assets/selfcheck/page.html
 assets/web/page.js
+assets/licenses/OFL-Noto-Serif.txt
+res/font/vamos_serif_medium.ttf
+res/font/vamos_serif_semibold.ttf
+assets/licenses/THIRD_PARTY_NOTICES.md
 ```
 
-## M3 续做：COS 可信更新（2026-11-01）
+## 占位、未完成与延期
 
-- 已替换 GitHub Releases 解析/检查与系统 DownloadManager 更新实现；BuildConfig URL 保留 TASK 指定占位，正式公钥为空（支持逗号分隔双公钥）。未配置时 fail closed，手动检查说明缺失配置。
-- 原始 version.json 字节 + 独立 Base64 `.sig` 验签后才解析；versionCode 判新、24 小时检查节流、24 小时缓存重新验签、普通/强制更新与任务忙时延后弹窗。
-- 前台下载服务：HTTPS、Range + 强 ETag/If-Range、200 安全重启、暂停/恢复、速率/进度、三次网络重试、空间检查、SHA 不符删除文件、同版本两次校验失败停止重试。
-- 安装前重新验签缓存并复核 SHA/大小/包名/版本/证书；未知来源授权返回后继续，使用受限 FileProvider + ACTION_VIEW。未发布正式包。
-- `tools/release/make_version_json.py` 接受 APK/离线私钥路径输出原始清单与 detached signature；临时目录生成私钥的签名脚本冒烟测试通过，私钥已删除，没有提交密钥。
-- 六场景：正常清单/签名错误/SHA 错误/Range 续传/强更判定均有离线单测；真实 COS、系统安装与「无安装权限→授权」设备流程尚未测。地址与公钥未提供，未编造线上验收。
-- 验证：`assembleDebug` 通过；`SignedUpdateTest` 8 项、应用 about 包 30 项均通过。修复了旧社交链接测试断言；本段最终 Lint 正在运行，后续记录最终结果。
-- 新增 EdDSA-Java 0.3.0（CC0-1.0），保留原始许可全文。所有旧版未完成描述以最新续做段落为准。
-
-# Vamos 测试报告
-
-## 续作进展（以下进展优先于后面的首轮基线）
-
-### M2 确认规则与停止路径
-
-- 已接入支付、消息/邮件/评论、删除、账号/系统设置、对外发布五类规则，四类可持久化切换，关闭需二次提示，支付锁定。正常与自主任务始终保留确认关卡。
-- 执行层取消自主模式无条件放行；支付核对金额，消息核对对象/原文，一次性授权绑定 App、对象、动作、有效步数；超时拒绝并停止，继续需新授权。
-- 更新模型工具参数与提示词，消除“只有花钱才确认”的旧约定。停止直接取消运行协程，避免等待 inbox 消费。
-- `assembleDebug` 通过；确认规则矩阵、原有目标/内容/金额绑定、持久化与自主模式测试通过（core 20 项，app 10 项，以测试 XML 为准）。
-- 仍待：设备注入停止时延、日夜截图验收；COS 更新与 M4 下一段实现。
-
----
-
-日期：2026-11-01。范围：M1 源码迁移与 M2 部分实现；本次不是 V1.0 正式发布验收。
-
-## 环境与构建
-
-- Linux 云构建环境，JDK 17，Gradle 8.11.1，Android SDK 36 / build-tools 34.0.0，minSdk 30 / targetSdk 35。
-- 无 Android 真机或模拟器；`adb devices` 列表为空。没有进行安装、启动、配对、真实模型 API/OAuth、截图或任务注入的设备验收。
-- 本次仅 debug 签名；没有索取、生成或提交 release keystore、Ed25519 私钥、API Key、token 或 COS 密钥。
-- 构建使用 `JAVA_HOME=/workspace/jdk-17 ANDROID_HOME=/workspace/android-sdk GRADLE_USER_HOME=/workspace/.gradle`。
-- M1：`./gradlew assembleDebug --offline` **通过**，保存里程碑 APK。
-- M2：`./gradlew assembleDebug :app:testDebugUnitTest --tests '*VamosMilestoneTest' --offline` **通过**。
-- 新增测试：**2 项通过、0 失败**；验证 DeepSeek/通义模型名、看图默认值、厂商保留、双音量键顺序/重复/释放重置。
-- `git diff --check` **通过**。
-- 最终 `./gradlew assembleDebug :app:lintDebug :app:testDebugUnitTest --tests '*VamosMilestoneTest' --offline` **通过**。
-- Lint：**0 错误，92 警告**。报告中的警告未全部清理，未建立全局 baseline，未关闭错误检查。
-- core 针对性回归：`ConfirmationGateTest` 15 项、`PhoneSetupFlowTest` 28 项、`KnowledgeIndexTest` 6 项，共 **49 项通过、0 失败**；与新增测试合计 **51 项通过**。
-- Lint 首次为 33 错误；修复 Android 12 API 保护、广播注册、受限键盘回调、BOM 字面量等问题，将 19 处已确认赋值的 producer 改为显式 remembered state + keyed effect，并保留取消与资源释放逻辑。
-- WebView 旧版本特性常量保留一处有原因说明的、方法级 `RestrictedApi` 抑制；未使用全局抑制。完整 HTML/XML 报告保留在 `app/build/reports/lint-results-debug.html` 与 `app/build/reports/lint-results-debug.xml`。
-- 云环境自带 JDK 的 CA 缺失通过 `-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts` 解决；TLS 校验保持开启。依赖缓存补齐后最终检查使用 offline 模式。
-
-## APK
-
-- 最终 debug APK 已生成：`app/build/outputs/apk/debug/app-debug.apk`；目标交付名为 `vamos-1.0.0-debug.apk`，不提交二进制。
-- M1 里程碑 APK 暂存于 `work/vamos-m1-debug.apk`。
-- 此云环境不存在聊天指定的 `/codex/browser/projectless/.../output` 目录，且无权限创建 `/codex`，也未提供 sudo。因此未能生成聊天可下载的 APK/报告附件；APK 和完整 Lint 报告保留在上述构建目录，源码和本报告通过 draft PR 交付。
-- applicationId：`com.yongpeng.vamos`，versionName：`1.0.0`，versionCode：**33**（上游为 32）。
-- 大小：103,249,501 字节。
-- SHA-256：`15ff53f3282d04d70924c04f0f66680ca802a3f65db3e59b6623010dfd50cbfe`。
-- `aapt dump badging` 验证包名与版本；`apksigner verify` **通过**。
-- 与上游包名不同，具备并存的包身份；实际并存安装**未测**。
-
-## M1 验收
-
-| 项目 | 结果 |
-|---|---|
-| Gradle applicationId/namespace、app/core 源码、测试、AIDL 目录与引用迁移 | 已实现，构建通过 |
-| 品牌、通知、UA、提示词、launcher V 标志 | 已替换；设备启动画面待测 |
-| LICENSE 原样保留 | 与基线 SHA-256 比对一致 |
-| NOTICE 原文保留并追加修改声明 | 已实现，`Modified by 永鹏 / Vamos, 2026` |
-| 修改的源文件头部标注 | 已添加 `Modified by Vamos (2026)` |
-| 关于 › 开源许可 | 显示 Apache-2.0 全文、NOTICE 上游署名/链接和第三方列表/说明 |
-| FileProvider authority | 声明 `com.yongpeng.vamos.fileprovider`，仅开放 `cache/update/`；更新安装流程接入留待 M3 |
-| res 中品牌残留 | `rg -i mika app/src/main/res`：**0 命中**（含资源文件名已迁移） |
-| 安装、与上游并存、启动无旧品牌 | 无设备，未测 |
-
-## M2 实现与设计对照
-
-已完整阅读 TASK.md、PRD、design-spec.md，查看日夜总览及 01–08 的所有分组图。下表为源码覆盖情况，**不是截图验收通过**。
-
-| 设计组 | 本次实现 | 仍需完成 |
-|---|---|---|
-| 01 引导 | V 标志、两行标题、示例说明、条款阅读/勾选、权限说明、日夜主题 | 三份正式法律文档由产品/法务提供；引导顺序及逐屏布局微调、设备验证 |
-| 02 模型 | DeepSeek 推荐边框、`deepseek-flash`、看图 caps、默认用主模型、通义 `qwen3.7-plus`、Key 后四位/显示切换、其他厂商列表、保留账号登录 | 连通性真实 API 验证；测试/保存仍沿用已有合并流程；视觉与交互逐屏验收 |
-| 03 配对 | 保留真实状态驱动的向导，统一主题、字号、卡片和按钮 | 设计六步布局、六位 PIN 格、自动打勾动效等逐屏精修；所有配对状态设备验收 |
-| 04 对话/执行 | 共享卡片/气泡主题，停止按钮，时间线语义色，后台预览青碧呼吸描边，隐藏 V1.1 示例任务卡 | 按稿重排任务卡、小窗/时间线、抽屉、完整通用状态；日夜设备截图 |
-| 05 确认 | 无遮罩/返回关闭的底部确认面板、朱砂允许按钮、60 秒环形倒计时；服务端本地任务超时也改为 60 秒 | **五类逐项开关及执行层完整强制规则尚未实现**；截图预览、超时后重新确认等状态；不能宣称敏感确认增强完成 |
-| 06 更新 | 普通新版提示改为居中圆角对话框，沿用已有下载控件 | COS、Ed25519、断点续传/强更及所有新状态留待 M3；旧 GitHub 更新实现仍在 |
-| 07 其他 | 设置/记忆/定时/自检等复用新主题；隐藏电脑端入口；关于移除上游作者社交/联系入口；许可页署名 | 各页按稿重排、一键关闭手机控制入口、部分胶囊布局与视觉、完整许可全文整理 |
-| 08 通用 | 现有空/加载/失败状态接入新主题，V1 示例入口已隐藏 | 骨架、断网、未配置/未配对提示等逐屏统一 |
-
-共有 token 已按设计值实现，夜间 onAccent 为 #1A1C1B；标题暂用系统 Serif 回退，未捆绑 Noto Serif CJK。卡片实现色层/描边，完整背景模糊尚未全部接入；所有触控区/色彩用途仍需逐屏审计。
-
-### 停止开关
-
-- App 内按钮、现有通知「停止」、胶囊执行中长按、双音量键入口均连接真实取消路径。
-- 双音量键在前台 Activity 可用；全局监听依赖用户启用无障碍且系统允许过滤按键。
-- 手势纯逻辑单测通过；**没有实测 ≤1 秒中断注入/释放虚拟屏**，不能标为该时延验收通过。
-- 本次没有完成五类敏感确认设置/策略。上游自主模式行为仍需整改，不能按 PRD 的支付锁定规则验收。
-
-## 日夜截图验收
-
-没有可用设备，未生成应用截图。设计图仅作参照，不当作应用运行结果。01–08 组的日间/夜间逐屏对照、字号放大、Android 11 降级与减少动画均**未测**。
-
-## M3 更新六场景
-
-| 场景 | 结果 |
-|---|---|
-| 正常 COS 更新 | 未实现/未测 |
-| Ed25519 签名错误 | 未实现/未测 |
-| SHA 错误 | 未按新协议实现/未测 |
-| 断点续传 | 未实现/未测 |
-| 强制更新 | 未实现/未测 |
-| 无安装权限 | 未按新协议设备验收 |
-
-## APK 内 native/runtime 清单与 M4
-
-以下为本次实际 APK 的清单。**仍含 PRoot、Alpine rootfs；M4 未完成，不能声称无 GPL/LGPL 组件。** 未做上游同环境 APK 体积基线对比。
-
-```text
-lib/arm64-v8a/libandroidx.graphics.path.so
-lib/arm64-v8a/libmlkit_google_ocr_pipeline.so
-lib/arm64-v8a/libproot.so
-lib/arm64-v8a/libproot_loader.so
-lib/arm64-v8a/libvamosrun.so
-lib/armeabi-v7a/libandroidx.graphics.path.so
-lib/armeabi-v7a/libmlkit_google_ocr_pipeline.so
-lib/x86/libandroidx.graphics.path.so
-lib/x86/libmlkit_google_ocr_pipeline.so
-lib/x86_64/libandroidx.graphics.path.so
-lib/x86_64/libmlkit_google_ocr_pipeline.so
-assets/runtime/packages.json
-assets/runtime/rootfs.tar.xz
-```
-
-沙箱设置入口已隐藏，运行时代码/二进制并未整体移除。保留原有许可材料。README 的 Vamos 产品说明/构建说明、沙箱工具与依赖清理、GPL 资源移除均待 M4。
-
-## 推迟功能
-
-按 TASK.md：国产 ROM 图文适配、执行记录导出、新手示例任务卡、CLI/MCP 开放为 V1.1+；免确认白名单、模板市场、崩溃上报、沙箱重新引入为 V2+。本次没有新增这些功能或 SDK。
-
-## 修改文件
-
-见 `MODIFIED_FILES.md`，按基线 e17d308 列出迁移/修改/新增文件。每个里程碑单独提交，M2 为部分实现提交。
+1. 正式 COS 桶地址、公钥、三份正式法律文本由产品/运维提供；保持占位，未配置更新时 fail closed。没有索取或提交正式私钥、keystore、API Key、token、COS SecretId/SecretKey。
+2. 逐屏日夜截图、视觉对照、真机配对/后台操作/停止时延，以及真实模型/OAuth 和更新安装六场景仍需完成。源码覆盖不等于设备验收通过。
+3. 正式签名与发布由 Dodo 本地完成；本次不构建正式签名包，不上架、不发布、不合并 PR。
+4. V1.1 延期：国产 ROM 图文、执行记录导出、新手示例任务卡、开放 CLI/MCP。V2：免确认白名单、模板市场、崩溃上报、沙箱。
+5. 随 Linux 一并移除的 PDF/Python 脚本提取不可用；普通附件和文件工具保留，不能仅凭二进制文件名声称已读取内容。

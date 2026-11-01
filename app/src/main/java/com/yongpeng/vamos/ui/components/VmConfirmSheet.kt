@@ -20,12 +20,11 @@ import kotlinx.coroutines.delay
 fun VmConfirmSheet(title: String, body: String, onDeny: () -> Unit, onAllow: () -> Unit, deadlineMillis: Long = 0L) {
     val c = VmTheme.colors
     val deadline = remember(deadlineMillis) { deadlineMillis.takeIf { it > 0 } ?: (System.currentTimeMillis()+60_000) }
-    var remaining by remember { mutableIntStateOf(((deadline-System.currentTimeMillis())/1000).toInt().coerceIn(0,60)) }
+    var remaining by remember { mutableIntStateOf(((deadline-System.currentTimeMillis()+999)/1000).toInt().coerceIn(0,60)) }
     val frame = LocalVmFrame.current
     val timeout by rememberUpdatedState(LocalVmConfirmationTimeout.current)
-    val deny by rememberUpdatedState(onDeny)
     LaunchedEffect(Unit) {
-        while (remaining > 0) { delay(250); remaining=((deadline-System.currentTimeMillis())/1000).toInt().coerceIn(0,60) }
+        while (remaining > 0) { delay(250); remaining=((deadline-System.currentTimeMillis()+999)/1000).toInt().coerceIn(0,60) }
         timeout()
     }
     Dialog(onDismissRequest = {}, properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false, usePlatformDefaultWidth = false)) {
@@ -57,6 +56,6 @@ fun VmCountdownRing(remaining: Int) {
     val c = VmTheme.colors
     Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
         CircularProgressIndicator(progress = { remaining / 60f }, modifier = Modifier.fillMaxSize(), color = c.accentCinnabar, strokeWidth = 4.dp, trackColor = c.tone2)
-        Text(remaining.toString(), style = VmType.BodyStrong, color = c.textInk)
+        Text(remaining.toString(), style = VmType.BodyStrong.copy(fontWeight=if(remaining<=10) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal), color = c.textInk)
     }
 }

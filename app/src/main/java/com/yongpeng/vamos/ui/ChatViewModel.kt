@@ -1148,7 +1148,11 @@ class ChatViewModel(
             is TaskState.Succeeded -> ex.copy(status = ExchangeStatus.Done(s.answer.trim(), null, s.verified, s.note, s.unconfirmed, s.reviewed),
                 waitingForModel = false, draft = null, line = "")
             is TaskState.Failed -> ex.copy(status = ExchangeStatus.Failed(s.reason), waitingForModel = false, draft = null, line = "")
-            TaskState.Cancelled -> ex.copy(status = ExchangeStatus.Cancelled(), waitingForModel = false, draft = null, line = "")
+            TaskState.Cancelled -> {
+                val confirmation = ex.status as? ExchangeStatus.NeedsConfirmation
+                val expired = confirmation != null && confirmation.deadlineMillis > 0 && System.currentTimeMillis() >= confirmation.deadlineMillis
+                ex.copy(status = ExchangeStatus.Cancelled(if(expired) "确认已超时，已视为拒绝，任务已暂停" else null), waitingForModel = false, draft = null, line = "")
+            }
         }
 
         /**

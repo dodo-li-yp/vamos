@@ -497,8 +497,10 @@ private fun CurrentStepBody(
         PillButton(copy.action, primary = !a11y && !fixNotificationsFirst, tag = "setup-action") { onStepAction(step) }
     }
     if (a11y && view.showAppInfo) PillButton(PhoneSetupCopy.APP_INFO, primary = false, tag = "setup-app-info", onClick = onAppInfo)
-    // 读到的开关只是参考:用户说打开了就往下走,哪一步都不会卡死
-    if (step in PhoneSetupFlow.CONFIRMABLE) PillButton(PhoneSetupCopy.TURNED_ON_NEXT, primary = false, tag = "setup-confirm") { onConfirmStep(step) }
+    // 系统状态优先自动推进；10 秒仍未检测到时提供人工确认。
+    var manualConfirmationVisible by remember(step) { mutableStateOf(false) }
+    LaunchedEffect(step) { kotlinx.coroutines.delay(10_000); manualConfirmationVisible = true }
+    if (manualConfirmationVisible && step in PhoneSetupFlow.CONFIRMABLE) PillButton(PhoneSetupCopy.TURNED_ON_NEXT, primary = false, tag = "setup-confirm") { onConfirmStep(step) }
     if (step == SetupStep.PairingCode) ManualCode(askPort = !view.portFound, onSubmit = onSubmit)
     if (view.revisiting) LinkText(PhoneSetupCopy.REVISIT_BACK, "setup-revisit-back") { onRevisit(null) }
 }

@@ -35,7 +35,7 @@ sealed interface Decision {
 
 /**
  * 不可逆判定、审批与同意核对。整个代码库里只有这里调用 [IrreversibleDetector] 的判定和 [ConfirmationGate.permits]
- * (有测试守着),各来源只在 [OriginPolicy] 里写明哪里不同;问不问由 [ApprovalPolicy.decide] 定(只有付款问)。
+ * (有测试守着),各来源只在 [OriginPolicy] 里写明哪里不同;问不问由 [ApprovalPolicy.decide] 和五类确认规则决定。
  */
 class ConfirmDecision(
     private val tools: ToolDispatcher,
@@ -44,7 +44,7 @@ class ConfirmDecision(
     private val risks: RiskJudge = ClassifiedRisk,
     private val recorder: ActionRecorder? = null,
     private val provenance: RunProvenance = RunProvenance(),
-    /** 开工就是自主执行(没有确认关卡):付款也不问,界面目标猜测也不阻断动作;中途换成自主看 [ApprovalSettings.autonomous]。 */
+    /** 自主执行模式标记；敏感确认始终按独立类别规则执行，支付不可跳过。 */
     private val autonomous: Boolean = false,
     /** Vamos 自己的包名:作用在它上面的写操作一律不做(不自己给自己点同意、改设置)。 */
     private val selfPackage: String? = null,

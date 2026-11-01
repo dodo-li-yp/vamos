@@ -1,6 +1,6 @@
 # Vamos 修改文件清单
 
-相对基线 e17d308；M1–M4 及 Lint 修复。R 为目录迁移。LICENSE 保留原文。
+相对基线 e17d308；涵盖 M1–M4、M2 续做和 Lint 修复。R 为目录迁移，LICENSE 保留原文。
 
 ```text
 M	.github/CONTRIBUTING.md
@@ -25,14 +25,14 @@ D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/MikarunDeviceTest.kt
 D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/SandboxSmokeTest.kt
 D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/SandboxSyscallFallbackDeviceTest.kt
 D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/SandboxTaskDeviceTest.kt
-D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/ShareExporterDeviceTest.kt
 D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/SkillScriptsDeviceTest.kt
-D	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/WorkspaceFileGateDeviceTest.kt
 R084	app/src/androidTest/java/com/wangzan101/mika/ChineseUi.kt	app/src/androidTest/java/com/yongpeng/vamos/ChineseUi.kt
 R080	app/src/androidTest/java/com/wangzan101/mika/DeviceTaskState.kt	app/src/androidTest/java/com/yongpeng/vamos/DeviceTaskState.kt
 A	app/src/androidTest/java/com/yongpeng/vamos/RunAction.kt
 R095	app/src/androidTest/java/com/wangzan101/mika/a11y/WebEditorTestActivity.java	app/src/androidTest/java/com/yongpeng/vamos/a11y/WebEditorTestActivity.java
 R093	app/src/androidTest/java/com/wangzan101/mika/acceptance/LiveRunTest.kt	app/src/androidTest/java/com/yongpeng/vamos/acceptance/LiveRunTest.kt
+R081	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/ShareExporterDeviceTest.kt	app/src/androidTest/java/com/yongpeng/vamos/cap/files/ShareExporterDeviceTest.kt
+R086	app/src/androidTest/java/com/wangzan101/mika/cap/sandbox/WorkspaceFileGateDeviceTest.kt	app/src/androidTest/java/com/yongpeng/vamos/cap/files/WorkspaceFileGateDeviceTest.kt
 R089	app/src/androidTest/java/com/wangzan101/mika/cap/phone/a11y/A11yOnDisplayTest.kt	app/src/androidTest/java/com/yongpeng/vamos/cap/phone/a11y/A11yOnDisplayTest.kt
 R096	app/src/androidTest/java/com/wangzan101/mika/cap/phone/a11y/AccessibilityReconnectDeviceTest.kt	app/src/androidTest/java/com/yongpeng/vamos/cap/phone/a11y/AccessibilityReconnectDeviceTest.kt
 R093	app/src/androidTest/java/com/wangzan101/mika/cap/phone/a11y/AndroidScreenTest.kt	app/src/androidTest/java/com/yongpeng/vamos/cap/phone/a11y/AndroidScreenTest.kt
@@ -122,6 +122,7 @@ R086	app/src/androidTest/java/com/wangzan101/mika/ui/SelfCheckScreenTest.kt	app/
 R085	app/src/androidTest/java/com/wangzan101/mika/ui/SettingsScreenTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/SettingsScreenTest.kt
 R091	app/src/androidTest/java/com/wangzan101/mika/ui/SteerEditingDeviceTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/SteerEditingDeviceTest.kt
 R088	app/src/androidTest/java/com/wangzan101/mika/ui/UsageScreenTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/UsageScreenTest.kt
+A	app/src/androidTest/java/com/yongpeng/vamos/ui/VmDesignScreenshotsTest.kt
 R092	app/src/androidTest/java/com/wangzan101/mika/ui/VoiceHoldTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/VoiceHoldTest.kt
 R093	app/src/androidTest/java/com/wangzan101/mika/ui/WebSitesSectionTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/WebSitesSectionTest.kt
 R089	app/src/androidTest/java/com/wangzan101/mika/ui/viewer/FileViewerScreenTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/viewer/FileViewerScreenTest.kt
@@ -132,6 +133,7 @@ M	app/src/main/AndroidManifest.xml
 R074	app/src/main/aidl/com/wangzan101/mika/shell/IMikaShell.aidl	app/src/main/aidl/com/yongpeng/vamos/shell/IVamosShell.aidl
 A	app/src/main/assets/licenses/CC0-1.0.txt
 A	app/src/main/assets/licenses/NOTICE.txt
+A	app/src/main/assets/licenses/OFL-Noto-Serif.txt
 A	app/src/main/assets/licenses/THIRD_PARTY_NOTICES.md
 D	app/src/main/assets/runtime/packages.json
 D	app/src/main/assets/runtime/rootfs.tar.xz
@@ -143,9 +145,7 @@ D	app/src/main/java/com/wangzan101/mika/a11y/MikaAccessibilityService.kt
 D	app/src/main/java/com/wangzan101/mika/about/ApkUpdater.kt
 D	app/src/main/java/com/wangzan101/mika/about/Releases.kt
 D	app/src/main/java/com/wangzan101/mika/about/UpdateChecker.kt
-D	app/src/main/java/com/wangzan101/mika/cap/sandbox/AndroidFdSys.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/AndroidSandbox.kt
-D	app/src/main/java/com/wangzan101/mika/cap/sandbox/Attachments.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/BridgeProtocol.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/BundledRuntime.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/ProcRunner.kt
@@ -157,7 +157,6 @@ D	app/src/main/java/com/wangzan101/mika/cap/sandbox/SandboxDirs.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/SandboxForeground.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/SandboxOwner.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/SandboxState.kt
-D	app/src/main/java/com/wangzan101/mika/cap/sandbox/ShareExporter.kt
 D	app/src/main/java/com/wangzan101/mika/cap/sandbox/SkillsSync.kt
 D	app/src/main/java/com/wangzan101/mika/chat/SharedFile.kt
 D	app/src/main/java/com/wangzan101/mika/sandbox/SandboxService.kt
@@ -165,6 +164,7 @@ D	app/src/main/java/com/wangzan101/mika/ui/AdvancedSection.kt
 D	app/src/main/java/com/wangzan101/mika/ui/LicensesScreen.kt
 D	app/src/main/java/com/wangzan101/mika/ui/WelcomeScreen.kt
 D	app/src/main/java/com/wangzan101/mika/ui/theme/Colors.kt
+D	app/src/main/java/com/wangzan101/mika/ui/theme/Tokens.kt
 R068	app/src/main/java/com/wangzan101/mika/MikaApp.kt	app/src/main/java/com/yongpeng/vamos/VamosApp.kt
 A	app/src/main/java/com/yongpeng/vamos/a11y/VamosAccessibilityService.kt
 R067	app/src/main/java/com/wangzan101/mika/about/ApkIntegrity.kt	app/src/main/java/com/yongpeng/vamos/about/ApkIntegrity.kt
@@ -189,7 +189,13 @@ R093	app/src/main/java/com/wangzan101/mika/browser/RecentPages.kt	app/src/main/j
 R098	app/src/main/java/com/wangzan101/mika/browser/SiteLooks.kt	app/src/main/java/com/yongpeng/vamos/browser/SiteLooks.kt
 R093	app/src/main/java/com/wangzan101/mika/browser/StartPageModel.kt	app/src/main/java/com/yongpeng/vamos/browser/StartPageModel.kt
 R089	app/src/main/java/com/wangzan101/mika/browser/UserBrowser.kt	app/src/main/java/com/yongpeng/vamos/browser/UserBrowser.kt
-R071	app/src/main/java/com/wangzan101/mika/cap/phone/PhoneServices.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/PhoneServices.kt
+R093	app/src/main/java/com/wangzan101/mika/cap/sandbox/AndroidFdSys.kt	app/src/main/java/com/yongpeng/vamos/cap/files/AndroidFdSys.kt
+R089	app/src/main/java/com/wangzan101/mika/cap/sandbox/Attachments.kt	app/src/main/java/com/yongpeng/vamos/cap/files/Attachments.kt
+R078	app/src/main/java/com/wangzan101/mika/cap/sandbox/ShareExporter.kt	app/src/main/java/com/yongpeng/vamos/cap/files/ShareExporter.kt
+A	app/src/main/java/com/yongpeng/vamos/cap/files/WorkspaceDirs.kt
+A	app/src/main/java/com/yongpeng/vamos/cap/files/WorkspaceFiles.kt
+A	app/src/main/java/com/yongpeng/vamos/cap/files/WorkspaceOwner.kt
+R065	app/src/main/java/com/wangzan101/mika/cap/phone/PhoneServices.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/PhoneServices.kt
 R094	app/src/main/java/com/wangzan101/mika/cap/phone/a11y/AndroidScreen.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/a11y/AndroidScreen.kt
 R063	app/src/main/java/com/wangzan101/mika/cap/phone/a11y/AppCopyReader.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/a11y/AppCopyReader.kt
 R093	app/src/main/java/com/wangzan101/mika/cap/phone/a11y/AppSwitch.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/a11y/AppSwitch.kt
@@ -209,8 +215,8 @@ R096	app/src/main/java/com/wangzan101/mika/cap/phone/display/AgentDisplay.kt	app
 R096	app/src/main/java/com/wangzan101/mika/cap/phone/display/FrameMath.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/display/FrameMath.kt
 R090	app/src/main/java/com/wangzan101/mika/cap/phone/display/LazyDisplay.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/display/LazyDisplay.kt
 R077	app/src/main/java/com/wangzan101/mika/cap/phone/setup/BootRestoreHandler.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/BootRestoreHandler.kt
-R088	app/src/main/java/com/wangzan101/mika/cap/phone/setup/BuiltinShellManager.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/BuiltinShellManager.kt
-R086	app/src/main/java/com/wangzan101/mika/cap/phone/setup/BuiltinShellRecovery.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/BuiltinShellRecovery.kt
+R086	app/src/main/java/com/wangzan101/mika/cap/phone/setup/BuiltinShellManager.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/BuiltinShellManager.kt
+R085	app/src/main/java/com/wangzan101/mika/cap/phone/setup/BuiltinShellRecovery.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/BuiltinShellRecovery.kt
 R093	app/src/main/java/com/wangzan101/mika/cap/phone/setup/DeveloperSettings.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/DeveloperSettings.kt
 R082	app/src/main/java/com/wangzan101/mika/cap/phone/setup/PairingCodeReader.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/PairingCodeReader.kt
 R093	app/src/main/java/com/wangzan101/mika/cap/phone/setup/PairingCoordinator.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/setup/PairingCoordinator.kt
@@ -230,7 +236,7 @@ R082	app/src/main/java/com/wangzan101/mika/cap/phone/shell/HelperProcess.kt	app/
 R095	app/src/main/java/com/wangzan101/mika/cap/phone/shell/MainScreenLog.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/MainScreenLog.kt
 R092	app/src/main/java/com/wangzan101/mika/cap/phone/shell/MainScreenWatch.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/MainScreenWatch.kt
 R090	app/src/main/java/com/wangzan101/mika/cap/phone/shell/ShareIntent.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/ShareIntent.kt
-R088	app/src/main/java/com/wangzan101/mika/cap/phone/shell/SharedShell.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/SharedShell.kt
+R078	app/src/main/java/com/wangzan101/mika/cap/phone/shell/SharedShell.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/SharedShell.kt
 R076	app/src/main/java/com/wangzan101/mika/cap/phone/shell/ShellBinding.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/ShellBinding.kt
 R091	app/src/main/java/com/wangzan101/mika/cap/phone/shell/ShellClip.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/ShellClip.kt
 R097	app/src/main/java/com/wangzan101/mika/cap/phone/shell/ShellClipboard.kt	app/src/main/java/com/yongpeng/vamos/cap/phone/shell/ShellClipboard.kt
@@ -371,8 +377,8 @@ R081	app/src/main/java/com/wangzan101/mika/ui/BrowserStart.kt	app/src/main/java/
 R091	app/src/main/java/com/wangzan101/mika/ui/ChatAttachments.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatAttachments.kt
 R093	app/src/main/java/com/wangzan101/mika/ui/ChatCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatCopy.kt
 R091	app/src/main/java/com/wangzan101/mika/ui/ChatDrawer.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatDrawer.kt
-R087	app/src/main/java/com/wangzan101/mika/ui/ChatScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatScreen.kt
-R097	app/src/main/java/com/wangzan101/mika/ui/ChatViewModel.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatViewModel.kt
+R083	app/src/main/java/com/wangzan101/mika/ui/ChatScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatScreen.kt
+R096	app/src/main/java/com/wangzan101/mika/ui/ChatViewModel.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatViewModel.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/ConfirmationRulesScreen.kt
 R088	app/src/main/java/com/wangzan101/mika/ui/ConversationMenu.kt	app/src/main/java/com/yongpeng/vamos/ui/ConversationMenu.kt
 R074	app/src/main/java/com/wangzan101/mika/ui/DeveloperOptionsScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/DeveloperOptionsScreen.kt
@@ -382,11 +388,11 @@ R082	app/src/main/java/com/wangzan101/mika/ui/KeptPageCopy.kt	app/src/main/java/
 R077	app/src/main/java/com/wangzan101/mika/ui/KeptPageRow.kt	app/src/main/java/com/yongpeng/vamos/ui/KeptPageRow.kt
 R088	app/src/main/java/com/wangzan101/mika/ui/LearningNotes.kt	app/src/main/java/com/yongpeng/vamos/ui/LearningNotes.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/LicensesScreen.kt
-R084	app/src/main/java/com/wangzan101/mika/ui/MainActivity.kt	app/src/main/java/com/yongpeng/vamos/ui/MainActivity.kt
+R081	app/src/main/java/com/wangzan101/mika/ui/MainActivity.kt	app/src/main/java/com/yongpeng/vamos/ui/MainActivity.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/MarkdownModel.kt	app/src/main/java/com/yongpeng/vamos/ui/MarkdownModel.kt
 R085	app/src/main/java/com/wangzan101/mika/ui/MarkdownText.kt	app/src/main/java/com/yongpeng/vamos/ui/MarkdownText.kt
 R077	app/src/main/java/com/wangzan101/mika/ui/McpScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/McpScreen.kt
-R077	app/src/main/java/com/wangzan101/mika/ui/MemoryScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/MemoryScreen.kt
+R076	app/src/main/java/com/wangzan101/mika/ui/MemoryScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/MemoryScreen.kt
 R090	app/src/main/java/com/wangzan101/mika/ui/MemoryViewModel.kt	app/src/main/java/com/yongpeng/vamos/ui/MemoryViewModel.kt
 R085	app/src/main/java/com/wangzan101/mika/ui/MessageMenu.kt	app/src/main/java/com/yongpeng/vamos/ui/MessageMenu.kt
 R087	app/src/main/java/com/wangzan101/mika/ui/ModelSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/ModelSetupScreen.kt
@@ -395,9 +401,9 @@ R086	app/src/main/java/com/wangzan101/mika/ui/ModelsScreen.kt	app/src/main/java/
 R097	app/src/main/java/com/wangzan101/mika/ui/Navigation.kt	app/src/main/java/com/yongpeng/vamos/ui/Navigation.kt
 R095	app/src/main/java/com/wangzan101/mika/ui/Onboarding.kt	app/src/main/java/com/yongpeng/vamos/ui/Onboarding.kt
 R096	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupCopy.kt
-R086	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupScreen.kt
+R078	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupScreen.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/PipPhysics.kt	app/src/main/java/com/yongpeng/vamos/ui/PipPhysics.kt
-R080	app/src/main/java/com/wangzan101/mika/ui/PlansScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PlansScreen.kt
+R079	app/src/main/java/com/wangzan101/mika/ui/PlansScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PlansScreen.kt
 R091	app/src/main/java/com/wangzan101/mika/ui/ReasoningControl.kt	app/src/main/java/com/yongpeng/vamos/ui/ReasoningControl.kt
 R079	app/src/main/java/com/wangzan101/mika/ui/RecoverySection.kt	app/src/main/java/com/yongpeng/vamos/ui/RecoverySection.kt
 R080	app/src/main/java/com/wangzan101/mika/ui/RunMetricsUi.kt	app/src/main/java/com/yongpeng/vamos/ui/RunMetricsUi.kt
@@ -413,7 +419,7 @@ R088	app/src/main/java/com/wangzan101/mika/ui/SourceViewModel.kt	app/src/main/ja
 R082	app/src/main/java/com/wangzan101/mika/ui/SpeechModelScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/SpeechModelScreen.kt
 R084	app/src/main/java/com/wangzan101/mika/ui/StatusCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/StatusCopy.kt
 R098	app/src/main/java/com/wangzan101/mika/ui/StreamingMarkdown.kt	app/src/main/java/com/yongpeng/vamos/ui/StreamingMarkdown.kt
-R062	app/src/main/java/com/wangzan101/mika/ui/UpdateDownloadControls.kt	app/src/main/java/com/yongpeng/vamos/ui/UpdateDownloadControls.kt
+R058	app/src/main/java/com/wangzan101/mika/ui/UpdateDownloadControls.kt	app/src/main/java/com/yongpeng/vamos/ui/UpdateDownloadControls.kt
 R090	app/src/main/java/com/wangzan101/mika/ui/UsageScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/UsageScreen.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/VmAppUpdatePrompt.kt
 R093	app/src/main/java/com/wangzan101/mika/ui/VoiceHold.kt	app/src/main/java/com/yongpeng/vamos/ui/VoiceHold.kt
@@ -428,13 +434,14 @@ R078	app/src/main/java/com/wangzan101/mika/ui/components/PageParts.kt	app/src/ma
 R077	app/src/main/java/com/wangzan101/mika/ui/components/Rows.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Rows.kt
 R093	app/src/main/java/com/wangzan101/mika/ui/components/Scrollbar.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Scrollbar.kt
 R082	app/src/main/java/com/wangzan101/mika/ui/components/StepLine.kt	app/src/main/java/com/yongpeng/vamos/ui/components/StepLine.kt
-R078	app/src/main/java/com/wangzan101/mika/ui/components/Surfaces.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Surfaces.kt
+R067	app/src/main/java/com/wangzan101/mika/ui/components/Surfaces.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Surfaces.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/components/VmComponents.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/components/VmConfirmSheet.kt
+A	app/src/main/java/com/yongpeng/vamos/ui/components/VmExecutionComponents.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/theme/Colors.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/theme/Icons.kt	app/src/main/java/com/yongpeng/vamos/ui/theme/Icons.kt
 R083	app/src/main/java/com/wangzan101/mika/ui/theme/Theme.kt	app/src/main/java/com/yongpeng/vamos/ui/theme/Theme.kt
-R054	app/src/main/java/com/wangzan101/mika/ui/theme/Tokens.kt	app/src/main/java/com/yongpeng/vamos/ui/theme/Tokens.kt
+A	app/src/main/java/com/yongpeng/vamos/ui/theme/Tokens.kt
 R090	app/src/main/java/com/wangzan101/mika/ui/viewer/FileViewerActivity.kt	app/src/main/java/com/yongpeng/vamos/ui/viewer/FileViewerActivity.kt
 R086	app/src/main/java/com/wangzan101/mika/ui/viewer/FileViewerScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/viewer/FileViewerScreen.kt
 R096	app/src/main/java/com/wangzan101/mika/ui/viewer/ViewerKind.kt	app/src/main/java/com/yongpeng/vamos/ui/viewer/ViewerKind.kt
@@ -460,6 +467,8 @@ D	app/src/main/jniLibs/arm64-v8a/libproot_loader.so
 D	app/src/main/res/drawable-nodpi/mika_launcher_art.png
 M	app/src/main/res/drawable/ic_notification.xml
 A	app/src/main/res/drawable/vamos_launcher_art.xml
+A	app/src/main/res/font/vamos_serif_medium.ttf
+A	app/src/main/res/font/vamos_serif_semibold.ttf
 M	app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 M	app/src/main/res/values-b+zh+Hant/strings.xml
 M	app/src/main/res/values-b+zh+Hant/strings_about.xml
@@ -538,7 +547,6 @@ D	app/src/test/java/com/wangzan101/mika/about/ReleasesTest.kt
 D	app/src/test/java/com/wangzan101/mika/about/UpdateCheckerTest.kt
 D	app/src/test/java/com/wangzan101/mika/cap/sandbox/AndroidSandboxContractTest.kt
 D	app/src/test/java/com/wangzan101/mika/cap/sandbox/AndroidSandboxRunTest.kt
-D	app/src/test/java/com/wangzan101/mika/cap/sandbox/AttachmentsNamingTest.kt
 D	app/src/test/java/com/wangzan101/mika/cap/sandbox/BridgeProtocolTest.kt
 D	app/src/test/java/com/wangzan101/mika/cap/sandbox/BundledRuntimeTest.kt
 D	app/src/test/java/com/wangzan101/mika/cap/sandbox/JvmGate.kt
@@ -566,6 +574,9 @@ R097	app/src/test/java/com/wangzan101/mika/browser/PageLoansTest.kt	app/src/test
 R096	app/src/test/java/com/wangzan101/mika/browser/RecentPagesTest.kt	app/src/test/java/com/yongpeng/vamos/browser/RecentPagesTest.kt
 R098	app/src/test/java/com/wangzan101/mika/browser/SiteLooksTest.kt	app/src/test/java/com/yongpeng/vamos/browser/SiteLooksTest.kt
 R096	app/src/test/java/com/wangzan101/mika/browser/StartPageModelTest.kt	app/src/test/java/com/yongpeng/vamos/browser/StartPageModelTest.kt
+R090	app/src/test/java/com/wangzan101/mika/cap/sandbox/AttachmentsNamingTest.kt	app/src/test/java/com/yongpeng/vamos/cap/files/AttachmentsNamingTest.kt
+A	app/src/test/java/com/yongpeng/vamos/cap/files/JvmGate.kt
+A	app/src/test/java/com/yongpeng/vamos/cap/files/WorkspaceContractTest.kt
 R096	app/src/test/java/com/wangzan101/mika/cap/phone/a11y/AppSwitchTest.kt	app/src/test/java/com/yongpeng/vamos/cap/phone/a11y/AppSwitchTest.kt
 R097	app/src/test/java/com/wangzan101/mika/cap/phone/a11y/ChangeWaitTest.kt	app/src/test/java/com/yongpeng/vamos/cap/phone/a11y/ChangeWaitTest.kt
 R089	app/src/test/java/com/wangzan101/mika/cap/phone/a11y/LazyPhoneScreenTest.kt	app/src/test/java/com/yongpeng/vamos/cap/phone/a11y/LazyPhoneScreenTest.kt
@@ -721,19 +732,15 @@ D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxGroup.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxGuard.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxPackages.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxPort.kt
-D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxTools.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/Sha256.kt
-D	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/ShareRules.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/general/RequestConfirmation.kt
 D	core/src/main/kotlin/com/wangzan101/mika/core/workspace/SandboxError.kt
-D	core/src/main/kotlin/com/wangzan101/mika/core/workspace/SandboxPaths.kt
-D	core/src/main/kotlin/com/wangzan101/mika/core/workspace/SandboxTree.kt
 R091	core/src/main/kotlin/com/wangzan101/mika/core/action/ActionExecutor.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ActionExecutor.kt
 R089	core/src/main/kotlin/com/wangzan101/mika/core/action/ActionOutcome.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ActionOutcome.kt
 R091	core/src/main/kotlin/com/wangzan101/mika/core/action/ActionRecorder.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ActionRecorder.kt
 R083	core/src/main/kotlin/com/wangzan101/mika/core/action/ActivityRecord.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ActivityRecord.kt
 A	core/src/main/kotlin/com/yongpeng/vamos/core/action/Approval.kt
-R085	core/src/main/kotlin/com/wangzan101/mika/core/action/ConfirmDecision.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ConfirmDecision.kt
+R082	core/src/main/kotlin/com/wangzan101/mika/core/action/ConfirmDecision.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/ConfirmDecision.kt
 R082	core/src/main/kotlin/com/wangzan101/mika/core/action/FollowUp.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/FollowUp.kt
 R097	core/src/main/kotlin/com/wangzan101/mika/core/action/Origin.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/Origin.kt
 R096	core/src/main/kotlin/com/wangzan101/mika/core/action/OutwardPacing.kt	core/src/main/kotlin/com/yongpeng/vamos/core/action/OutwardPacing.kt
@@ -778,16 +785,21 @@ R094	core/src/main/kotlin/com/wangzan101/mika/core/agent/StopRules.kt	core/src/m
 R095	core/src/main/kotlin/com/wangzan101/mika/core/agent/StopSummary.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/StopSummary.kt
 R091	core/src/main/kotlin/com/wangzan101/mika/core/agent/StuckAdvice.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/StuckAdvice.kt
 R087	core/src/main/kotlin/com/wangzan101/mika/core/agent/SystemPrompt.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/SystemPrompt.kt
-R095	core/src/main/kotlin/com/wangzan101/mika/core/agent/TaskState.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/TaskState.kt
+R094	core/src/main/kotlin/com/wangzan101/mika/core/agent/TaskState.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/TaskState.kt
 R095	core/src/main/kotlin/com/wangzan101/mika/core/agent/TokenEstimate.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/TokenEstimate.kt
 R094	core/src/main/kotlin/com/wangzan101/mika/core/agent/TurnPolicy.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/TurnPolicy.kt
 R088	core/src/main/kotlin/com/wangzan101/mika/core/agent/UsageMeter.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/UsageMeter.kt
-R087	core/src/main/kotlin/com/wangzan101/mika/core/agent/UserExchange.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/UserExchange.kt
+R086	core/src/main/kotlin/com/wangzan101/mika/core/agent/UserExchange.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/UserExchange.kt
 R087	core/src/main/kotlin/com/wangzan101/mika/core/agent/UserScreenTurns.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/UserScreenTurns.kt
 R082	core/src/main/kotlin/com/wangzan101/mika/core/agent/UserWords.kt	core/src/main/kotlin/com/yongpeng/vamos/core/agent/UserWords.kt
 A	core/src/main/kotlin/com/yongpeng/vamos/core/assembly/McpClientProvider.kt
 R076	core/src/main/kotlin/com/wangzan101/mika/core/assembly/RunAssembler.kt	core/src/main/kotlin/com/yongpeng/vamos/core/assembly/RunAssembler.kt
 R071	core/src/main/kotlin/com/wangzan101/mika/core/assembly/TaskTools.kt	core/src/main/kotlin/com/yongpeng/vamos/core/assembly/TaskTools.kt
+R066	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/ShareRules.kt	core/src/main/kotlin/com/yongpeng/vamos/core/cap/files/ShareRules.kt
+A	core/src/main/kotlin/com/yongpeng/vamos/core/cap/files/WorkspaceCapability.kt
+A	core/src/main/kotlin/com/yongpeng/vamos/core/cap/files/WorkspaceGroup.kt
+A	core/src/main/kotlin/com/yongpeng/vamos/core/cap/files/WorkspacePort.kt
+R052	core/src/main/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxTools.kt	core/src/main/kotlin/com/yongpeng/vamos/core/cap/files/WorkspaceTools.kt
 R085	core/src/main/kotlin/com/wangzan101/mika/core/cap/mcp/McpClient.kt	core/src/main/kotlin/com/yongpeng/vamos/core/cap/mcp/McpClient.kt
 R090	core/src/main/kotlin/com/wangzan101/mika/core/cap/phone/AppDwell.kt	core/src/main/kotlin/com/yongpeng/vamos/core/cap/phone/AppDwell.kt
 R094	core/src/main/kotlin/com/wangzan101/mika/core/cap/phone/AppPacing.kt	core/src/main/kotlin/com/yongpeng/vamos/core/cap/phone/AppPacing.kt
@@ -965,7 +977,7 @@ R096	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckReport.kt	
 R098	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckRunner.kt	core/src/main/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheckRunner.kt
 R091	core/src/main/kotlin/com/wangzan101/mika/core/shell/AccessibilityRepair.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/AccessibilityRepair.kt
 R087	core/src/main/kotlin/com/wangzan101/mika/core/shell/BuiltinShell.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/BuiltinShell.kt
-R096	core/src/main/kotlin/com/wangzan101/mika/core/shell/BuiltinShellEngine.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/BuiltinShellEngine.kt
+R092	core/src/main/kotlin/com/wangzan101/mika/core/shell/BuiltinShellEngine.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/BuiltinShellEngine.kt
 R088	core/src/main/kotlin/com/wangzan101/mika/core/shell/DevtoolsSocket.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/DevtoolsSocket.kt
 R093	core/src/main/kotlin/com/wangzan101/mika/core/shell/FakeBuiltinShellControl.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/FakeBuiltinShellControl.kt
 R084	core/src/main/kotlin/com/wangzan101/mika/core/shell/HelperHandoff.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/HelperHandoff.kt
@@ -1067,8 +1079,11 @@ R097	core/src/main/kotlin/com/wangzan101/mika/core/visual/FrameGrid.kt	core/src/
 R086	core/src/main/kotlin/com/wangzan101/mika/core/visual/FrameTuning.kt	core/src/main/kotlin/com/yongpeng/vamos/core/visual/FrameTuning.kt
 R083	core/src/main/kotlin/com/wangzan101/mika/core/visual/Shots.kt	core/src/main/kotlin/com/yongpeng/vamos/core/visual/Shots.kt
 R098	core/src/main/kotlin/com/wangzan101/mika/core/workspace/FdSys.kt	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/FdSys.kt
+A	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/WorkspaceError.kt
 R085	core/src/main/kotlin/com/wangzan101/mika/core/workspace/WorkspaceFileGate.kt	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/WorkspaceFileGate.kt
 R059	core/src/main/kotlin/com/wangzan101/mika/core/workspace/WorkspacePathCheck.kt	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/WorkspacePathCheck.kt
+R089	core/src/main/kotlin/com/wangzan101/mika/core/workspace/SandboxPaths.kt	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/WorkspacePaths.kt
+R091	core/src/main/kotlin/com/wangzan101/mika/core/workspace/SandboxTree.kt	core/src/main/kotlin/com/yongpeng/vamos/core/workspace/WorkspaceTree.kt
 M	core/src/main/resources/prompts/capabilities/channels.md
 M	core/src/main/resources/prompts/capabilities/general.md
 M	core/src/main/resources/prompts/capabilities/groups.md
@@ -1177,6 +1192,7 @@ R076	core/src/test/kotlin/com/wangzan101/mika/core/agent/SystemPromptTest.kt	cor
 R069	core/src/test/kotlin/com/wangzan101/mika/core/agent/TokenEstimateTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/agent/TokenEstimateTest.kt
 R090	core/src/test/kotlin/com/wangzan101/mika/core/agent/UsageMeterTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/agent/UsageMeterTest.kt
 R073	core/src/test/kotlin/com/wangzan101/mika/core/agent/UserWordsTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/agent/UserWordsTest.kt
+A	core/src/test/kotlin/com/yongpeng/vamos/core/cap/files/FakeSandbox.kt
 R084	core/src/test/kotlin/com/wangzan101/mika/core/cap/mcp/McpClientTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/cap/mcp/McpClientTest.kt
 R084	core/src/test/kotlin/com/wangzan101/mika/core/cap/phone/AppAfterTaskTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/cap/phone/AppAfterTaskTest.kt
 R086	core/src/test/kotlin/com/wangzan101/mika/core/cap/phone/AppDwellTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/cap/phone/AppDwellTest.kt
@@ -1316,7 +1332,7 @@ R087	core/src/test/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckReportTest
 R095	core/src/test/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckRunnerTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheckRunnerTest.kt
 A	core/src/test/kotlin/com/yongpeng/vamos/core/shell/AccessibilityListTest.kt
 R096	core/src/test/kotlin/com/wangzan101/mika/core/shell/AccessibilityRepairTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/AccessibilityRepairTest.kt
-R098	core/src/test/kotlin/com/wangzan101/mika/core/shell/BuiltinShellEngineTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/BuiltinShellEngineTest.kt
+R095	core/src/test/kotlin/com/wangzan101/mika/core/shell/BuiltinShellEngineTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/BuiltinShellEngineTest.kt
 R092	core/src/test/kotlin/com/wangzan101/mika/core/shell/DevtoolsSocketTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/DevtoolsSocketTest.kt
 R084	core/src/test/kotlin/com/wangzan101/mika/core/shell/HelperHandoffTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/HelperHandoffTest.kt
 R096	core/src/test/kotlin/com/wangzan101/mika/core/shell/HelperLinkTest.kt	core/src/test/kotlin/com/yongpeng/vamos/core/shell/HelperLinkTest.kt
@@ -1441,15 +1457,17 @@ M	core/src/test/resources/prompts/golden/phone-web-sandbox-online.txt
 M	core/src/test/resources/prompts/golden/phone-web.txt
 M	core/src/test/resources/prompts/golden/phone.txt
 M	core/src/test/resources/read-script/harness.js
-D	core/src/testFixtures/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxPathContract.kt
+R071	core/src/testFixtures/kotlin/com/wangzan101/mika/core/cap/sandbox/SandboxPathContract.kt	core/src/testFixtures/kotlin/com/yongpeng/vamos/core/cap/files/SandboxPathContract.kt
 R095	core/src/testFixtures/kotlin/com/wangzan101/mika/core/docs/ReadmeSections.kt	core/src/testFixtures/kotlin/com/yongpeng/vamos/core/docs/ReadmeSections.kt
 R094	core/src/testFixtures/kotlin/com/wangzan101/mika/core/workspace/WorkspaceFileGateContract.kt	core/src/testFixtures/kotlin/com/yongpeng/vamos/core/workspace/WorkspaceFileGateContract.kt
 A	licenses/CC0-1.0.txt
 D	licenses/GPL-2.0.txt
 D	licenses/GPL-3.0.txt
 D	licenses/LGPL-3.0.txt
+A	licenses/OFL-Noto-Serif.txt
 M	licenses/THIRD_PARTY_NOTICES.md
 M	settings.gradle.kts
+A	tools/fonts/subset_noto.py
 A	tools/release/README.md
 A	tools/release/make_version_json.py
 D	tools/sandbox/README.md

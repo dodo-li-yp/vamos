@@ -281,6 +281,10 @@ fun ChatScreen(
     val menuHost = remember(selecting) { MessageMenuHost(selecting) { menu = it } }
     val menuOpen = menu != null
     var expiredGoal by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(last?.status) {
+        val cancelled = last?.status as? ExchangeStatus.Cancelled
+        if(cancelled?.summary?.startsWith("确认已超时") == true) expiredGoal = last.goal
+    }
     expiredGoal?.let { goal ->
         androidx.compose.material3.AlertDialog(onDismissRequest={},title={Text("确认已超时")},text={Text("已视为拒绝，任务已暂停。重新确认会重新读取当前界面，不会沿用上次授权。")},
             confirmButton={TextButton({ if(vm.send(goal,check)) expiredGoal=null },enabled=ui.composer==ComposerMode.Idle){Text("重新确认")}},
