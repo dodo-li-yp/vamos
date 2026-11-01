@@ -28,7 +28,7 @@ import com.yongpeng.vamos.settings.ProviderConfig
 import com.yongpeng.vamos.settings.ProviderPresets
 import com.yongpeng.vamos.settings.RoleChoice
 import com.yongpeng.vamos.settings.RoleChoices
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,10 +67,10 @@ class ModelSetupScreenTest {
     )
 
     private fun show(ui: ModelSetupUi, onboarding: Boolean = true) =
-        compose.setContent { VamosTheme { ModelSetupContent(ui, onboarding = onboarding, actions = actions, onBack = {}) } }
+        compose.setContent { VmTheme { ModelSetupContent(ui, onboarding = onboarding, actions = actions, onBack = {}) } }
 
     @Test fun welcomeStarts() {
-        compose.setContent { VamosTheme { WelcomeScreen { calls += "start" } } }
+        compose.setContent { VmTheme { WelcomeScreen { calls += "start" } } }
         compose.onNodeWithText(WelcomeCopy.TITLE).assertIsDisplayed()
         compose.onNodeWithTag("welcome-start").performClick()
         assertEquals(listOf("start"), calls)
@@ -117,7 +117,7 @@ class ModelSetupScreenTest {
         val store = ProviderStore(tmp.root, AesGcmKeyCipher { error("Fixture has no API key") })
         val provider = store.connect("Test", deepseek.kind, "https://example.test/v1", null, listOf(ListedModel("m")))
         store.use(ModelRole.Main, provider.id, "m", caps.copy(contextTokens = 32_000))
-        compose.setContent { VamosTheme { ModelSetupScreen(store, onboarding = false, onBack = {}, onDone = {}) } }
+        compose.setContent { VmTheme { ModelSetupScreen(store, onboarding = false, onBack = {}, onDone = {}) } }
         val open = compose.onNodeWithTag("context-main")
         val window = compose.onNodeWithTag("context-window")
         val trigger = compose.onNodeWithTag("context-trigger")
@@ -157,7 +157,7 @@ class ModelSetupScreenTest {
     @Test fun visionPickerOffersSameAsMainAndOffAndListsEveryModel() {
         val picked = mutableListOf<String>()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 RolePickerContent(
                     connected(RoleChoices(main = "c1", vision = RoleChoice.Off)), ModelRole.Vision,
                     RolePickerActions(pick = { p, m -> picked += "$p $m" }, choose = { picked += "$it" }),
@@ -176,7 +176,7 @@ class ModelSetupScreenTest {
     }
 
     @Test fun lightPickerOffersOnlySameAsMain() {
-        compose.setContent { VamosTheme { RolePickerContent(connected(), ModelRole.Light, RolePickerActions(), onBack = {}) } }
+        compose.setContent { VmTheme { RolePickerContent(connected(), ModelRole.Light, RolePickerActions(), onBack = {}) } }
         compose.onNodeWithText(ModelsCopy.LIGHT_SAME_NOTE).assertIsDisplayed()
         compose.onNodeWithText(ModelsCopy.OFF).assertDoesNotExist()
         compose.onNodeWithText(ModelsCopy.roleHint(ModelRole.Light)).assertIsDisplayed()
@@ -185,7 +185,7 @@ class ModelSetupScreenTest {
     @Test fun pickerFiltersWhenThereAreManyModels() {
         val many = qwen.copy(models = (1..9).map { ListedModel("qwen-$it") })
         val ui = ModelSetupUi(form, providers = listOf(deepseek, many), configs = listOf(main), roles = RoleChoices(main = "c1"))
-        compose.setContent { VamosTheme { RolePickerContent(ui, ModelRole.Main, RolePickerActions(), onBack = {}) } }
+        compose.setContent { VmTheme { RolePickerContent(ui, ModelRole.Main, RolePickerActions(), onBack = {}) } }
         compose.onNodeWithTag("model-filter").performTextInput("qwen-9")
         // 筛选框里也有这几个字,只看不是输入框的那一行
         compose.onNode(hasText("qwen-9") and !hasSetTextAction()).assertIsDisplayed()
@@ -196,7 +196,7 @@ class ModelSetupScreenTest {
     @Test fun providerDetailPreviewsInUseModelsFirstAndLinksToAll() {
         val got = mutableListOf<String>()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ProviderDetailContent(
                     connected(RoleChoices(main = "c1", vision = RoleChoice.Model("c2"))), qwen,
                     ProviderDetailActions(showAll = { got += "all" }), onBack = {},
@@ -221,7 +221,7 @@ class ModelSetupScreenTest {
     @Test fun tappingAModelOpensUseAsSheetAndAssigns() {
         val used = mutableListOf<String>()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ProviderDetailContent(connected(), deepseek, ProviderDetailActions(use = { role, m -> used += "$role $m" }), onBack = {})
             }
         }
@@ -233,7 +233,7 @@ class ModelSetupScreenTest {
     }
 
     @Test fun useAsSheetMarksTheCurrentRole() {
-        compose.setContent { VamosTheme { ProviderDetailContent(connected(), deepseek, ProviderDetailActions(), onBack = {}) } }
+        compose.setContent { VmTheme { ProviderDetailContent(connected(), deepseek, ProviderDetailActions(), onBack = {}) } }
         compose.onNodeWithTag("model-deepseek-chat").performClick()
         compose.awaitOne(ModelsCopy.IN_USE).assertIsDisplayed()
         compose.awaitOne(ModelSetupCopy.CANCEL).performClick()
@@ -244,7 +244,7 @@ class ModelSetupScreenTest {
     @Test fun allModelsSearchesAndRefreshes() {
         val got = mutableListOf<String>()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 AllModelsContent(
                     connected(RoleChoices(main = "c1", vision = RoleChoice.Model("c2"))), qwen,
                     ProviderDetailActions(refresh = { got += "refresh" }), onBack = {},
@@ -262,7 +262,7 @@ class ModelSetupScreenTest {
 
     @Test fun allModelsShowsRefreshInProgress() {
         val running = connected().copy(listing = mapOf(qwen.id to ListState.Running))
-        compose.setContent { VamosTheme { AllModelsContent(running, qwen, ProviderDetailActions(), onBack = {}) } }
+        compose.setContent { VmTheme { AllModelsContent(running, qwen, ProviderDetailActions(), onBack = {}) } }
         compose.onNodeWithText(ModelsCopy.LISTING).assertIsDisplayed()
         compose.onNodeWithContentDescription(ModelsCopy.REFRESH).assertIsNotEnabled()
     }
@@ -293,7 +293,7 @@ class ModelSetupScreenTest {
         val started = mutableListOf<String>()
         val actions = SignInSheetActions(start = { started += "start $it" }, cancel = { started += "cancel $it" }, useApiKey = { started += "key $it" })
         var ui by mutableStateOf(ModelSetupUi(form))
-        compose.setContent { VamosTheme { SignInSheetBody(ui, SignInKind.Xai, actions) } }
+        compose.setContent { VmTheme { SignInSheetBody(ui, SignInKind.Xai, actions) } }
         compose.onNodeWithText(ModelsCopy.signInTitle(SignInKind.Xai)).assertIsDisplayed()
         compose.onNodeWithTag("signin-risk").assertIsDisplayed()
         compose.onNodeWithTag("signin-start").performClick()
@@ -309,7 +309,7 @@ class ModelSetupScreenTest {
     @Test fun openRouterSheetShowsFailureAndCanRetry() {
         val started = mutableListOf<String>()
         val ui = ModelSetupUi(form, accountSignIn = AccountSignInUi(AccountProvider.OpenRouter, failure = "已取消登录。"))
-        compose.setContent { VamosTheme { SignInSheetBody(ui, SignInKind.OpenRouter, SignInSheetActions(start = { started += "$it" })) } }
+        compose.setContent { VmTheme { SignInSheetBody(ui, SignInKind.OpenRouter, SignInSheetActions(start = { started += "$it" })) } }
         compose.onNodeWithText(ModelsCopy.signInStart(SignInKind.OpenRouter)).assertIsDisplayed()
         compose.onNodeWithTag("signin-risk").assertDoesNotExist()
         compose.onNodeWithTag("signin-failed").assertTextContains("已取消登录。")
@@ -322,7 +322,7 @@ class ModelSetupScreenTest {
         val ui = ModelSetupUi(form, providers = listOf(deepseek, grok), configs = listOf(main), roles = RoleChoices(main = "c1"),
             xaiAccount = SubscriptionAccount("me@example.com", signedIn = true))
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ProviderDetailContent(ui, grok, ProviderDetailActions(useAsMain = { got += "main" }, signOut = { got += "out" }), onBack = {})
             }
         }

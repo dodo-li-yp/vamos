@@ -1,6 +1,7 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
@@ -28,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -45,29 +45,31 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.yongpeng.vamos.ui.components.PageBackground
 import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.EmptyNote
-import com.yongpeng.vamos.ui.components.TopBar
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.components.VmEmptyNote
+import com.yongpeng.vamos.ui.components.VmTopBar
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 一次答复的来源:每条是「第几步 · 在哪 · 标题」,下面是当时的画面;没有画面的(后台读的网页正文、文件、命令输出)是摘录原文。 */
 @Composable
 fun SourceScreen(vm: SourceViewModel, onBack: () -> Unit) {
     BackHandler(onBack = onBack)
-    val ui by produceState<SourceUi?>(null, vm) { value = withContext(Dispatchers.IO) { vm.load() } }
+    val uiState = remember { mutableStateOf<SourceUi?>(null) }
+    val ui by uiState
+    LaunchedEffect(vm) { uiState.value = withContext(Dispatchers.IO) { vm.load() } }
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     PageBackground {
         Column(Modifier.fillMaxSize()) {
-            TopBar(stringResource(R.string.source_label), left = VamosIcons.Back, leftLabel = stringResource(R.string.back), onLeft = onBack)
+            VmTopBar(stringResource(R.string.source_label), left = VamosIcons.Back, leftLabel = stringResource(R.string.back), onLeft = onBack)
             ui?.let { source ->
                 LazyColumn(
                     Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + 16.dp),
                 ) {
                     source.legacyText?.takeIf(String::isNotBlank)?.let { legacy ->
-                        item("legacy") { GroupCard { Text(legacy, Modifier.padding(16.dp), style = VamosType.Body, color = c.ink) } }
+                        item("legacy") { GroupCard { Text(legacy, Modifier.padding(16.dp), style = VmType.Body, color = c.ink) } }
                     }
                     source.entries.forEachIndexed { index, entry ->
                         item("source-$index") {
@@ -75,11 +77,11 @@ fun SourceScreen(vm: SourceViewModel, onBack: () -> Unit) {
                                 Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
                                     Text(
                                         listOfNotNull(stringResource(R.string.step_number, entry.step), entry.place, entry.title).joinToString(" · "),
-                                        style = VamosType.BodyStrong, color = c.ink,
+                                        style = VmType.BodyStrong, color = c.ink,
                                     )
                                     // 有画面就只给画面:识别出的文字和画面重复;没有画面时摘录就是唯一的依据
                                     if (entry.screenshots.isEmpty()) {
-                                        entry.text?.let { Text(it, Modifier.padding(top = 6.dp), style = VamosType.Caption, color = c.ink2) }
+                                        entry.text?.let { Text(it, Modifier.padding(top = 6.dp), style = VmType.Caption, color = c.ink2) }
                                     }
                                     entry.screenshots.forEach { id -> SourceShot(vm, id) }
                                 }
@@ -87,7 +89,7 @@ fun SourceScreen(vm: SourceViewModel, onBack: () -> Unit) {
                         }
                     }
                     if (source.legacyText.isNullOrBlank() && source.entries.isEmpty()) {
-                        item("empty") { EmptyNote(stringResource(R.string.source_none)) }
+                        item("empty") { VmEmptyNote(stringResource(R.string.source_none)) }
                     }
                 }
             }
@@ -97,8 +99,10 @@ fun SourceScreen(vm: SourceViewModel, onBack: () -> Unit) {
 
 @Composable
 private fun SourceShot(vm: SourceViewModel, id: Int) {
-    val image by produceState<ImageBitmap?>(null, vm, id) {
-        value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
+    val imageState = remember { mutableStateOf<ImageBitmap?>(null) }
+    val image by imageState
+    LaunchedEffect(vm, id) {
+        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
     }
     var zoomed by remember { mutableStateOf(false) }
     image?.let {

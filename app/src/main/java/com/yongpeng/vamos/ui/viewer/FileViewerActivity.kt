@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.animationsOff
 
 /**
@@ -35,7 +35,7 @@ class FileViewerActivity : ComponentActivity() {
         val name = intent.getStringExtra(EXTRA_NAME) ?: uri.lastPathSegment.orEmpty()
         val kind = FileViewer.kindOf(this, uri, name)
         setContent {
-            VamosTheme(reduceMotion = animationsOff(this)) {
+            VmTheme(reduceMotion = animationsOff(this)) {
                 FileViewerScreen(uri, name, kind, onBack = ::finish)
             }
         }

@@ -6,7 +6,7 @@ import com.yongpeng.vamos.i18n.trPlural
 import com.yongpeng.vamos.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.testTag
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmSwitch
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -32,7 +32,7 @@ import com.yongpeng.vamos.task.ParallelLimit
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
+import com.yongpeng.vamos.ui.components.VmListItem
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.RadioRow
 import com.yongpeng.vamos.ui.components.RowChevron
@@ -40,8 +40,8 @@ import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.components.ValueTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import com.yongpeng.vamos.core.cap.phone.OperatingPace
 
 // ---------- 手机操作 ----------
@@ -63,7 +63,7 @@ fun PhoneOpsScreen(
         GroupLabel(stringResource(R.string.settings_status))
         GroupCard {
             val (a11yText, a11yTone) = StatusCopy.accessibilityValue(status.accessibility)
-            ListRow(
+            VmListItem(
                 VamosIcons.Hand, stringResource(R.string.settings_a11y), stringResource(R.string.settings_a11y_sub), first = true,
                 onClick = check.problems.firstOrNull { it is Problem.Accessibility }?.let { { onProblem(it) } },
             ) { RowValue(a11yText, a11yTone) }
@@ -72,7 +72,7 @@ fun PhoneOpsScreen(
                 val helper = status.builtinShell
                 val (hText, hTone) = PhoneSetupCopy.statusValue(helper)
                 val reconnect = PhoneSetupCopy.canReconnect(helper)
-                ListRow(
+                VmListItem(
                     VamosIcons.Link, PhoneSetupCopy.ROW_TITLE,
                     if (reconnect && helper is BuiltinShellStatus.Failed) PhoneSetupCopy.failure(helper.reason).title
                     else PhoneSetupCopy.statusLine(helper, status.usbDebugging),
@@ -80,13 +80,13 @@ fun PhoneOpsScreen(
                 ) { if (reconnect) RowValue(PhoneSetupCopy.RECONNECT, ValueTone.Link) else RowValue(hText, hTone) }
             }
             val (notifText, notifTone) = StatusCopy.notificationSummary(status.notificationOverview().summary)
-            ListRow(VamosIcons.Bell, StatusCopy.NOTIFICATIONS, stringResource(R.string.settings_notif_progress_sub), onClick = onOpenNotifications) {
+            VmListItem(VamosIcons.Bell, StatusCopy.NOTIFICATIONS, stringResource(R.string.settings_notif_progress_sub), onClick = onOpenNotifications) {
                 RowValue(notifText, notifTone)
                 RowChevron()
             }
             val tooOld = status.sdkInt < Prerequisites.MIN_SDK
             val focusWarning = Problem.FocusMayLeak in check.problems
-            ListRow(
+            VmListItem(
                 VamosIcons.Phone, stringResource(R.string.settings_system_version),
                 if (focusWarning) stringResource(R.string.settings_android_focus, androidRelease) else stringResource(R.string.settings_android, androidRelease),
                 onClick = when {
@@ -105,13 +105,13 @@ fun PhoneOpsScreen(
         if (status.sdkInt >= Prerequisites.MIN_SDK) {
             GroupLabel(stringResource(R.string.phone_channel))
             GroupCard {
-                ListRow(VamosIcons.Link, PhoneSetupCopy.REPAIR, PhoneSetupCopy.REPAIR_SUBTITLE, first = true, onClick = onRepair) {
+                VmListItem(VamosIcons.Link, PhoneSetupCopy.REPAIR, PhoneSetupCopy.REPAIR_SUBTITLE, first = true, onClick = onRepair) {
                     RowChevron()
                 }
                 val paired = status.builtinShell != BuiltinShellStatus.NotPaired
-                ListRow(
+                VmListItem(
                     VamosIcons.Close, PhoneSetupCopy.UNPAIR, PhoneSetupCopy.UNPAIR_SUBTITLE,
-                    titleColor = if (paired) VamosTheme.colors.bad else VamosTheme.colors.ink3,
+                    titleColor = if (paired) VmTheme.colors.bad else VmTheme.colors.ink3,
                     tone = if (paired) TileTone.Bad else TileTone.Neutral,
                     onClick = if (paired) ({ confirmUnpair = true }) else null,
                 )
@@ -125,7 +125,7 @@ fun PhoneOpsScreen(
             title = { Text(PhoneSetupCopy.UNPAIR_TITLE) },
             text = { Text(PhoneSetupCopy.UNPAIR_BODY) },
             confirmButton = {
-                TextButton({ confirmUnpair = false; onUnpair() }) { Text(PhoneSetupCopy.UNPAIR_CONFIRM, color = VamosTheme.colors.bad) }
+                TextButton({ confirmUnpair = false; onUnpair() }) { Text(PhoneSetupCopy.UNPAIR_CONFIRM, color = VmTheme.colors.bad) }
             },
             dismissButton = { TextButton({ confirmUnpair = false }) { Text(stringResource(R.string.cancel)) } },
         )
@@ -143,7 +143,7 @@ fun NotificationsScreen(status: SystemStatus, onFix: (Fix) -> Unit, onBack: () -
     val o = status.notificationOverview()
     PageScaffold(StatusCopy.NOTIFICATIONS, onBack) {
         GroupCard {
-            ListRow(
+            VmListItem(
                 VamosIcons.Bell, stringResource(R.string.settings_notif_master),
                 if (o.appAllowed) StatusCopy.NOTIF_APP_SUBTITLE_ON else StatusCopy.NOTIF_APP_SUBTITLE_OFF,
                 first = true, tone = if (o.appAllowed) TileTone.Neutral else TileTone.Bad,
@@ -165,7 +165,7 @@ fun NotificationsScreen(status: SystemStatus, onFix: (Fix) -> Unit, onBack: () -
 @Composable
 private fun ChannelRowItem(title: String, whenText: String, row: ChannelRow, fix: Fix, onFix: (Fix) -> Unit, first: Boolean = false) {
     val (text, tone) = StatusCopy.channelLevelValue(row)
-    ListRow(
+    VmListItem(
         VamosIcons.Bell, title, whenText, first = first,
         tone = if (row.warn) TileTone.Warn else TileTone.Neutral,
         onClick = { onFix(fix) },
@@ -193,11 +193,11 @@ fun DuringWorkScreen(
 ) {
     PageScaffold(stringResource(R.string.settings_during_work), onBack) {
         GroupCard {
-            ListRow(VamosIcons.Sun, stringResource(R.string.settings_keep_on), stringResource(R.string.settings_keep_on_sub), first = true, onClick = { onKeepScreenOn(!keepScreenOn) }) {
-                VamosSwitch(keepScreenOn, onKeepScreenOn, Modifier.testTag("work-keep-screen-on"))
+            VmListItem(VamosIcons.Sun, stringResource(R.string.settings_keep_on), stringResource(R.string.settings_keep_on_sub), first = true, onClick = { onKeepScreenOn(!keepScreenOn) }) {
+                VmSwitch(keepScreenOn, onKeepScreenOn, Modifier.testTag("work-keep-screen-on"))
             }
-            ListRow(VamosIcons.Mute, stringResource(R.string.settings_mute), stringResource(R.string.settings_mute_sub), onClick = { onMuteTarget(!muteTarget) }) {
-                VamosSwitch(muteTarget, onMuteTarget, Modifier.testTag("work-mute-target"))
+            VmListItem(VamosIcons.Mute, stringResource(R.string.settings_mute), stringResource(R.string.settings_mute_sub), onClick = { onMuteTarget(!muteTarget) }) {
+                VmSwitch(muteTarget, onMuteTarget, Modifier.testTag("work-mute-target"))
             }
             parallel?.let { ParallelRow(it, onParallelMax) }
         }
@@ -233,23 +233,23 @@ private fun paceDetail(p: OperatingPace): String = stringResource(
 @Composable
 private fun ParallelRow(p: ParallelSetting, onMax: (Int) -> Unit) {
     val supported = p.limit.reason == null
-    ListRow(
+    VmListItem(
         VamosIcons.Phone, stringResource(R.string.settings_parallel),
         subtitle = p.limit.reason ?: stringResource(R.string.settings_parallel_sub),
-        titleColor = if (supported) VamosTheme.colors.ink else VamosTheme.colors.ink3,
+        titleColor = if (supported) VmTheme.colors.ink else VmTheme.colors.ink3,
     ) {
         if (!supported) {
             RowValue(trPlural(R.plurals.settings_count_tasks, 1))
-            return@ListRow
+            return@VmListItem
         }
         Text(
             "−", Modifier.clickable(enabled = p.max > 1) { onMax(p.max - 1) }.padding(horizontal = 10.dp, vertical = 4.dp),
-            fontSize = 18.sp, color = if (p.max > 1) VamosTheme.colors.accent else VamosTheme.colors.ink3,
+            fontSize = 18.sp, color = if (p.max > 1) VmTheme.colors.accent else VmTheme.colors.ink3,
         )
         RowValue(trPlural(R.plurals.settings_count_tasks, p.max))
         Text(
             "+", Modifier.clickable(enabled = p.max < 3) { onMax(p.max + 1) }.padding(horizontal = 10.dp, vertical = 4.dp),
-            fontSize = 18.sp, color = if (p.max < 3) VamosTheme.colors.accent else VamosTheme.colors.ink3,
+            fontSize = 18.sp, color = if (p.max < 3) VmTheme.colors.accent else VmTheme.colors.ink3,
         )
     }
 }
@@ -342,13 +342,13 @@ fun RoutesScreen(count: Int?, onClear: () -> Unit, onBack: () -> Unit) {
     var confirmClear by remember { mutableStateOf(false) }
     PageScaffold(stringResource(R.string.settings_routes), onBack) {
         GroupCard {
-            ListRow(
+            VmListItem(
                 VamosIcons.Route, stringResource(R.string.routes_saved),
                 if (count == null) stringResource(R.string.loading) else trPlural(R.plurals.routes_count, count), first = true,
             ) {
                 if (count != null && count > 0) Text(
                     stringResource(R.string.routes_clear_all), Modifier.clickable { confirmClear = true }.padding(4.dp),
-                    style = VamosType.Value, color = VamosTheme.colors.bad,
+                    style = VmType.Value, color = VmTheme.colors.bad,
                 )
             }
         }
@@ -370,7 +370,7 @@ fun RecoveryScreen(onBack: () -> Unit, onOpenSelfCheck: () -> Unit = {}) {
     PageScaffold(stringResource(R.string.settings_recovery), onBack) {
         RecoverySwitches()
         GroupCard {
-            ListRow(
+            VmListItem(
                 VamosIcons.Bug, stringResource(R.string.selfcheck_title), stringResource(R.string.selfcheck_row_sub), first = true,
                 onClick = onOpenSelfCheck,
             ) { RowChevron() }

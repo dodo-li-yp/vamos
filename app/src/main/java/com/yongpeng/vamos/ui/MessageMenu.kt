@@ -55,8 +55,8 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.yongpeng.vamos.ui.components.GlassBlurSupported
 import com.yongpeng.vamos.ui.components.cardSurface
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 对话页里长按的一条消息:[key] 认是哪一条(「选择文字」记的就是它),[from] 是谁说的,[text] 是复制、引用用的纯文字
@@ -173,7 +173,7 @@ private fun quoteDescription(q: QuoteMessage.Quote): String =
 /** 输入框上方待发的引用:左边一道竖线,引的内容最多两行,右边 × 去掉。 */
 @Composable
 internal fun QuoteChip(quote: QuoteMessage.Quote, onRemove: () -> Unit, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val remove = stringResource(R.string.chat_quote_remove)
     val said = quoteDescription(quote)
     Row(
@@ -183,7 +183,7 @@ internal fun QuoteChip(quote: QuoteMessage.Quote, onRemove: () -> Unit, modifier
         Box(Modifier.width(3.dp).height(30.dp).background(c.accent, CircleShape))
         Text(
             quote.text, Modifier.weight(1f).padding(start = 10.dp).semantics { contentDescription = said },
-            style = VamosType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            style = VmType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis,
         )
         Box(
             Modifier.size(40.dp).clip(CircleShape)
@@ -200,7 +200,7 @@ internal fun QuoteChip(quote: QuoteMessage.Quote, onRemove: () -> Unit, modifier
 /** 用户的话里引的那条:气泡上方一小块淡色,最多两行。 */
 @Composable
 internal fun SentQuote(quote: QuoteMessage.Quote, maxWidth: Dp) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val said = quoteDescription(quote)
     Row(
         Modifier.padding(bottom = 4.dp).widthIn(max = maxWidth).background(c.ink.copy(alpha = 0.05f), QuoteShape)
@@ -210,7 +210,7 @@ internal fun SentQuote(quote: QuoteMessage.Quote, maxWidth: Dp) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.width(2.dp).height(16.dp).background(c.ink3, CircleShape))
-        Text(quote.text, Modifier.padding(start = 8.dp), style = VamosType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(quote.text, Modifier.padding(start = 8.dp), style = VmType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 

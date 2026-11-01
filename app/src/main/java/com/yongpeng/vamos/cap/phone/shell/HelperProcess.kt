@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.ProviderInfo
+import android.os.Build
 import android.os.Binder
 import android.os.Bundle
 import android.os.Handler
@@ -40,6 +41,10 @@ object HelperProcess {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            Log.e(TAG, "Phone control requires Android 12 or newer")
+            exitProcess(2)
+        }
         if (args.size < 3) {
             Log.e(TAG, "usage: HelperMain <package> <uid> <cert-sha256> (nonce on stdin)")
             exitProcess(2)
@@ -113,7 +118,7 @@ object HelperProcess {
         /** 经 ActivityManager 拿 Vamos 的 provider(同 `content call` 的做法),把 Binder 和自报的 uid/pid 交过去。 */
         @SuppressLint("PrivateApi", "DiscouragedPrivateApi")
         private fun deliver(n: String?): Outcome {
-            if (n == null) return Outcome.Rejected
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || n == null) return Outcome.Rejected
             // 包名和 uid 可能被重装的别的 App 占用:签名对不上就不交 Binder,撤掉改动退出
             if (!signedAsPinned()) {
                 Log.e(TAG, "$packageName is missing or not signed with the pinned certificate; exiting")

@@ -1,6 +1,9 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +32,8 @@ import androidx.compose.ui.unit.dp
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.cap.web.KeptPage
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.delay
 
 private val RowShape = RoundedCornerShape(14.dp)
@@ -62,7 +64,7 @@ internal fun LazyListScope.keptPageRow(index: Int, ex: Exchange, live: KeptPage?
             is KeptRow.Live -> KeptLine(row.page, onClose)
             is KeptRow.Closed -> Text(
                 KeptPageCopy.closedNote(row.reason), Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, bottom = 10.dp).testTag("kept-closed"),
-                style = VamosType.Hint, color = VamosTheme.colors.ink3,
+                style = VmType.Hint, color = VmTheme.colors.ink3,
             )
         }
     }
@@ -71,11 +73,13 @@ internal fun LazyListScope.keptPageRow(index: Int, ex: Exchange, live: KeptPage?
 /** 绿色那一行:「这一页保持在后台运行」,下面「站点 · 还剩多久后自动关」,右边「关闭」。剩下的时间每分钟走一次。 */
 @Composable
 fun KeptLine(page: KeptPage, onClose: () -> Unit) {
-    val c = VamosTheme.colors
-    val now by produceState(System.currentTimeMillis(), page.id) {
+    val c = VmTheme.colors
+    val nowState = remember { mutableStateOf(System.currentTimeMillis()) }
+    val now by nowState
+    LaunchedEffect(page.id) {
         while (true) {
             delay(TICK_MS)
-            value = System.currentTimeMillis()
+            nowState.value = System.currentTimeMillis()
         }
     }
     Row(
@@ -86,17 +90,17 @@ fun KeptLine(page: KeptPage, onClose: () -> Unit) {
     ) {
         Icon(VamosIcons.Globe, null, Modifier.size(18.dp), tint = c.ok)
         Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.kept_row_title), style = VamosType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.ok)
+            Text(stringResource(R.string.kept_row_title), style = VmType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.ok)
             Text(
                 stringResource(R.string.kept_row_detail, page.host, KeptPageCopy.closesIn(page.closesAt - now)),
-                style = VamosType.Hint, color = c.ok, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                style = VmType.Hint, color = c.ok, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }
         Box(
             Modifier.testTag("kept-close").clip(RoundedCornerShape(8.dp)).background(c.surface)
                 .clickable(role = Role.Button, onClick = onClose).padding(horizontal = 10.dp, vertical = 5.dp),
         ) {
-            Text(stringResource(R.string.kept_row_close), style = VamosType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.bad)
+            Text(stringResource(R.string.kept_row_close), style = VmType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.bad)
         }
     }
 }

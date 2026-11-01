@@ -17,7 +17,7 @@ import com.yongpeng.vamos.capsule.CapsuleKind
 import com.yongpeng.vamos.capsule.CapsuleView
 import com.yongpeng.vamos.capsule.CardActions
 import com.yongpeng.vamos.capsule.CardView
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -55,7 +55,7 @@ class KeptPageUiTest {
 
     @Test fun chatRowShowsHostTimeAndCloses() {
         var closed = 0
-        compose.setContent { VamosTheme(dark = false, reduceMotion = true) { KeptLine(page) { closed++ } } }
+        compose.setContent { VmTheme(dark = false, reduceMotion = true) { KeptLine(page) { closed++ } } }
         compose.onNodeWithText("这一页保持在后台运行").assertIsDisplayed()
         compose.onNodeWithText("course.example.com · 2 小时后自动关").assertIsDisplayed()
         compose.onNodeWithTag("kept-close").performClick()
@@ -64,7 +64,7 @@ class KeptPageUiTest {
 
     @Test fun capsuleSaysBackgroundPageRunning() {
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleContent(CapsuleView.Shown(CapsuleKind.KeptPage, "后台网页运行中", conversationId = "c1", pill = true), onTap = {}, onStop = {}, onHandBack = {})
             }
         }
@@ -75,7 +75,7 @@ class KeptPageUiTest {
     @Test fun cardShowsLiveViewTimeSourceAndButtons() {
         val frame = Bitmap.createBitmap(160, 90, Bitmap.Config.ARGB_8888)
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleCard(CardView.Kept(page), frame, zoomed = false, actions = actions, elapsed = { null }, height = 520.dp)
             }
         }

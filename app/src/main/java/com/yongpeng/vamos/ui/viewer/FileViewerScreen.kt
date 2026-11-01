@@ -1,6 +1,7 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui.viewer
 
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import androidx.compose.ui.res.stringResource
 import android.annotation.SuppressLint
@@ -46,7 +47,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,13 +73,13 @@ import com.yongpeng.vamos.ui.MarkdownText
 import com.yongpeng.vamos.ui.components.BarIconButton
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.PageBackground
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
@@ -117,7 +117,7 @@ fun FileViewerScreen(uri: Uri, name: String, kind: ViewerKind?, onBack: () -> Un
     val openElsewhere = { FileViewer.openElsewhere(context, uri, name) }
     PageBackground {
         Column(Modifier.fillMaxSize()) {
-            TopBar(name, VamosIcons.Back, onBack, stringResource(R.string.back), right = {
+            VmTopBar(name, VamosIcons.Back, onBack, stringResource(R.string.back), right = {
                 BarIconButton(VamosIcons.Share, stringResource(R.string.share), { FileViewer.share(context, uri, name) })
                 BarIconButton(VamosIcons.External, stringResource(R.string.viewer_open_elsewhere), openElsewhere)
             })
@@ -135,8 +135,10 @@ fun FileViewerScreen(uri: Uri, name: String, kind: ViewerKind?, onBack: () -> Un
 @Composable
 private fun LoadedView(uri: Uri, kind: ViewerKind, openElsewhere: () -> Unit) {
     val context = LocalContext.current
-    val result by produceState<Result<Loaded>?>(null, uri, kind) {
-        value = withContext(Dispatchers.IO) { runCatching { load(context, uri, kind) } }
+    val resultState = remember { mutableStateOf<Result<Loaded>?>(null) }
+    val result by resultState
+    LaunchedEffect(uri, kind) {
+        resultState.value = withContext(Dispatchers.IO) { runCatching { load(context, uri, kind) } }
     }
     val loaded = result
     when {
@@ -174,7 +176,7 @@ private fun load(context: Context, uri: Uri, kind: ViewerKind): Loaded = when (k
             buf.copyOf(n)
         }
         val truncated = bytes.size > TEXT_CAP
-        val text = String(bytes, 0, minOf(bytes.size, TEXT_CAP), Charsets.UTF_8).removePrefix("﻿")
+        val text = String(bytes, 0, minOf(bytes.size, TEXT_CAP), Charsets.UTF_8).removePrefix("\uFEFF")
         Loaded.Text(text, truncated)
     }
 }
@@ -193,14 +195,14 @@ private fun MarkdownView(l: Loaded.Text) {
             .testTag("viewer.markdown"),
     ) {
         if (l.truncated) TruncatedNote(Modifier.padding(bottom = 12.dp))
-        MarkdownText(l.text, VamosType.Body)
+        MarkdownText(l.text, VmType.Body)
     }
 }
 
 /** 等宽、可选中;按行分段放进懒加载列表,长文件也只排看得见的部分。长行自动折行。 */
 @Composable
 private fun PlainTextView(l: Loaded.Text) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val chunks = remember(l.text) { l.text.lines().chunked(LINES_PER_CHUNK).map { it.joinToString("\n") } }
     SelectionContainer {
         LazyColumn(
@@ -285,11 +287,13 @@ private class PdfDoc(private val fd: ParcelFileDescriptor) {
 @Composable
 private fun PdfView(uri: Uri, openElsewhere: () -> Unit) {
     val context = LocalContext.current
-    val doc by produceState<Result<PdfDoc>?>(null, uri) {
+    val docState = remember { mutableStateOf<Result<PdfDoc>?>(null) }
+    val doc by docState
+    LaunchedEffect(uri) {
         val opened = withContext(Dispatchers.IO) {
             runCatching { PdfDoc(context.contentResolver.openFileDescriptor(uri, "r") ?: error("打不开 $uri")) }
         }
-        value = opened
+        docState.value = opened
         try { awaitCancellation() } finally { opened.getOrNull()?.close() }
     }
     val d = doc
@@ -302,7 +306,7 @@ private fun PdfView(uri: Uri, openElsewhere: () -> Unit) {
 
 @Composable
 private fun PdfPages(doc: PdfDoc) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val list = rememberLazyListState()
     val zoom = remember { Zoom() }
     val current by remember(list) { derivedStateOf { currentPage(list) } }
@@ -319,8 +323,8 @@ private fun PdfPages(doc: PdfDoc) {
             Text(
                 "${current + 1} / ${doc.sizes.size}",
                 Modifier.align(Alignment.BottomCenter).windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 12.dp)
-                    .background(c.ink.copy(alpha = 0.72f), VamosShapes.Pill).padding(horizontal = 12.dp, vertical = 4.dp),
-                style = VamosType.Label, color = c.bg,
+                    .background(c.ink.copy(alpha = 0.72f), VmShapes.Pill).padding(horizontal = 12.dp, vertical = 4.dp),
+                style = VmType.Label, color = c.bg,
             )
         }
     }
@@ -335,18 +339,20 @@ private fun currentPage(list: LazyListState): Int {
 
 @Composable
 private fun PdfPage(doc: PdfDoc, index: Int, size: IntSize) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     BoxWithConstraints(
         Modifier.fillMaxWidth().aspectRatio(size.width.toFloat() / size.height.coerceAtLeast(1))
             .background(Color.White).border(0.5.dp, c.edge),
     ) {
         val widthPx = constraints.maxWidth
-        val bitmap by produceState<Bitmap?>(null, doc, index, widthPx) {
-            if (widthPx <= 0) return@produceState
-            val b = runCatching { doc.render(index, widthPx) }.getOrNull() ?: return@produceState
-            value = b
+        val bitmapState = remember { mutableStateOf<Bitmap?>(null) }
+        val bitmap by bitmapState
+        LaunchedEffect(doc, index, widthPx) {
+            if (widthPx <= 0) return@LaunchedEffect
+            val b = runCatching { doc.render(index, widthPx) }.getOrNull() ?: return@LaunchedEffect
+            bitmapState.value = b
             // 滑出列表或尺寸变了:先撤下再回收,别让界面画到已回收的位图
-            try { awaitCancellation() } finally { value = null; b.recycle() }
+            try { awaitCancellation() } finally { bitmapState.value = null; b.recycle() }
         }
         bitmap?.let { b ->
             val image = remember(b) { b.asImageBitmap() }
@@ -405,7 +411,7 @@ private fun Modifier.zoomable(zoom: Zoom, panWithOneFinger: Boolean): Modifier =
 @Composable
 private fun Loading() {
     Box(Modifier.fillMaxSize().testTag("viewer.loading"), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(Modifier.size(28.dp), color = VamosTheme.colors.accent, strokeWidth = 2.5.dp)
+        CircularProgressIndicator(Modifier.size(28.dp), color = VmTheme.colors.accent, strokeWidth = 2.5.dp)
     }
 }
 
@@ -416,12 +422,12 @@ private fun Failure(message: String, openElsewhere: () -> Unit, modifier: Modifi
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(message, style = VamosType.Body, color = VamosTheme.colors.ink2, textAlign = TextAlign.Center)
-        VamosButton(stringResource(R.string.viewer_open_elsewhere), openElsewhere, kind = ButtonKind.Secondary, size = ButtonSize.Medium)
+        Text(message, style = VmType.Body, color = VmTheme.colors.ink2, textAlign = TextAlign.Center)
+        VmButton(stringResource(R.string.viewer_open_elsewhere), openElsewhere, kind = ButtonKind.Secondary, size = ButtonSize.Medium)
     }
 }
 
 @Composable
 private fun TruncatedNote(modifier: Modifier = Modifier) {
-    Text(stringResource(R.string.viewer_truncated), modifier, style = VamosType.Caption, color = VamosTheme.colors.ink3)
+    Text(stringResource(R.string.viewer_truncated), modifier, style = VmType.Caption, color = VmTheme.colors.ink3)
 }

@@ -26,12 +26,12 @@ import com.yongpeng.vamos.cap.sandbox.RuntimePreparer
 import com.yongpeng.vamos.cap.sandbox.SandboxState
 import kotlinx.coroutines.launch
 import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
 import com.yongpeng.vamos.ui.components.TileTone
-import com.yongpeng.vamos.ui.components.VamosSwitch
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.components.VmSwitch
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 设置 › 文件与计算环境 的文案(纯函数,便于测试)。运行环境对用户是看不见的实现细节(产品决定):
@@ -86,12 +86,12 @@ fun AdvancedSection(
     var confirming by remember { mutableStateOf(false) }
 
     GroupCard {
-        ListRow(VamosIcons.Link, SandboxCopy.NETWORK_TITLE, SandboxCopy.NETWORK_SUBTITLE, first = true) {
-            VamosSwitch(networkAllowed, onNetworkChange, Modifier.testTag("sandbox-network"))
+        VmListItem(VamosIcons.Link, SandboxCopy.NETWORK_TITLE, SandboxCopy.NETWORK_SUBTITLE, first = true) {
+            VmSwitch(networkAllowed, onNetworkChange, Modifier.testTag("sandbox-network"))
         }
-        Note(SandboxCopy.NETWORK_EXPLAIN, if (networkAllowed) VamosTheme.colors.warn else VamosTheme.colors.ink3)
-        if (isolationIssue) Note(SandboxCopy.ISOLATION_UNAVAILABLE, VamosTheme.colors.bad)
-        ListRow(VamosIcons.Close, tr(R.string.sandbox_reset), SandboxCopy.resetSubtitle(status), titleColor = VamosTheme.colors.bad, tone = TileTone.Bad,
+        Note(SandboxCopy.NETWORK_EXPLAIN, if (networkAllowed) VmTheme.colors.warn else VmTheme.colors.ink3)
+        if (isolationIssue) Note(SandboxCopy.ISOLATION_UNAVAILABLE, VmTheme.colors.bad)
+        VmListItem(VamosIcons.Close, tr(R.string.sandbox_reset), SandboxCopy.resetSubtitle(status), titleColor = VmTheme.colors.bad, tone = TileTone.Bad,
             onClick = if (status is SandboxStatus.Installing) null else ({ confirming = true }))
     }
 
@@ -100,7 +100,7 @@ fun AdvancedSection(
             onDismissRequest = { confirming = false },
             title = { Text(SandboxCopy.RESET_TITLE) },
             text = { Text(SandboxCopy.RESET_BODY) },
-            confirmButton = { TextButton({ confirming = false; onReset() }) { Text(tr(R.string.reset), color = VamosTheme.colors.bad) } },
+            confirmButton = { TextButton({ confirming = false; onReset() }) { Text(tr(R.string.reset), color = VmTheme.colors.bad) } },
             dismissButton = { TextButton({ confirming = false }) { Text(tr(R.string.cancel)) } },
         )
     }
@@ -108,5 +108,5 @@ fun AdvancedSection(
 
 @Composable
 private fun Note(text: String, color: Color) {
-    Text(text, Modifier.fillMaxWidth().padding(start = 60.dp, end = 16.dp, bottom = 10.dp), style = VamosType.Hint, color = color)
+    Text(text, Modifier.fillMaxWidth().padding(start = 60.dp, end = 16.dp, bottom = 10.dp), style = VmType.Hint, color = color)
 }

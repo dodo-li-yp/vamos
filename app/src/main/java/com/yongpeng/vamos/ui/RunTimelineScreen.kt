@@ -1,6 +1,7 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.trPlural
 import androidx.compose.ui.res.stringResource
@@ -32,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,20 +48,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.components.EmptyNote
+import com.yongpeng.vamos.ui.components.VmEmptyNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
+import com.yongpeng.vamos.ui.components.VmListItem
 import com.yongpeng.vamos.ui.components.PageBackground
 import com.yongpeng.vamos.ui.components.RowChevron
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.StepItem
 import com.yongpeng.vamos.ui.components.StepState
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.components.ValueTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -73,7 +73,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun RunTimelineScreen(vm: RunTimelineViewModel, onBack: () -> Unit) {
     BackHandler(onBack = onBack)
-    val ui by produceState<TimelineUi>(TimelineUi.Loading, vm) { value = withContext(Dispatchers.IO) { vm.load() } }
+    val uiState = remember { mutableStateOf<TimelineUi>(TimelineUi.Loading) }
+    val ui by uiState
+    LaunchedEffect(vm) { uiState.value = withContext(Dispatchers.IO) { vm.load() } }
     val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -91,10 +93,10 @@ fun RunTimelineScreen(vm: RunTimelineViewModel, onBack: () -> Unit) {
 
     PageBackground {
         Column(Modifier.fillMaxSize()) {
-            TopBar(stringResource(R.string.timeline_title), left = VamosIcons.Back, leftLabel = stringResource(R.string.back), onLeft = onBack)
+            VmTopBar(stringResource(R.string.timeline_title), left = VamosIcons.Back, leftLabel = stringResource(R.string.back), onLeft = onBack)
             when (val u = ui) {
                 TimelineUi.Loading -> Unit
-                TimelineUi.Expired -> EmptyNote(TimelineUi.EXPIRED_TEXT, Modifier.padding(top = 80.dp))
+                TimelineUi.Expired -> VmEmptyNote(TimelineUi.EXPIRED_TEXT, Modifier.padding(top = 80.dp))
                 is TimelineUi.Ready -> LazyColumn(
                     Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = bottom + 16.dp),
@@ -128,45 +130,45 @@ fun RunTimelineScreen(vm: RunTimelineViewModel, onBack: () -> Unit) {
 
 @Composable
 private fun HeaderGroup(h: TimelineHeader, onExport: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var more by rememberSaveable { mutableStateOf(false) }
     GroupCard {
         Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 12.dp)) {
-            Text(h.goal, style = VamosType.Title, color = c.ink)
+            Text(h.goal, style = VmType.Title, color = c.ink)
             if (h.criteria.isNotEmpty()) {
-                Text(stringResource(R.string.timeline_criteria), Modifier.padding(top = 10.dp), style = VamosType.Label, color = c.ink3)
+                Text(stringResource(R.string.timeline_criteria), Modifier.padding(top = 10.dp), style = VmType.Label, color = c.ink3)
                 h.criteria.forEachIndexed { i, text ->
                     Text(
                         if (h.criteria.size > 1) "${i + 1}. $text" else text, Modifier.padding(top = 3.dp),
-                        style = VamosType.Caption, color = c.ink2,
+                        style = VmType.Caption, color = c.ink2,
                     )
                 }
             }
         }
         h.metrics?.let { RunMetricsSummary(it) }
-        ListRow(null, stringResource(R.string.timeline_outcome)) { RowValue(h.outcome, if (h.outcome == stringResource(R.string.outcome_succeeded)) ValueTone.Ok else ValueTone.Plain) }
-        if (h.verdict != stringResource(R.string.verify_none)) ListRow(null, stringResource(R.string.timeline_check)) { RowValue(h.verdict) }
+        VmListItem(null, stringResource(R.string.timeline_outcome)) { RowValue(h.outcome, if (h.outcome == stringResource(R.string.outcome_succeeded)) ValueTone.Ok else ValueTone.Plain) }
+        if (h.verdict != stringResource(R.string.verify_none)) VmListItem(null, stringResource(R.string.timeline_check)) { RowValue(h.verdict) }
         // 小结那一行已经写了用时
-        if (h.metrics == null) h.duration?.let { d -> ListRow(null, stringResource(R.string.timeline_duration)) { RowValue(d) } }
-        ListRow(null, stringResource(R.string.timeline_export), stringResource(R.string.timeline_export_hint), onClick = onExport) { RowChevron() }
-        ListRow(null, stringResource(R.string.timeline_more), onClick = { more = !more }) {
+        if (h.metrics == null) h.duration?.let { d -> VmListItem(null, stringResource(R.string.timeline_duration)) { RowValue(d) } }
+        VmListItem(null, stringResource(R.string.timeline_export), stringResource(R.string.timeline_export_hint), onClick = onExport) { RowChevron() }
+        VmListItem(null, stringResource(R.string.timeline_more), onClick = { more = !more }) {
             RowValue(if (more) stringResource(R.string.collapse) else stringResource(R.string.expand))
             RowChevron()
         }
         if (more) {
-            ListRow(null, stringResource(R.string.timeline_model_calls)) { RowValue(trPlural(R.plurals.times, h.modelCalls)) }
+            VmListItem(null, stringResource(R.string.timeline_model_calls)) { RowValue(trPlural(R.plurals.times, h.modelCalls)) }
             if (h.usedMemory.isNotEmpty()) {
-                ListRow(null, stringResource(R.string.timeline_memory_used)) { RowValue(trPlural(R.plurals.items, h.usedMemory.size)) }
+                VmListItem(null, stringResource(R.string.timeline_memory_used)) { RowValue(trPlural(R.plurals.items, h.usedMemory.size)) }
                 Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)) {
                     h.usedMemory.forEach { memory ->
-                        Text("· $memory", Modifier.padding(top = 3.dp), style = VamosType.Hint, color = c.ink2)
+                        Text("· $memory", Modifier.padding(top = 3.dp), style = VmType.Hint, color = c.ink2)
                     }
                 }
             }
             Text(
                 stringResource(R.string.timeline_timing_note),
                 Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp),
-                style = VamosType.Hint, color = c.ink3,
+                style = VmType.Hint, color = c.ink3,
             )
         }
     }
@@ -175,7 +177,7 @@ private fun HeaderGroup(h: TimelineHeader, onExport: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunTimelineViewModel) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var open by rememberSaveable(s.step) { mutableStateOf(false) }
     val shot = s.screenshotId
     val failed = s.result?.startsWith(stringResource(R.string.result_error_prefix)) == true
@@ -186,15 +188,15 @@ private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunT
     ) {
         Column(Modifier.fillMaxWidth().padding(end = 16.dp, top = 11.dp, bottom = 11.dp)) {
             Row(verticalAlignment = Alignment.Top) {
-                Text(stringResource(R.string.step_number, s.step), style = VamosType.Label, color = c.ink3)
+                Text(stringResource(R.string.step_number, s.step), style = VmType.Label, color = c.ink3)
                 Text(
                     if (s.activities.isEmpty()) listOfNotNull(s.tool, s.detail).joinToString(" · ") else "",
                     Modifier.weight(1f).padding(start = 8.dp),
-                    style = VamosType.Body, color = c.ink, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    style = VmType.Body, color = c.ink, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 s.result?.let {
                     Text(
-                        it, Modifier.padding(start = 8.dp).widthIn(max = 120.dp), style = VamosType.Caption,
+                        it, Modifier.padding(start = 8.dp).widthIn(max = 120.dp), style = VmType.Caption,
                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                         color = when {
                             failed -> c.bad
@@ -204,9 +206,9 @@ private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunT
                     )
                 }
             }
-            Text(RunTimelineViewModel.timingLabel(s.timing), Modifier.padding(top = 2.dp), style = VamosType.Hint, color = c.ink3)
+            Text(RunTimelineViewModel.timingLabel(s.timing), Modifier.padding(top = 2.dp), style = VmType.Hint, color = c.ink3)
             if (s.said.isNotEmpty()) {
-                Text(s.said, Modifier.padding(top = 3.dp), style = VamosType.Caption, color = c.ink2)
+                Text(s.said, Modifier.padding(top = 3.dp), style = VmType.Caption, color = c.ink2)
             }
             s.activities.forEach { a ->
                 val action = if (a.count > 1) trPlural(R.plurals.timeline_viewed_times, a.count) else a.label
@@ -221,7 +223,7 @@ private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunT
                 }
                 Text(
                     listOfNotNull(action, a.target?.takeIf(String::isNotBlank), effect.takeIf(String::isNotBlank)).joinToString(" · "),
-                    Modifier.padding(top = 3.dp), style = VamosType.Caption, color = c.ink2,
+                    Modifier.padding(top = 3.dp), style = VmType.Caption, color = c.ink2,
                 )
             }
             if (s.tags.isNotEmpty()) {
@@ -232,7 +234,7 @@ private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunT
             if (shot != null) {
                 Text(
                     if (open) stringResource(R.string.timeline_hide_screen) else stringResource(R.string.timeline_show_screen), Modifier.padding(top = 6.dp),
-                    style = VamosType.Label, color = c.accent,
+                    style = VmType.Label, color = c.accent,
                 )
                 if (open) Shot(vm, shot, s.step)
             }
@@ -242,7 +244,7 @@ private fun TimelineRow(s: TimelineStep, first: Boolean, last: Boolean, vm: RunT
 
 @Composable
 private fun TagChip(t: Tag) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val (bg, fg) = when (t.tone) {
         TagTone.Ok -> c.okSoft to c.ok
         TagTone.Warn -> c.warnSoft to c.warn
@@ -250,21 +252,23 @@ private fun TagChip(t: Tag) {
     }
     Text(
         t.text, Modifier.background(bg, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
-        style = VamosType.Hint, fontWeight = FontWeight.SemiBold, color = fg,
+        style = VmType.Hint, fontWeight = FontWeight.SemiBold, color = fg,
     )
 }
 
 /** 当时的画面:在后台线程解码;文件已被清理时只说一句。 */
 @Composable
 private fun Shot(vm: RunTimelineViewModel, id: Int, step: Int) {
-    val image by produceState<ImageBitmap?>(null, id) {
-        value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
+    val imageState = remember { mutableStateOf<ImageBitmap?>(null) }
+    val image by imageState
+    LaunchedEffect(id) {
+        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
     }
     val shape = RoundedCornerShape(12.dp)
     image?.let {
         Image(
             it, stringResource(R.string.timeline_step_screen, step),
-            Modifier.padding(top = 8.dp).widthIn(max = 220.dp).clip(shape).background(VamosTheme.colors.fill, shape),
+            Modifier.padding(top = 8.dp).widthIn(max = 220.dp).clip(shape).background(VmTheme.colors.fill, shape),
             contentScale = ContentScale.FillWidth,
         )
     }

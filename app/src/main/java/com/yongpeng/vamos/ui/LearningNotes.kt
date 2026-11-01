@@ -14,8 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 结果卡片下的小字:记住了什么、学会或停用了哪项技能,各带按钮。 */
 internal fun LazyListScope.learningNotes(index: Int, ex: Exchange, vm: ChatViewModel) {
@@ -47,7 +47,7 @@ internal fun LazyListScope.learningNotes(index: Int, ex: Exchange, vm: ChatViewM
 @Composable
 private fun NoteLine(text: String, buttons: @Composable () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(text, Modifier.weight(1f), style = VamosType.Hint, color = VamosTheme.colors.ink3)
+        Text(text, Modifier.weight(1f), style = VmType.Hint, color = VmTheme.colors.ink3)
         buttons()
     }
 }

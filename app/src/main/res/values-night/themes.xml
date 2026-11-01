@@ -4,5 +4,5 @@
     <style name="Theme.Vamos" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/vamos_bg</item>
     </style>
-    <color name="vamos_bg">#0E0E10</color>
+    <color name="vamos_bg">#1A1C1B</color>
 </resources>

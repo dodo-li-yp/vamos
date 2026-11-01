@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -71,13 +70,13 @@ import com.yongpeng.vamos.browser.BrowserPage
 import com.yongpeng.vamos.browser.SiteFace
 import com.yongpeng.vamos.ui.components.BarIconButton
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -93,7 +92,7 @@ internal val InitialSmall = TextStyle(fontSize = 13.sp, lineHeight = 16.sp, font
  */
 @Composable
 fun SiteTile(face: SiteFace, size: Dp, shape: Shape, initialStyle: TextStyle) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val icon = rememberSiteIcon(face)
     if (icon != null) {
         Box(Modifier.size(size).background(Color.White, shape).border(0.5.dp, c.edge, shape).clip(shape), contentAlignment = Alignment.Center) {
@@ -114,9 +113,11 @@ private object SiteIcons {
 private fun rememberSiteIcon(face: SiteFace): ImageBitmap? {
     val file = face.icon
     val key = file?.let { "${it.path}@${face.iconAtMs}" }
-    val icon by produceState(key?.let { SiteIcons.cache.get(it) }, key) {
-        if (file == null || key == null || value != null) return@produceState
-        value = withContext(Dispatchers.IO) { runCatching { BitmapFactory.decodeFile(file.path)?.asImageBitmap() }.getOrNull() }
+    val iconState = remember { mutableStateOf(key?.let { SiteIcons.cache.get(it) }) }
+    val icon by iconState
+    LaunchedEffect(key) {
+        if (file == null || key == null || iconState.value != null) return@LaunchedEffect
+        iconState.value = withContext(Dispatchers.IO) { runCatching { BitmapFactory.decodeFile(file.path)?.asImageBitmap() }.getOrNull() }
             ?.also { SiteIcons.cache.put(key, it) }
     }
     return icon
@@ -135,12 +136,12 @@ fun BrowserPageBar(
     onReload: () -> Unit,
     onStop: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val focus = LocalFocusManager.current
     var editing by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().background(c.bg).windowInsetsPadding(WindowInsets.statusBars)) {
         Row(
-            Modifier.fillMaxWidth().height(VamosSize.TopBar).padding(horizontal = 8.dp),
+            Modifier.fillMaxWidth().height(VmSize.VmTopBar).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -151,9 +152,9 @@ fun BrowserPageBar(
                     onSubmit(input)
                 }
                 Text(
-                    tr(R.string.cancel), Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button) { editing = false; focus.clearFocus() }
+                    tr(R.string.cancel), Modifier.clip(VmShapes.Pill).clickable(role = Role.Button) { editing = false; focus.clearFocus() }
                         .padding(horizontal = 10.dp, vertical = 8.dp),
-                    style = VamosType.Body, color = c.accent,
+                    style = VmType.Body, color = c.accent,
                 )
             } else {
                 BarIconButton(VamosIcons.Close, tr(R.string.browser_close_page), onClose)
@@ -173,11 +174,11 @@ fun BrowserPageBar(
 
 @Composable
 private fun AddressPill(page: BrowserPage, face: SiteFace?, modifier: Modifier, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val query = AddressInput.searchQuery(page.url)
     val shown = query ?: face?.name ?: page.url
     Row(
-        modifier.height(40.dp).clip(VamosShapes.Pill).background(c.fill)
+        modifier.height(40.dp).clip(VmShapes.Pill).background(c.fill)
             .clickable(onClickLabel = tr(R.string.browser_edit_url), role = Role.Button, onClick = onClick)
             .padding(horizontal = 14.dp).testTag("browser-address-pill"),
         verticalAlignment = Alignment.CenterVertically,
@@ -187,7 +188,7 @@ private fun AddressPill(page: BrowserPage, face: SiteFace?, modifier: Modifier, 
             query != null -> Icon(VamosIcons.Search, null, Modifier.size(14.dp), tint = c.ink3)
             page.url.startsWith("https://") -> Icon(VamosIcons.Lock, tr(R.string.browser_secure), Modifier.size(14.dp), tint = c.ink3)
         }
-        Text(shown, Modifier.weight(1f, fill = false), style = VamosType.Body, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(shown, Modifier.weight(1f, fill = false), style = VmType.Body, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (page.desktop) {
             Text(
                 BROWSER_DESKTOP_TAG, Modifier.background(c.warnSoft, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 1.dp),
@@ -202,12 +203,12 @@ private val TagText = TextStyle(fontSize = 11.sp, lineHeight = 15.sp, fontWeight
 /** 展开的地址栏:完整网址全选着,键盘上是「前往」。 */
 @Composable
 private fun AddressEditor(url: String, modifier: Modifier, onGo: (String) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val focus = remember { FocusRequester() }
     var text by remember { mutableStateOf(TextFieldValue(url, TextRange(0, url.length))) }
     LaunchedEffect(Unit) { focus.requestFocus() }
     Row(
-        modifier.height(40.dp).background(c.surface, VamosShapes.Pill).border(1.5.dp, c.accent, VamosShapes.Pill).padding(horizontal = 14.dp),
+        modifier.height(40.dp).background(c.surface, VmShapes.Pill).border(1.5.dp, c.accent, VmShapes.Pill).padding(horizontal = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -216,7 +217,7 @@ private fun AddressEditor(url: String, modifier: Modifier, onGo: (String) -> Uni
             text, { text = it },
             Modifier.weight(1f).focusRequester(focus).testTag("browser-address"),
             singleLine = true,
-            textStyle = VamosType.Body.copy(fontSize = 14.5.sp, color = c.ink),
+            textStyle = VmType.Body.copy(fontSize = 14.5.sp, color = c.ink),
             cursorBrush = SolidColor(c.accent),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go, autoCorrectEnabled = false),
             keyboardActions = KeyboardActions(onGo = { onGo(text.text) }),
@@ -234,7 +235,7 @@ fun BrowserToolbar(
     onShare: () -> Unit,
     onMore: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(Modifier.fillMaxWidth().background(c.bg).windowInsetsPadding(WindowInsets.navigationBars)) {
         Box(Modifier.fillMaxWidth().height(0.5.dp).background(c.hair))
         Row(
@@ -254,7 +255,7 @@ fun BrowserToolbar(
 /** 「给 Vamos 登录」的横幅:说明这次用的是 Vamos 办事时的那一版,登录完点「登录好了」。 */
 @Composable
 fun LoginBanner(desktop: Boolean, onDone: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val text = buildAnnotatedString {
         withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(tr(R.string.browser_login_for_vamos)) }
         append(tr(R.string.browser_login_for_vamos_sub, if (desktop) tr(R.string.browser_desktop) else tr(R.string.browser_mobile)))
@@ -266,8 +267,8 @@ fun LoginBanner(desktop: Boolean, onDone: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(text, Modifier.weight(1f), style = VamosType.Caption, color = c.ink)
-        VamosButton(BROWSER_LOGIN_DONE, onDone, size = ButtonSize.Small)
+        Text(text, Modifier.weight(1f), style = VmType.Caption, color = c.ink)
+        VmButton(BROWSER_LOGIN_DONE, onDone, size = ButtonSize.Small)
     }
 }
 
@@ -289,7 +290,7 @@ fun BrowserMoreSheet(
     onToggleFavorite: () -> Unit,
     onToggleDesktop: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = c.surface, shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 8.dp).testTag("browser-more")) {
             if (face != null && host != null) {
@@ -300,18 +301,18 @@ fun BrowserMoreSheet(
                 ) {
                     SiteTile(face, 28.dp, MiniShape, InitialSmall)
                     Column(Modifier.weight(1f)) {
-                        Text(face.name, style = VamosType.BodyStrong, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(host, style = VamosType.Caption, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(face.name, style = VmType.BodyStrong, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(host, style = VmType.Caption, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
             fun act(f: () -> Unit): () -> Unit = { onDismiss(); f() }
-            ListRow(VamosIcons.Refresh, tr(R.string.refresh), first = true, onClick = act(onReload))
-            ListRow(VamosIcons.Copy, tr(R.string.browser_copy_link), onClick = act(onCopy))
-            ListRow(VamosIcons.External, tr(R.string.browser_open_outside), onClick = act(onOpenOutside))
+            VmListItem(VamosIcons.Refresh, tr(R.string.refresh), first = true, onClick = act(onReload))
+            VmListItem(VamosIcons.Copy, tr(R.string.browser_copy_link), onClick = act(onCopy))
+            VmListItem(VamosIcons.External, tr(R.string.browser_open_outside), onClick = act(onOpenOutside))
             if (host != null) {
-                ListRow(VamosIcons.Star, if (favorite) tr(R.string.browser_unfavorite) else tr(R.string.browser_favorite), onClick = act(onToggleFavorite))
-                ListRow(
+                VmListItem(VamosIcons.Star, if (favorite) tr(R.string.browser_unfavorite) else tr(R.string.browser_favorite), onClick = act(onToggleFavorite))
+                VmListItem(
                     if (desktop) VamosIcons.Phone else VamosIcons.Desktop,
                     if (desktop) tr(R.string.browser_to_mobile) else tr(R.string.browser_to_desktop),
                     subtitle = if (desktop) tr(R.string.browser_keep_mobile) else tr(R.string.browser_keep_desktop),

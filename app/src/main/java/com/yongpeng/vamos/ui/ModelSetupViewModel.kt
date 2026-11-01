@@ -178,7 +178,9 @@ data class AddForm(
     val familyTokens: List<String> get() = presetFor(preset).familyTokens.ifEmpty { ModelOptions.familyOf(baseUrl) }
 
     companion object {
-        fun of(p: ProviderPreset) = AddForm(p.label, p.kind, p.baseUrl, "")
+        fun of(p: ProviderPreset) = AddForm(p.label, p.kind, p.baseUrl, "",
+            model = when(p.label) { "DeepSeek" -> "deepseek-flash"; "通义千问" -> "qwen3.7-plus"; else -> "" },
+            manual = p.label == "DeepSeek" || p.label == "通义千问")
         fun presetFor(label: String): ProviderPreset = ProviderPresets.all.firstOrNull { it.label == label } ?: ProviderPresets.custom
     }
 }

@@ -67,7 +67,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -124,21 +123,21 @@ import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.GlassBackdrop
 import com.yongpeng.vamos.ui.components.GlassBar
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.VamosCard
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.components.VmGlassCard
 import com.yongpeng.vamos.ui.components.PageBackground
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.components.cardSurface
 import com.yongpeng.vamos.ui.components.floatShadow
 import com.yongpeng.vamos.ui.components.glassSource
 import com.yongpeng.vamos.ui.components.rememberGlassBackdrop
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosMotion
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmMotion
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.viewer.FileViewer
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmType
 import com.yongpeng.vamos.voice.HoldToTalk
 import com.yongpeng.vamos.voice.VoiceSource
 import kotlinx.coroutines.delay
@@ -256,7 +255,7 @@ fun ChatScreen(
         if (grown > 0 && followingTail && !listState.isScrollInProgress) listState.scrollBy(grown.toFloat())
     }
 
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val backdrop = rememberGlassBackdrop()
     val context = LocalContext.current
     /** 长按了的那条消息;菜单开着(收起的动画放完才清掉)。 */
@@ -267,14 +266,14 @@ fun ChatScreen(
     val lift = remember { Animatable(0f) }
     LaunchedEffect(menu) {
         if (menu != null) {
-            if (reduceMotion) lift.snapTo(1f) else lift.animateTo(1f, tween(MENU_IN_MS, easing = VamosMotion.Decelerate))
+            if (reduceMotion) lift.snapTo(1f) else lift.animateTo(1f, tween(MENU_IN_MS, easing = VmMotion.Decelerate))
         }
     }
     /** 收起菜单:倒着放一遍出现的动画,放完再清掉;[then] 当场做。 */
     fun closeMenu(then: () -> Unit = {}) {
         then()
         scope.launch {
-            if (reduceMotion) lift.snapTo(0f) else lift.animateTo(0f, tween(MENU_OUT_MS, easing = VamosMotion.Decelerate))
+            if (reduceMotion) lift.snapTo(0f) else lift.animateTo(0f, tween(MENU_OUT_MS, easing = VmMotion.Decelerate))
             menu = null
         }
     }
@@ -316,7 +315,7 @@ fun ChatScreen(
         // 没有任务在跑、这个对话留着一页在后台运行时:顶栏写「后台保持着 1 个网页」
         val sub = ChatCopy.subtitle(last, last?.let(vm::livePlace)) ?: kept?.let { ChatCopy.KEPT_PAGE to ChatCopy.Tone.Ok }
         Column(Modifier.behindMenu(menuOpen) { lift.value }.onSizeChanged { topHeight = it.height }) {
-            TopBar(
+            VmTopBar(
                 ChatCopy.APP_TITLE,
                 left = VamosIcons.Menu, leftLabel = stringResource(R.string.chat_menu), onLeft = onOpenDrawer,
                 // 别的对话里还有任务在跑(并行时):菜单上一个小圆点,侧栏「进行中」里能切过去
@@ -418,18 +417,15 @@ private fun LazyListState.nearTail(thresholdPx: Int): Boolean {
 /** 问候、一句「想让 Vamos 做什么？」和一列示例;点示例把它填进输入框,改好了再发。 */
 @Composable
 private fun EmptyState(conversation: String?, onPick: (String) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val hour = remember(conversation) { LocalTime.now().hour }
     Column(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(start = 8.dp, end = 8.dp, top = 52.dp)) {
-            Text(ChatCopy.greeting(hour), style = VamosType.LargeTitle, color = c.ink)
+            Text(ChatCopy.greeting(hour), style = VmType.LargeTitle, color = c.ink)
             Text(ChatCopy.EMPTY_PROMPT, Modifier.padding(top = 6.dp), style = EmptyLead, color = c.ink2)
         }
-        VamosCard(Modifier.padding(top = 28.dp)) {
-            ChatCopy.examples.forEachIndexed { i, ex ->
-                ExampleRow(exampleIcon(ex.kind), ex.text, first = i == 0) { onPick(ex.text) }
-            }
-        }
+        // V1.1 example task cards intentionally have no V1 entry point.
+
     }
 }
 
@@ -443,7 +439,7 @@ private fun exampleIcon(kind: ChatCopy.ExampleKind): ImageVector = when (kind) {
 
 @Composable
 private fun ExampleRow(icon: ImageVector, text: String, first: Boolean, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth()
             .then(if (first) Modifier else Modifier.drawBehind {
@@ -456,7 +452,7 @@ private fun ExampleRow(icon: ImageVector, text: String, first: Boolean, onClick:
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Icon(icon, null, Modifier.size(VamosSize.Icon), tint = c.ink2)
+        Icon(icon, null, Modifier.size(VmSize.Icon), tint = c.ink2)
         Text(text, Modifier.weight(1f), style = ExampleText, color = c.ink)
     }
 }
@@ -544,30 +540,30 @@ internal fun UserBubble(text: String, conversationId: String?, note: String? = n
             if (attached.hasAttachments && attached.words.isNotEmpty()) Spacer(Modifier.size(6.dp))
             if ((!attached.hasAttachments || attached.words.isNotEmpty()) && (paged.page == null || quoted.words.isNotEmpty())) UserMessage(conversationId, attached.words.takeIf { attached.hasAttachments } ?: quoted.words, ChatThumbWidth) { words ->
                 // 选择文字时蓝底上选中的底色用白色半透明,把手照旧是蓝色(画在气泡外面)
-                val colors = VamosTheme.colors
+                val colors = VmTheme.colors
                 CompositionLocalProvider(LocalTextSelectionColors provides TextSelectionColors(colors.accent, colors.onAccent.copy(alpha = 0.35f))) {
                     MessageArea(
                         key, QuoteMessage.From.You, words, "selectable-user",
-                        Modifier.widthIn(max = max).background(colors.accent, VamosShapes.UserBubble),
-                        lifted = { LiftedMessage(VamosShapes.UserBubble, colors.accent) { UserBubbleText(words) } },
+                        Modifier.widthIn(max = max).background(colors.accent, VmShapes.UserBubble),
+                        lifted = { LiftedMessage(VmShapes.UserBubble, colors.accent) { UserBubbleText(words) } },
                     ) { UserBubbleText(words) }
                 }
             }
-            note?.let { Text(it, Modifier.padding(top = 3.dp, end = 4.dp), style = VamosType.Hint, color = VamosTheme.colors.ink3) }
+            note?.let { Text(it, Modifier.padding(top = 3.dp, end = 4.dp), style = VmType.Hint, color = VmTheme.colors.ink3) }
         }
     }
 }
 
 @Composable
 private fun UserBubbleText(words: String) {
-    Text(words, Modifier.padding(horizontal = 14.dp, vertical = 10.dp), style = BubbleText, color = VamosTheme.colors.onAccent)
+    Text(words, Modifier.padding(horizontal = 14.dp, vertical = 10.dp), style = BubbleText, color = VmTheme.colors.onAccent)
 }
 
 /** 长按抬起的那条消息:[color] 底、带阴影;太长时(最高半屏)只露开头,下面裁掉。 */
 @Composable
 private fun LiftedMessage(shape: Shape, color: Color, content: @Composable () -> Unit) {
     Box(
-        Modifier.floatShadow(VamosTheme.colors, shape).background(color, shape).clip(shape)
+        Modifier.floatShadow(VmTheme.colors, shape).background(color, shape).clip(shape)
             .wrapContentHeight(Alignment.Top, unbounded = true),
     ) { content() }
 }
@@ -579,7 +575,7 @@ private val ChatThumbWidth = 110.dp
 @Composable
 private fun DraftText(text: String, generating: Boolean) {
     MarkdownText(
-        text, AnswerText.copy(color = VamosTheme.colors.ink),
+        text, AnswerText.copy(color = VmTheme.colors.ink),
         Modifier.fillMaxWidth().padding(bottom = 12.dp).answerSurface(), streaming = generating,
     )
 }
@@ -589,7 +585,7 @@ private fun DraftText(text: String, generating: Boolean) {
 private fun FinishedReply(text: String, key: String) {
     Box(Modifier.padding(bottom = 4.dp)) {
         AnswerArea(key, text, Modifier.fillMaxWidth().answerSurface()) {
-            MarkdownText(text, AnswerText.copy(color = VamosTheme.colors.ink), streaming = false)
+            MarkdownText(text, AnswerText.copy(color = VmTheme.colors.ink), streaming = false)
         }
     }
 }
@@ -604,8 +600,8 @@ private fun AnswerArea(key: String, answer: String, modifier: Modifier, content:
     MessageArea(
         key, QuoteMessage.From.Vamos, plain, "selectable-answer", modifier,
         lifted = {
-            LiftedMessage(VamosShapes.AnswerBubble, VamosTheme.colors.surface) {
-                MarkdownText(answer, AnswerText.copy(color = VamosTheme.colors.ink), Modifier.padding(horizontal = 14.dp, vertical = 12.dp), streaming = false)
+            LiftedMessage(VmShapes.AnswerBubble, VmTheme.colors.surface) {
+                MarkdownText(answer, AnswerText.copy(color = VmTheme.colors.ink), Modifier.padding(horizontal = 14.dp, vertical = 12.dp), streaming = false)
             }
         },
     ) { content() }
@@ -615,15 +611,15 @@ private fun AnswerArea(key: String, answer: String, modifier: Modifier, content:
 @Composable
 private fun InterruptedReply(text: String) {
     Column(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
-        MarkdownText(text, AnswerText.copy(color = VamosTheme.colors.ink2), Modifier.fillMaxWidth().answerSurface(), streaming = false)
-        Text(stringResource(R.string.steer_interrupted_reply), Modifier.padding(top = 3.dp, start = 4.dp), style = VamosType.Hint, color = VamosTheme.colors.ink3)
+        MarkdownText(text, AnswerText.copy(color = VmTheme.colors.ink2), Modifier.fillMaxWidth().answerSurface(), streaming = false)
+        Text(stringResource(R.string.steer_interrupted_reply), Modifier.padding(top = 3.dp, start = 4.dp), style = VmType.Hint, color = VmTheme.colors.ink3)
     }
 }
 
 /** Vamos 回答的底:很淡的灰,左下尾角。 */
 @Composable
 private fun Modifier.answerSurface(): Modifier =
-    background(VamosTheme.colors.answer, VamosShapes.AnswerBubble).padding(horizontal = 14.dp, vertical = 12.dp)
+    background(VmTheme.colors.answer, VmShapes.AnswerBubble).padding(horizontal = 14.dp, vertical = 12.dp)
 
 // ---------- 进度 ----------
 
@@ -633,7 +629,7 @@ private fun Modifier.answerSurface(): Modifier =
  */
 @Composable
 private fun WorkBlock(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val paused = ChatCopy.paused(ex.status)
     val elapsed = rememberElapsed(ex.startedAt)
     Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
@@ -669,10 +665,12 @@ private fun WorkBlock(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boole
 @Composable
 private fun rememberElapsed(startedAt: Long): Long? {
     if (startedAt <= 0L) return null
-    val now by produceState(System.currentTimeMillis(), startedAt) {
+    val nowState = remember { mutableStateOf(System.currentTimeMillis()) }
+    val now by nowState
+    LaunchedEffect(startedAt) {
         while (true) {
-            value = System.currentTimeMillis()
-            delay(1_000L - value % 1_000L)
+            nowState.value = System.currentTimeMillis()
+            delay(1_000L - nowState.value % 1_000L)
         }
     }
     return (now - startedAt).coerceAtLeast(0L)
@@ -686,7 +684,7 @@ private enum class Dot { Done, Current, Paused, Dim }
  */
 @Composable
 private fun StepLine(steps: List<StepRow>, live: Boolean, paused: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var all by rememberSaveable { mutableStateOf(!live) }
     val hidden = if (all) 0 else (steps.size - ChatCopy.VISIBLE_STEPS).coerceAtLeast(0)
     Column(
@@ -713,7 +711,7 @@ private fun StepLine(steps: List<StepRow>, live: Boolean, paused: Boolean) {
 
 @Composable
 private fun StepItem(text: String, subtitle: String, dot: Dot, current: Boolean, link: Boolean = false, onClick: (() -> Unit)? = null) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClickLabel = stringResource(R.string.chat_expand_steps), onClick = onClick) else Modifier)
@@ -732,7 +730,7 @@ private fun StepItem(text: String, subtitle: String, dot: Dot, current: Boolean,
                 },
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
-            if (subtitle.isNotEmpty()) Text(subtitle, style = VamosType.Hint, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (subtitle.isNotEmpty()) Text(subtitle, style = VmType.Hint, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -740,7 +738,7 @@ private fun StepItem(text: String, subtitle: String, dot: Dot, current: Boolean,
 /** 步骤点:8dp 实心;当前步外面一圈 3dp 的淡色光环。 */
 @Composable
 private fun StepDot(dot: Dot) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val (fill, ring) = when (dot) {
         Dot.Done -> c.ink3 to null
         Dot.Dim -> c.hair to null
@@ -783,7 +781,7 @@ internal fun Spinner(modifier: Modifier, spinning: Boolean, track: Color, head: 
  */
 @Composable
 private fun DoneLine(ex: Exchange, reduceMotion: Boolean, openRun: (String) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var open by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
         Row(
@@ -801,7 +799,7 @@ private fun DoneLine(ex: Exchange, reduceMotion: Boolean, openRun: (String) -> U
             ex.runId?.let { id ->
                 Text(
                     // 灰色斜体加下划线:和回答融在一起,又看得出能点
-                    stringResource(R.string.chat_view_process), Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button) { openRun(id) }.padding(horizontal = 4.dp, vertical = 4.dp),
+                    stringResource(R.string.chat_view_process), Modifier.clip(VmShapes.Pill).clickable(role = Role.Button) { openRun(id) }.padding(horizontal = 4.dp, vertical = 4.dp),
                     style = DoneText.copy(fontStyle = FontStyle.Italic, textDecoration = TextDecoration.Underline), color = c.ink3,
                 )
             }
@@ -866,17 +864,18 @@ private fun StatusCard(
             NeedCard(
                 stringResource(R.string.input_title), stringResource(R.string.chat_input_body, status.prompt, note),
                 options = if (options.isEmpty()) null else ({
-                    options.forEach { o -> VamosButton(o, { vm.answer(o) }, Modifier.fillMaxWidth(), kind = ButtonKind.Tonal, size = ButtonSize.Medium) }
+                    options.forEach { o -> VmButton(o, { vm.answer(o) }, Modifier.fillMaxWidth(), kind = ButtonKind.Tonal, size = ButtonSize.Medium) }
                 }),
             ) {
                 if (options.isEmpty()) CardButton(stringResource(R.string.action_cancel_task), onClick = vm::cancel)
             }
         }
         // 只有花钱的操作要你同意,每次只同意这一次
-        is ExchangeStatus.NeedsConfirmation -> NeedCard(status.title, status.body + "\n" + ConfirmationCopy.NOTE) {
-            CardButton(stringResource(R.string.chat_refuse), onClick = { vm.decline(status.key) })
-            CardButton(stringResource(R.string.chat_allow_once), primary = true, onClick = { vm.approve(status.key) })
+        is ExchangeStatus.NeedsConfirmation -> androidx.compose.runtime.key(status.key) {
+            com.yongpeng.vamos.ui.components.VmConfirmSheet(status.title, status.body,
+                onDeny = { vm.decline(status.key) }, onAllow = { vm.approve(status.key) })
         }
+
         is ExchangeStatus.Paused -> NeedCard(stringResource(R.string.chat_paused), status.why) {
             CardButton(stringResource(R.string.action_cancel_task), onClick = vm::cancel)
             CardButton(stringResource(R.string.chat_continue), primary = true, onClick = vm::resume)
@@ -887,13 +886,13 @@ private fun StatusCard(
                 Column {
                     status.unverifiedLine?.let { line ->
                         Row(Modifier.padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(18.dp).background(VamosTheme.colors.warnSoft, CircleShape), contentAlignment = Alignment.Center) {
-                                Icon(VamosIcons.Exclaim, null, Modifier.size(11.dp), tint = VamosTheme.colors.warn)
+                            Box(Modifier.size(18.dp).background(VmTheme.colors.warnSoft, CircleShape), contentAlignment = Alignment.Center) {
+                                Icon(VamosIcons.Exclaim, null, Modifier.size(11.dp), tint = VmTheme.colors.warn)
                             }
-                            Text(line, style = VamosType.Caption, fontWeight = FontWeight.SemiBold, color = VamosTheme.colors.ink2)
+                            Text(line, style = VmType.Caption, fontWeight = FontWeight.SemiBold, color = VmTheme.colors.ink2)
                         }
                     }
-                    MarkdownText(status.answer, AnswerText.copy(color = VamosTheme.colors.ink))
+                    MarkdownText(status.answer, AnswerText.copy(color = VmTheme.colors.ink))
                     // 来源:旧记录里模型写的依据文字,或运行记录里代码记下的来源;都没有就不显示
                     if (status.evidence != null || runId != null) SourceChip(status.evidence, runId, loadSource, openSource)
                 }
@@ -901,21 +900,21 @@ private fun StatusCard(
         }
         is ExchangeStatus.Failed -> Column(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp, bottom = 12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.size(8.dp).background(VamosTheme.colors.bad, CircleShape))
-                Text(stringResource(R.string.chat_not_done), style = VamosType.BodyStrong, color = VamosTheme.colors.ink)
+                Box(Modifier.size(8.dp).background(VmTheme.colors.bad, CircleShape))
+                Text(stringResource(R.string.chat_not_done), style = VmType.BodyStrong, color = VmTheme.colors.ink)
             }
-            Text(status.reason, Modifier.padding(top = 4.dp), style = CardBody, color = VamosTheme.colors.ink2)
+            Text(status.reason, Modifier.padding(top = 4.dp), style = CardBody, color = VmTheme.colors.ink2)
         }
         // 停止后补上的交代当作这一轮的回答,排在「已停止」下面;还在写时一行小字
         is ExchangeStatus.Cancelled -> Column(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
-            Text(stringResource(R.string.chat_stopped), Modifier.padding(start = 2.dp), style = VamosType.Body, color = VamosTheme.colors.ink2)
+            Text(stringResource(R.string.chat_stopped), Modifier.padding(start = 2.dp), style = VmType.Body, color = VmTheme.colors.ink2)
             if (status.summarizing) Text(
-                StatusCopy.STOP_SUMMARIZING, Modifier.padding(start = 2.dp, top = 4.dp), style = VamosType.Caption, color = VamosTheme.colors.ink3,
+                StatusCopy.STOP_SUMMARIZING, Modifier.padding(start = 2.dp, top = 4.dp), style = VmType.Caption, color = VmTheme.colors.ink3,
             )
             status.summary?.let { summary ->
                 Box(Modifier.padding(top = 8.dp)) {
                     AnswerArea(key, summary, Modifier.fillMaxWidth().answerSurface()) {
-                        MarkdownText(summary, AnswerText.copy(color = VamosTheme.colors.ink))
+                        MarkdownText(summary, AnswerText.copy(color = VmTheme.colors.ink))
                     }
                 }
             }
@@ -926,12 +925,14 @@ private fun StatusCard(
 /** 回答下面的「来源」小胶囊,只是入口;依据和截图在独立页面看。 */
 @Composable
 private fun SourceChip(text: String?, runId: String?, loadSource: suspend (String) -> EvidenceSource?, openSource: (String?, String?) -> Unit) {
-    val source by produceState<EvidenceSource?>(null, runId) { value = runId?.let { loadSource(it) } }
+    val sourceState = remember { mutableStateOf<EvidenceSource?>(null) }
+    val source by sourceState
+    LaunchedEffect(runId) { sourceState.value = runId?.let { loadSource(it) } }
     if (text == null && source?.items.isNullOrEmpty() && source?.screenshots.isNullOrEmpty()) return
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.padding(top = 12.dp).heightIn(min = 30.dp)
-            .cardSurface(c, VamosShapes.Pill).clip(VamosShapes.Pill)
+            .cardSurface(c, VmShapes.Pill).clip(VmShapes.Pill)
             .clickable(onClickLabel = stringResource(R.string.chat_view_source)) { openSource(runId, text) }
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -954,8 +955,8 @@ private fun NeedCard(
     options: (@Composable () -> Unit)? = null,
     buttons: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    val c = VamosTheme.colors
-    VamosCard(Modifier.padding(top = 8.dp, bottom = 12.dp)) {
+    val c = VmTheme.colors
+    VmGlassCard(Modifier.padding(top = 8.dp, bottom = 12.dp)) {
         Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.size(8.dp).background(c.warnSolid, CircleShape))
@@ -975,7 +976,7 @@ private fun NeedCard(
 
 @Composable
 private fun RowScope.CardButton(text: String, primary: Boolean = false, onClick: () -> Unit) {
-    VamosButton(
+    VmButton(
         text, onClick, Modifier.weight(1f),
         kind = if (primary) ButtonKind.Primary else ButtonKind.Tonal, size = ButtonSize.Medium,
     )
@@ -983,18 +984,18 @@ private fun RowScope.CardButton(text: String, primary: Boolean = false, onClick:
 
 @Composable
 private fun TextLink(text: String, onClick: () -> Unit) {
-    Text(text, Modifier.clip(VamosShapes.Pill).clickable(onClick = onClick).padding(4.dp), style = VamosType.Caption, color = VamosTheme.colors.ink3)
+    Text(text, Modifier.clip(VmShapes.Pill).clickable(onClick = onClick).padding(4.dp), style = VmType.Caption, color = VmTheme.colors.ink3)
 }
 
 /** 导出到「下载/Vamos」的文件:小卡片,名字、大小和存放处;点了能看的在 App 里打开([FileViewer]),其余交给系统里能打开它的 App。 */
 @Composable
 private fun FileCards(files: List<SharedFile>) {
     val context = LocalContext.current
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(Modifier.fillMaxWidth().padding(bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (f in files) {
             Row(
-                Modifier.fillMaxWidth().cardSurface(c, VamosShapes.Card).clip(VamosShapes.Card)
+                Modifier.fillMaxWidth().cardSurface(c, VmShapes.Card).clip(VmShapes.Card)
                     .clickable(onClickLabel = stringResource(R.string.chat_open), role = Role.Button) { openShared(context, f) }
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -1010,7 +1011,7 @@ private fun FileCards(files: List<SharedFile>) {
                         style = FileMeta, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Icon(VamosIcons.Chevron, null, Modifier.size(VamosSize.SmallIcon), tint = c.ink3)
+                Icon(VamosIcons.Chevron, null, Modifier.size(VmSize.SmallIcon), tint = c.ink3)
             }
         }
     }
@@ -1063,7 +1064,7 @@ internal fun Composer(
     /** 按着说话时为 true:对话内容跟着虚化。 */
     onVoiceHolding: (Boolean) -> Unit = {},
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val vh = rememberVoiceHold(voice, onVoiceText)
     val vState = voiceState(vh)
     val voiceHolding = vh?.holding == true
@@ -1141,14 +1142,14 @@ internal fun Composer(
             if (attachments.isNotEmpty()) PendingTray(attachments, onRemove, Modifier.padding(bottom = 2.dp))
             if (importing || rejected.isNotEmpty() || overLimit > 0) {
                 Column(Modifier.fillMaxWidth().padding(start = 4.dp, bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (importing) Text(AttachCopy.IMPORTING, style = VamosType.Caption, color = c.ink3)
+                    if (importing) Text(AttachCopy.IMPORTING, style = VmType.Caption, color = c.ink3)
                     if (rejected.isNotEmpty() || overLimit > 0) {
                         val why = listOfNotNull(
                             rejected.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.chat_attach_rejected, it.joinToString(stringResource(R.string.list_sep))) },
                             overLimit.takeIf { it > 0 }?.let(AttachCopy::overLimit),
                         ).joinToString("\n")
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(why, Modifier.weight(1f), style = VamosType.Caption, color = c.warn)
+                            Text(why, Modifier.weight(1f), style = VmType.Caption, color = c.warn)
                             TextLink(stringResource(R.string.ok_got_it), onDismissRejected)
                         }
                     }
@@ -1164,18 +1165,18 @@ internal fun Composer(
                 if (attachPanel != null) {
                     val label = if (panel == Panel.Open) AttachCopy.CLOSE else AttachCopy.ADD
                     Box(
-                        Modifier.size(VamosSize.IconButton).clip(CircleShape)
+                        Modifier.size(VmSize.IconButton).clip(CircleShape)
                             .clickable(enabled = !importing, onClickLabel = label, onClick = togglePanel),
                         contentAlignment = Alignment.Center,
                     ) {
-                        Icon(VamosIcons.Plus, label, Modifier.size(VamosSize.Icon).graphicsLayer { rotationZ = turn }, tint = c.ink)
+                        Icon(VamosIcons.Plus, label, Modifier.size(VmSize.Icon).graphicsLayer { rotationZ = turn }, tint = c.ink)
                     }
                 }
                 Box(Modifier.weight(1f).padding(start = if (attachPanel != null) 2.dp else 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp)) {
                     val converting = vState is HoldToTalk.State.Converting
                     if (text.isEmpty() && !converting) {
                         if (vh != null) VoicePlaceholder(mode)
-                        else Text(ChatCopy.placeholder(mode, hasHistory), style = VamosType.Body, color = c.ink3, maxLines = 1)
+                        else Text(ChatCopy.placeholder(mode, hasHistory), style = VmType.Body, color = c.ink3, maxLines = 1)
                     }
                     BasicTextField(
                         shownValue,
@@ -1187,7 +1188,7 @@ internal fun Composer(
                                 fieldFocused = it.isFocused
                                 if (it.isFocused && panel == Panel.Open) panel = Panel.Yielding
                             },
-                        textStyle = VamosType.Body.copy(color = c.ink),
+                        textStyle = VmType.Body.copy(color = c.ink),
                         cursorBrush = SolidColor(c.accent),
                         maxLines = 5,
                     )
@@ -1200,17 +1201,12 @@ internal fun Composer(
                 val canSend = AttachTray.canSend(text, attachments, importing)
                 // 任务在跑时停止一直在;写了字再多一个发送,发出去的话交给当前任务
                 if (busy) {
-                    Box(
-                        Modifier.size(VamosSize.IconButton).background(c.ink, CircleShape).clip(CircleShape)
-                            .clickable(onClickLabel = stringResource(R.string.chat_stop), onClick = onStop),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(VamosIcons.Stop, stringResource(R.string.chat_stop), Modifier.size(26.dp), tint = c.bg)
-                    }
+                    com.yongpeng.vamos.ui.components.VmStopButton(onStop)
+
                 }
                 if (!busy || canSend) {
                     Box(
-                        Modifier.size(VamosSize.IconButton)
+                        Modifier.size(VmSize.IconButton)
                             .background(if (canSend) c.accent else c.greySoft, CircleShape)
                             .clip(CircleShape)
                             .clickable(enabled = canSend, onClickLabel = stringResource(R.string.chat_send)) { panel = Panel.Closed; onSend() },

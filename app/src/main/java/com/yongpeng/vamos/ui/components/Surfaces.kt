@@ -44,20 +44,30 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.theme.VamosColors
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmColors
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 页面底:干净的近白(深色下近黑),不加渐变。 */
 @Composable
 fun PageBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
-    Box(modifier.fillMaxSize().background(VamosTheme.colors.bg), content = content)
+    val c = VmTheme.colors
+    Box(modifier.fillMaxSize().background(c.bgPaper).drawBehind {
+        val h = 240.dp.toPx()
+        val w = size.width
+        val mountain = androidx.compose.ui.graphics.Path().apply {
+            moveTo(0f, 0f); lineTo(w, 0f); lineTo(w, h * .42f)
+            cubicTo(w * .65f, h * .85f, w * .65f, h * .10f, w * .42f, h * .42f)
+            cubicTo(w * .24f, h * .73f, w * .14f, h * .49f, 0f, h * .83f); close()
+        }
+        drawPath(mountain, c.brandDai.copy(alpha = .10f))
+    }, content = content)
 }
 
 /** 卡片的底:白底 + 黑 5% 描边 + 极淡阴影;深色下只有描边。 */
-fun Modifier.cardSurface(colors: VamosColors, shape: Shape = VamosShapes.Card): Modifier =
+fun Modifier.cardSurface(colors: VmColors, shape: Shape = VmShapes.Card): Modifier =
     (if (colors.cardShadow.alpha > 0f) {
         shadow(6.dp, shape, clip = false, ambientColor = colors.cardShadow.copy(alpha = 0.45f), spotColor = colors.cardShadow.copy(alpha = 0.16f))
     } else this)
@@ -65,22 +75,22 @@ fun Modifier.cardSurface(colors: VamosColors, shape: Shape = VamosShapes.Card): 
         .border(0.5.dp, colors.edge, shape)
 
 /** 悬浮元素的阴影(输入栏、浮在内容上的按钮)。 */
-fun Modifier.floatShadow(colors: VamosColors, shape: Shape): Modifier =
+fun Modifier.floatShadow(colors: VmColors, shape: Shape): Modifier =
     shadow(14.dp, shape, clip = false, ambientColor = colors.floatShadow.copy(alpha = 0.3f), spotColor = colors.floatShadow.copy(alpha = 0.35f))
 
 /** 一张卡片,内容裁在圆角里(行的按压效果不出角)。 */
 @Composable
-fun VamosCard(modifier: Modifier = Modifier, shape: Shape = VamosShapes.Card, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth().cardSurface(VamosTheme.colors, shape).clip(shape), content = content)
+fun VmGlassCard(modifier: Modifier = Modifier, shape: Shape = VmShapes.Card, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.fillMaxWidth().cardSurface(VmTheme.colors, shape).clip(shape), content = content)
 }
 
 /**
- * 分组卡片:一组 [ListRow]。下面自带 12dp 间距,和下一组的 [GroupLabel](上 8)合起来是分组之间的 20。
+ * 分组卡片:一组 [VmListItem]。下面自带 12dp 间距,和下一组的 [GroupLabel](上 8)合起来是分组之间的 20。
  * 行与行的分隔线由行自己画,从文字处开始。
  */
 @Composable
 fun GroupCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    VamosCard(modifier.padding(bottom = 12.dp), content = content)
+    VmGlassCard(modifier.padding(bottom = 12.dp), content = content)
 }
 
 /** 状态卡:左边圆形图标,右边标题和说明。用于页面顶上的总状态。 */
@@ -93,8 +103,8 @@ fun StateCard(
     modifier: Modifier = Modifier,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
-    val c = VamosTheme.colors
-    VamosCard(modifier.padding(bottom = 12.dp)) {
+    val c = VmTheme.colors
+    VmGlassCard(modifier.padding(bottom = 12.dp)) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -105,8 +115,8 @@ fun StateCard(
                 Icon(icon, null, Modifier.size(20.dp), tint = fg)
             }
             Column(Modifier.weight(1f)) {
-                Text(title, style = VamosType.BodyStrong, color = c.ink)
-                if (!subtitle.isNullOrEmpty()) Text(subtitle, style = VamosType.Caption, color = c.ink3)
+                Text(title, style = VmType.BodyStrong, color = c.ink)
+                if (!subtitle.isNullOrEmpty()) Text(subtitle, style = VmType.Caption, color = c.ink3)
             }
             trailing()
         }
@@ -141,7 +151,7 @@ fun Modifier.glassSource(backdrop: GlassBackdrop?): Modifier =
             drawLayer(backdrop.layer)
         }
 
-private val GlassBlur = BlurEffect(30f, 30f, TileMode.Clamp)
+private val GlassBlur = BlurEffect(24f, 24f, TileMode.Clamp)
 
 /**
  * 玻璃输入栏的外壳:半透明底 + 背景模糊 + 悬浮阴影,高至少 52。
@@ -151,10 +161,10 @@ private val GlassBlur = BlurEffect(30f, 30f, TileMode.Clamp)
 fun GlassBar(
     modifier: Modifier = Modifier,
     backdrop: GlassBackdrop? = null,
-    shape: Shape = VamosShapes.Pill,
+    shape: Shape = VmShapes.Pill,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var origin by remember { mutableStateOf(Offset.Zero) }
     Box(
         modifier.floatShadow(c, shape).clip(shape)
@@ -173,7 +183,7 @@ fun GlassBar(
         Row(
             Modifier.fillMaxWidth().background(if (backdrop != null) c.glass else c.surface)
                 .border(0.5.dp, c.glassEdge, shape)
-                .heightIn(min = VamosSize.Composer).padding(6.dp),
+                .heightIn(min = VmSize.Composer).padding(6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             content = content,

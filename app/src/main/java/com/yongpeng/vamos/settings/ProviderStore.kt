@@ -166,7 +166,7 @@ sealed interface RoleChoice {
  */
 data class RoleChoices(
     val main: String? = null,
-    val vision: RoleChoice = RoleChoice.Off,
+    val vision: RoleChoice = RoleChoice.SameAsMain,
     val light: RoleChoice = RoleChoice.SameAsMain,
     /** 按用途保存,同一个模型可在不同用途选不同档位;「用主模型」连同它的档位一起跟随。 */
     val reasoningEfforts: Map<ModelRole, String> = emptyMap(),

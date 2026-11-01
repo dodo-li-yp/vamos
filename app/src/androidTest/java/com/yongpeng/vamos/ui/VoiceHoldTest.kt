@@ -20,7 +20,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.yongpeng.vamos.ChineseUi
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.voice.SpeechEngineSpec
 import com.yongpeng.vamos.voice.SpeechEvent
 import com.yongpeng.vamos.voice.SpeechSession
@@ -66,7 +66,7 @@ class VoiceHoldTest {
     }
 
     private fun composer(text: String = "") = compose.setContent {
-        VamosTheme {
+        VmTheme {
             var t by remember { mutableStateOf(text) }
             Box(Modifier.fillMaxSize()) {
                 Composer(

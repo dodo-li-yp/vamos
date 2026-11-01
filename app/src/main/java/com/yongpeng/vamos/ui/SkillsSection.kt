@@ -26,16 +26,16 @@ import com.yongpeng.vamos.core.knowledge.AppKnowledgeStage
 import com.yongpeng.vamos.ui.components.ActionSheet
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.EmptyNote
+import com.yongpeng.vamos.ui.components.VmEmptyNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.components.VmSwitch
 import com.yongpeng.vamos.ui.components.RowActions
 import com.yongpeng.vamos.ui.components.SheetAction
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 技能相关的两块内容。[pending] 为假是「技能」段:已收下的个人技能(开关即启用/停用)和在用的 App 知识;
@@ -54,13 +54,13 @@ internal fun SkillsSection(vm: MemoryViewModel, ui: SkillsUi, pending: Boolean) 
             GroupCard {
                 ui.drafts.forEachIndexed { i, d ->
                     Column(Modifier.testTag("skill-row")) {
-                        ListRow(null, d.display, d.description.ifBlank { null }, first = i == 0, onClick = { toggle(d.id) })
+                        VmListItem(null, d.display, d.description.ifBlank { null }, first = i == 0, onClick = { toggle(d.id) })
                         SkillBody(d, expanded = viewing == d.id)
                         RowActions {
-                            VamosButton(stringResource(R.string.skills_accept_try), { vm.approveSkill(d.id) }, size = ButtonSize.Small)
-                            VamosButton(stringResource(R.string.edit_it), { editing = d }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
-                            VamosButton(if (viewing == d.id) stringResource(R.string.skills_hide_full) else stringResource(R.string.skills_view_full), { toggle(d.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
-                            VamosButton(stringResource(R.string.no_thanks), { vm.rejectSkill(d.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                            VmButton(stringResource(R.string.skills_accept_try), { vm.approveSkill(d.id) }, size = ButtonSize.Small)
+                            VmButton(stringResource(R.string.edit_it), { editing = d }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                            VmButton(if (viewing == d.id) stringResource(R.string.skills_hide_full) else stringResource(R.string.skills_view_full), { toggle(d.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                            VmButton(stringResource(R.string.no_thanks), { vm.rejectSkill(d.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
                         }
                     }
                 }
@@ -76,13 +76,13 @@ internal fun SkillsSection(vm: MemoryViewModel, ui: SkillsUi, pending: Boolean) 
     } else {
         GroupLabel(stringResource(R.string.skills_mine))
         GroupCard {
-            if (ui.installed.isEmpty()) EmptyNote(stringResource(R.string.skills_empty))
+            if (ui.installed.isEmpty()) VmEmptyNote(stringResource(R.string.skills_empty))
             ui.installed.forEachIndexed { i, s ->
                 val state = when { s.suspended -> stringResource(R.string.skills_suspended); s.trial -> stringResource(R.string.skills_trial); else -> null }
                 val detail = listOfNotNull(stringResource(R.string.skills_user_created).takeIf { s.userCreated }, state, s.recent.takeIf { it.isNotEmpty() }?.let { stringResource(R.string.skills_recent, it.joinToString(" · ")) }).joinToString(" · ")
                 Column(Modifier.testTag("skill-row")) {
-                    ListRow(null, s.display, s.description.ifBlank { null }, first = i == 0, detail = detail, onClick = { acting = s }) {
-                        VamosSwitch(!s.suspended, { on -> if (on) vm.restoreSkill(s.name) else vm.suspendSkill(s.name) })
+                    VmListItem(null, s.display, s.description.ifBlank { null }, first = i == 0, detail = detail, onClick = { acting = s }) {
+                        VmSwitch(!s.suspended, { on -> if (on) vm.restoreSkill(s.name) else vm.suspendSkill(s.name) })
                     }
                     SkillBody(s, expanded = viewing == s.id)
                 }
@@ -131,12 +131,12 @@ private fun AppKnowledgeItem(vm: MemoryViewModel, row: AppKnowledgeRow, first: B
         AppKnowledgeStage.Archived -> tr(R.string.skills_archived)
     }
     Column {
-        ListRow(null, row.name, stage, first = first, onClick = onToggle)
+        VmListItem(null, row.name, stage, first = first, onClick = onToggle)
         ChangesAndText(row.changedLines, row.markdown, expanded)
         RowActions {
-            VamosButton(if (expanded) stringResource(R.string.skills_hide_full) else stringResource(R.string.skills_view_full), onToggle, kind = ButtonKind.Tonal, size = ButtonSize.Small)
-            if (row.stage == AppKnowledgeStage.Draft) VamosButton(stringResource(R.string.skills_accept_try), { vm.approveAppDraft(row.id) }, size = ButtonSize.Small)
-            if (row.stage != AppKnowledgeStage.Verified && !row.replaced) VamosButton(stringResource(R.string.skills_archive), { vm.rejectAppDraft(row.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+            VmButton(if (expanded) stringResource(R.string.skills_hide_full) else stringResource(R.string.skills_view_full), onToggle, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+            if (row.stage == AppKnowledgeStage.Draft) VmButton(stringResource(R.string.skills_accept_try), { vm.approveAppDraft(row.id) }, size = ButtonSize.Small)
+            if (row.stage != AppKnowledgeStage.Verified && !row.replaced) VmButton(stringResource(R.string.skills_archive), { vm.rejectAppDraft(row.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
         }
     }
 }
@@ -148,13 +148,13 @@ private fun SkillBody(r: SkillRow, expanded: Boolean) = ChangesAndText(r.changed
 /** 一行下面:这份草稿改了哪几行([changed]),展开时再加全文。 */
 @Composable
 private fun ChangesAndText(changed: List<String>, markdown: String, expanded: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     if (changed.isEmpty() && !expanded) return
     Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
         if (changed.isNotEmpty()) {
-            Text(stringResource(R.string.skills_changed_lines), style = VamosType.Hint, color = c.ink3)
-            changed.forEach { Text(it, style = VamosType.Hint, color = if (it.startsWith("+")) c.ok else c.bad) }
+            Text(stringResource(R.string.skills_changed_lines), style = VmType.Hint, color = c.ink3)
+            changed.forEach { Text(it, style = VmType.Hint, color = if (it.startsWith("+")) c.ok else c.bad) }
         }
-        if (expanded) Text(markdown, Modifier.padding(top = 6.dp), style = VamosType.Hint, color = c.ink2)
+        if (expanded) Text(markdown, Modifier.padding(top = 6.dp), style = VmType.Hint, color = c.ink2)
     }
 }

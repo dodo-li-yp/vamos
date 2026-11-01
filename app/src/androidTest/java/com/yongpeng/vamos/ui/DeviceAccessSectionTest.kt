@@ -15,7 +15,7 @@ import com.yongpeng.vamos.ChineseUi
 import com.yongpeng.vamos.settings.AesGcmKeyCipher
 import com.yongpeng.vamos.settings.DeviceAccessSettings
 import com.yongpeng.vamos.ui.components.PageScaffold
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -32,7 +32,7 @@ class DeviceAccessSectionTest {
     @Test fun credentialEditorRequiresConfirmationAndNeverShowsSavedValue() {
         val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
         val settings = DeviceAccessSettings(dir, AesGcmKeyCipher { key })
-        compose.setContent { VamosTheme(dark = false, reduceMotion = true) {
+        compose.setContent { VmTheme(dark = false, reduceMotion = true) {
             PageScaffold("电脑连接", {}) { DeviceAccessSection(settings) }
         } }
         compose.onNodeWithText("锁屏凭据").performClick()

@@ -1,112 +1,107 @@
-// Modified by Vamos (2026): brand and package migration.
+// Modified by Vamos (2026): design v0.1 welcome, consent and permission explanation.
 package com.yongpeng.vamos.ui
 
-import com.yongpeng.vamos.i18n.tr
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.yongpeng.vamos.R
-import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.Hairline
-import com.yongpeng.vamos.ui.components.IconTile
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.PageBackground
-import com.yongpeng.vamos.ui.components.ProgressDots
-import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.components.*
+import com.yongpeng.vamos.ui.theme.*
 
-/** 上手第一步:说清 Vamos 是什么、能做哪几类事,开始前要做的两件事和大概时间。 */
 @Composable
 fun WelcomeScreen(onStart: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
+    val context = LocalContext.current
+    val consent = remember { context.getSharedPreferences("vamos-consent", 0) }
+    var page by rememberSaveable { mutableIntStateOf(0) }
+    var agreed by rememberSaveable { mutableStateOf(false) }
+    var document by rememberSaveable { mutableStateOf<String?>(null) }
+    BackHandler(enabled = page > 0 || document != null) { if (document != null) document = null else page-- }
     PageBackground {
-        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.statusBars).windowInsetsPadding(WindowInsets.navigationBars)) {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
-                Column(Modifier.fillMaxWidth().padding(top = 40.dp, start = 8.dp, end = 8.dp, bottom = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(
-                        painterResource(R.drawable.vamos_launcher_art), null,
-                        Modifier.size(76.dp).shadow(14.dp, LogoShape, clip = false).clip(LogoShape),
-                        contentScale = ContentScale.Crop,
-                    )
-                    Text(WelcomeCopy.TITLE, Modifier.padding(top = 20.dp), style = VamosType.LargeTitle, fontSize = 26.sp, color = c.ink, textAlign = TextAlign.Center)
-                    Text(
-                        WelcomeCopy.LEAD, Modifier.padding(top = 8.dp),
-                        fontSize = 15.sp, lineHeight = 24.sp, color = c.ink2, textAlign = TextAlign.Center,
-                    )
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp)) {
+            if (document != null) {
+                VmTopBar(document!!, left = VamosIcons.Back, onLeft = { document = null })
+                Text(legalCopy(document!!), Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp), style = VmType.Body, color = c.textInk)
+                VmButton("返回阅读页", { document = null }, Modifier.fillMaxWidth().padding(bottom = 16.dp))
+            } else {
+                if (page == 0) {
+                    Row(Modifier.fillMaxWidth().height(56.dp), horizontalArrangement = Arrangement.End) {
+                        VmButton("跳过", { page = 1 }, kind = ButtonKind.Text)
+                    }
+                } else VmTopBar(if (page == 1) "使用前请阅读" else "Vamos 会用到这些权限", left = VamosIcons.Back, onLeft = { page-- })
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    when (page) {
+                        0 -> {
+                            Spacer(Modifier.height(80.dp))
+                            VamosLogo(72.dp)
+                            Text("你说一句话，\nVamos 替你操作手机", style = VmType.LargeTitle, color = c.textInk)
+                            Text("在后台屏打开 App、点击、输入、滑动，不打断你正在用的界面。敏感操作前，会先请你确认。", style = VmType.Body, color = c.textInk2)
+                            VmGlassCard {
+                                Text("「给文件传输助手发：明早 9 点开会」\n\n「每天 8 点查天气，下雨才提醒我」", Modifier.padding(16.dp), style = VmType.Body, color = c.textInk)
+                            }
+                        }
+                        1 -> {
+                            Text("Vamos 会代你操作其他 App。为了让你清楚知道风险和数据去向，请先阅读以下文件。", style = VmType.Body, color = c.textInk2)
+                            GroupCard {
+                                listOf("用户协议", "隐私政策", "免责声明").forEachIndexed { i, title ->
+                                    VmListItem(VamosIcons.Doc, title, "开发预览草案 · 待产品与法务审核", first = i == 0, onClick = { document = title }) { RowChevron() }
+                                }
+                            }
+                            VmNotice("自动操作可能违反部分 App 的使用条款，由此产生的账号风险需要你自行判断。法律文档仍为开发草案，正式发布前须完成审核。", VmNoticeTone.Warn)
+                        }
+                        2 -> {
+                            ProgressDots(3, 2)
+                            Text("现在不会一次全部申请。用到对应功能时申请；拒绝后只影响该功能。", style = VmType.Body, color = c.textInk2)
+                            GroupCard {
+                                listOf(
+                                    Triple(VamosIcons.Globe, "网络", "调用你配置的模型 API"),
+                                    Triple(VamosIcons.Phone, "无线调试与无障碍", "helper 创建后台屏与注入操作；无障碍按需读取控件、辅助操作"),
+                                    Triple(VamosIcons.Bell, "通知", "显示任务进度和停止按钮"),
+                                    Triple(VamosIcons.Mic, "麦克风", "按住说话时申请"),
+                                    Triple(VamosIcons.Clock, "闹钟与开机自启", "按时恢复定时任务"),
+                                    Triple(VamosIcons.Refresh, "安装未知应用", "安装更新时申请"),
+                                ).forEachIndexed { i, (icon,title,body) -> VmListItem(icon,title,body,first = i == 0) }
+                            }
+                        }
+                    }
                 }
-                GroupCard(Modifier.padding(top = 28.dp)) {
-                    WelcomeCopy.FEATURES.forEachIndexed { i, f -> Feature(f.icon, f.title, f.body, first = i == 0) }
+                if (page == 0) {
+                    ProgressDots(3, 0, Modifier.padding(vertical = 16.dp))
+                    Text("接下来：连接模型 · 设置手机控制（可跳过）· 权限说明", style = VmType.Caption, color = c.textInk2)
                 }
-            }
-            Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp)) {
-                ProgressDots(Onboarding.DOTS, Onboarding.dot(OnboardingStep.Welcome), Modifier.padding(top = 4.dp))
-                Text(
-                    WelcomeCopy.NOTE, Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 12.dp, start = 16.dp, end = 16.dp),
-                    style = VamosType.Hint, fontSize = 12.5.sp, color = c.ink3, textAlign = TextAlign.Center,
+                if (page == 1) Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(agreed, { agreed = it }, Modifier.testTag("legal-consent"))
+                    Text("我已阅读并同意《用户协议》《隐私政策》《免责声明》开发草案", style = VmType.Body, color = c.textInk)
+                }
+                VmButton(
+                    when(page) { 0 -> "开始设置"; 1 -> "同意并继续"; else -> "知道了，连接模型" },
+                    { if (page == 2) { consent.edit().putBoolean("accepted-draft-v1", true).apply(); onStart() } else page++ },
+                    Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 16.dp).testTag("welcome-start"),
+                    enabled = page != 1 || agreed,
                 )
-                VamosButton(WelcomeCopy.START, onStart, Modifier.fillMaxWidth().testTag("welcome-start"))
             }
         }
     }
 }
 
-@Composable
-private fun Feature(icon: ImageVector, title: String, body: String, first: Boolean) {
-    val c = VamosTheme.colors
-    Column {
-        if (!first) Hairline(start = 0.dp)
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 13.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            IconTile(icon)
-            Column(Modifier.weight(1f)) {
-                Text(title, fontSize = 15.sp, lineHeight = 21.sp, fontWeight = FontWeight.SemiBold, color = c.ink)
-                Text(body, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink2)
-            }
-        }
-    }
+private fun legalCopy(title: String): String = "开发预览草案 · 2026-11-01\n正式发布前须由产品与法务审核。\n\n" + when(title) {
+    "用户协议" -> "Vamos 是由你配置模型并授权操作手机的工具。你应仅操作自己的账号和获授权的数据，遵守目标 App 的条款。请核对每次任务的目标与结果。登录、验证码和支付密码需你本人输入。你可以随时停止任务或断开手机控制。"
+    "隐私政策" -> "对话、附件及执行所需的屏幕信息会发送给你选择的模型厂商，请查阅该厂商的隐私政策。Vamos 将配置与任务记录保存在本机；请勿在反馈和日志中公开 API Key、令牌或个人信息。本开发版本未接入统计或崩溃上报 SDK。"
+    else -> "自动操作可能误识别界面，可能造成信息误发、内容删除或其他损失。第三方 App 的条款可能限制自动操作。请只授予完成任务所需的权限，并在确认敏感操作前核对对象、内容与金额。此草案不替代正式法律文件。"
 }
 
-private val LogoShape = RoundedCornerShape(22.dp)
-
-/** 欢迎页的文字。 */
 object WelcomeCopy {
-    val TITLE: String get() = tr(R.string.welcome_title)
-    val LEAD: String get() = tr(R.string.welcome_lead)
-    val NOTE: String get() = tr(R.string.welcome_note)
-    val START: String get() = tr(R.string.welcome_start)
-
-    data class Item(val icon: ImageVector, val title: String, val body: String)
-
-    val FEATURES get() = listOf(
-        Item(VamosIcons.Apps, tr(R.string.welcome_apps), tr(R.string.welcome_apps_body)),
-        Item(VamosIcons.Globe, tr(R.string.welcome_web), tr(R.string.welcome_web_body)),
-        Item(VamosIcons.Doc, tr(R.string.welcome_files), tr(R.string.welcome_files_body)),
-        Item(VamosIcons.Clock, tr(R.string.welcome_schedule), tr(R.string.welcome_schedule_body)),
-    )
+    const val TITLE = "你说一句话，Vamos 替你操作手机"
+    const val LEAD = "在后台屏操作，不打断你正在用的界面"
+    const val NOTE = "连接模型 · 设置手机控制（可跳过）· 权限说明"
+    const val START = "开始设置"
 }

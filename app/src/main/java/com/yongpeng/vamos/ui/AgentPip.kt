@@ -64,7 +64,7 @@ import com.yongpeng.vamos.ui.PipPhysics.Corner
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
 import com.yongpeng.vamos.ui.components.floatShadow
 
@@ -106,7 +106,7 @@ fun AgentPip(
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val fade = if (reduceMotion) tween<Float>(150) else tween(300)
         AnimatedVisibility(pip.visible && pip.expanded, enter = fadeIn(fade), exit = fadeOut(fade)) {
-            Box(Modifier.fillMaxSize().background(VamosTheme.colors.floatShadow.copy(alpha = 0.12f)).pointerInput(Unit) { detectTapGestures { onCollapse() } })
+            Box(Modifier.fillMaxSize().background(VmTheme.colors.floatShadow.copy(alpha = 0.12f)).pointerInput(Unit) { detectTapGestures { onCollapse() } })
         }
         AnimatedVisibility(pip.visible, enter = fadeIn(fade), exit = fadeOut(if (reduceMotion) tween(150) else tween(500))) {
             PipWindow(
@@ -215,9 +215,9 @@ private fun PipWindow(
     val pos = free ?: bounds.position(corner).let { (x, y) -> Offset(x, y) }
     val outer = RoundedCornerShape(if (pip.expanded) 26.dp else 16.dp)
     val inner = RoundedCornerShape(if (pip.expanded) 22.dp else 13.dp)
-    val breath = if (pip.mode == PipMode.NeedsYou && !reduceMotion) {
+    val breath = if (pip.mode == PipMode.Running && !reduceMotion) {
         rememberInfiniteTransition(label = "breathe").animateFloat(
-            1f, 0.55f, infiniteRepeatable(tween(1000), RepeatMode.Reverse), label = "breathe",
+            0.22f, 0.55f, infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "breathe",
         ).value
     } else 1f
 
@@ -226,15 +226,15 @@ private fun PipWindow(
             // 橙色光晕:比窗口大一圈,模糊后透出边缘(安卓 12 以下不模糊,只是一圈淡橙色)
             Box(
                 Modifier.offset((-5).dp, (-5).dp).size(w + 10.dp, h + 10.dp).alpha(breath)
-                    .blur(10.dp).background(VamosTheme.colors.warnSolid.copy(alpha = 0.55f), outer),
+                    .blur(10.dp).background(VmTheme.colors.warnSolid.copy(alpha = 0.55f), outer),
             )
         }
         Box(
             Modifier.size(w, h)
                 .alpha(if (pip.mode == PipMode.Done) 0.85f else 1f)
-                .floatShadow(VamosTheme.colors, outer)
-                .background(VamosTheme.colors.glass, outer)
-                .border(0.5.dp, VamosTheme.colors.glassEdge, outer)
+                .floatShadow(VmTheme.colors, outer)
+                .background(VmTheme.colors.glass, outer)
+                .border(0.5.dp, VmTheme.colors.glassEdge, outer)
                 .pointerInput(Unit) {
                     val tracker = VelocityTracker()
                     // 自己数位移而不用 detectDragGestures:越过触摸阈值时把阈值内的那段也补上,
@@ -266,7 +266,7 @@ private fun PipWindow(
                 .pointerInput(Unit) { detectTapGestures { if (needsYou) attend() else if (!expanded) expand() } }
                 .padding(if (pip.expanded) 4.dp else 3.dp),
         ) {
-            Box(Modifier.fillMaxSize().clip(inner).background(VamosTheme.colors.surface)) {
+            Box(Modifier.fillMaxSize().clip(inner).background(VmTheme.colors.surface)) {
                 if (frame != null) {
                     val image = remember(frame) { frame.asImageBitmap() }
                     Image(image, stringResource(R.string.pip_screen), Modifier.fillMaxSize(), alignment = Alignment.TopCenter,
@@ -276,16 +276,16 @@ private fun PipWindow(
             if (pip.expanded) {
                 Box(
                     Modifier.align(Alignment.TopEnd).padding(6.dp).size(26.dp)
-                        .floatShadow(VamosTheme.colors, CircleShape).background(VamosTheme.colors.glass, CircleShape).clip(CircleShape)
+                        .floatShadow(VmTheme.colors, CircleShape).background(VmTheme.colors.glass, CircleShape).clip(CircleShape)
                         .clickable(onClickLabel = stringResource(R.string.collapse), onClick = onCollapse),
                     contentAlignment = Alignment.Center,
-                ) { Icon(VamosIcons.Close, stringResource(R.string.collapse), Modifier.size(12.dp), tint = VamosTheme.colors.ink) }
+                ) { Icon(VamosIcons.Close, stringResource(R.string.collapse), Modifier.size(12.dp), tint = VmTheme.colors.ink) }
             }
         }
         // 边框光画在玻璃框外沿
         val glow = when (pip.mode) {
-            PipMode.Running -> VamosTheme.colors.ok to 2.dp
-            PipMode.NeedsYou -> VamosTheme.colors.warnSolid.copy(alpha = breath) to 2.dp
+            PipMode.Running -> VmTheme.colors.agentQingbi.copy(alpha = if (reduceMotion) 1f else breath) to 2.dp
+            PipMode.NeedsYou -> VmTheme.colors.warnSolid to 2.dp
             PipMode.Done -> null
         }
         if (glow != null) Box(Modifier.size(w, h).border(glow.second, glow.first, outer))

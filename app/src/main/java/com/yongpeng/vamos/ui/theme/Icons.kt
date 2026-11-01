@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.vector.addPathNodes
  * 都是 object 里的常量,只建一次;个别要在小尺寸下看清的(勾、发送、箭头、关闭)线宽加粗一点。
  */
 object VamosIcons {
-    private fun stroke(name: String, vararg paths: String, width: Float = VamosSize.IconStroke): ImageVector =
-        ImageVector.Builder(name, VamosSize.Icon, VamosSize.Icon, 24f, 24f).apply {
+    private fun stroke(name: String, vararg paths: String, width: Float = VmSize.IconStroke): ImageVector =
+        ImageVector.Builder(name, VmSize.Icon, VmSize.Icon, 24f, 24f).apply {
             paths.forEach {
                 addPath(
                     addPathNodes(it), stroke = SolidColor(Color.Black), strokeLineWidth = width,
@@ -24,7 +24,7 @@ object VamosIcons {
         }.build()
 
     private fun filled(name: String, vararg paths: String): ImageVector =
-        ImageVector.Builder(name, VamosSize.Icon, VamosSize.Icon, 24f, 24f).apply {
+        ImageVector.Builder(name, VmSize.Icon, VmSize.Icon, 24f, 24f).apply {
             paths.forEach { addPath(addPathNodes(it), fill = SolidColor(Color.Black)) }
         }.build()
 

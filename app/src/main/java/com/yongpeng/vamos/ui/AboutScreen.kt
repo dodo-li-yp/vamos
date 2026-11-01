@@ -61,15 +61,15 @@ import com.yongpeng.vamos.about.ReleaseInfo
 import com.yongpeng.vamos.about.UpdateState
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.RowChevron
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.ValueTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 关于页上点开的底部面板。 */
 private enum class AboutSheet { Update, Changelog, Feedback, Group, Diagnostics }
@@ -94,7 +94,7 @@ fun AboutScreen(
     onBack: () -> Unit,
     diagnostics: () -> String = { "" },
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val context = LocalContext.current
     var sheet by rememberSaveable { mutableStateOf<AboutSheet?>(null) }
     // 点了「检查更新」后等这一轮结果:有新版直接弹出说明,没有就提示一句
@@ -119,7 +119,7 @@ fun AboutScreen(
 
         GroupCard {
             val v = AboutCopy.checkValue(update)
-            ListRow(
+            VmListItem(
                 VamosIcons.Refresh, AboutCopy.CHECK, if (update.hasUpdate) AboutCopy.CHECK_SUB_NEW else AboutCopy.CHECK_SUB, first = true,
                 onClick = {
                     if (update.hasUpdate) sheet = AboutSheet.Update
@@ -132,16 +132,7 @@ fun AboutScreen(
                 TrailingValue(v)
                 RowChevron()
             }
-            ListRow(VamosIcons.Lines, AboutCopy.CHANGELOG, AboutCopy.CHANGELOG_SUB, onClick = { sheet = AboutSheet.Changelog }) { RowChevron() }
-        }
-        GroupCard {
-            ListRow(VamosIcons.Chats, AboutCopy.GROUP, AboutCopy.GROUP_SUB, first = true, onClick = { sheet = AboutSheet.Group }) { RowChevron() }
-            ListRow(VamosIcons.Bug, AboutCopy.FEEDBACK, AboutCopy.FEEDBACK_SUB, onClick = { sheet = AboutSheet.Feedback }) { RowChevron() }
-        }
-        GroupCard {
-            ListRow(VamosIcons.XMark, AboutCopy.FOLLOW, AboutCopy.FOLLOW_SUB, first = true, onClick = { onOpenUrl(VamosLinks.X) }) { ExternalMark() }
-            ListRow(VamosIcons.Code, AboutCopy.REPO, AboutCopy.REPO_SUB, onClick = { onOpenUrl(VamosLinks.REPO) }) { ExternalMark() }
-            ListRow(VamosIcons.Book, AboutCopy.GUIDE, AboutCopy.GUIDE_SUB, onClick = { onOpenUrl(VamosLinks.README) }) { ExternalMark() }
+            VmListItem(VamosIcons.Lines, AboutCopy.CHANGELOG, AboutCopy.CHANGELOG_SUB, onClick = { sheet = AboutSheet.Changelog }) { RowChevron() }
         }
 
         Row(
@@ -149,7 +140,7 @@ fun AboutScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Icon(VamosIcons.Shield, null, Modifier.padding(top = 1.dp).size(18.dp), tint = c.ok)
-            Text(AboutCopy.DATA_NOTE, style = VamosType.Caption, color = c.ink2)
+            Text(AboutCopy.DATA_NOTE, style = VmType.Caption, color = c.ink2)
         }
 
         Column(Modifier.fillMaxWidth().padding(top = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -162,16 +153,16 @@ fun AboutScreen(
                 },
                 Modifier.clip(RoundedCornerShape(6.dp)).clickable(onClick = onOpenLicense).padding(horizontal = 6.dp, vertical = 2.dp)
                     .testTag("about-license"),
-                style = VamosType.Hint, color = c.ink3, textAlign = TextAlign.Center,
+                style = VmType.Hint, color = c.ink3, textAlign = TextAlign.Center,
             )
-            Text(AboutCopy.AUTHOR, Modifier.padding(top = 2.dp), style = VamosType.Hint, color = c.ink3)
+
         }
     }
 
     val close = { sheet = null }
     when (sheet) {
         AboutSheet.Update -> update.update?.let { r ->
-            UpdateSheet(r, versionName, beta, onOpenUrl = { close(); onOpenUrl(it) }, onDismiss = close)
+            VmUpdateDialog(r, versionName, beta, onOpenUrl = { close(); onOpenUrl(it) }, onDismiss = close)
         }
         AboutSheet.Changelog -> ChangelogSheet(update.latest, onOpenAll = { close(); onOpenUrl(VamosLinks.RELEASES) }, onDismiss = close)
         AboutSheet.Feedback -> FeedbackSheet(
@@ -190,7 +181,7 @@ fun AboutScreen(
 
 @Composable
 private fun Hero(versionName: String, build: String, beta: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
         Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -199,17 +190,17 @@ private fun Hero(versionName: String, build: String, beta: Boolean) {
             painterResource(R.drawable.vamos_launcher_art), contentDescription = null,
             Modifier.size(72.dp).clip(RoundedCornerShape(20.dp)),
         )
-        Text("Vamos", Modifier.padding(top = 12.dp), style = VamosType.Title, fontWeight = FontWeight.Bold, color = c.ink)
-        Text(AboutCopy.TAGLINE, Modifier.padding(top = 4.dp), style = VamosType.Caption, color = c.ink2, textAlign = TextAlign.Center)
+        Text("Vamos", Modifier.padding(top = 12.dp), style = VmType.Title, fontWeight = FontWeight.Bold, color = c.ink)
+        Text(AboutCopy.TAGLINE, Modifier.padding(top = 4.dp), style = VmType.Caption, color = c.ink2, textAlign = TextAlign.Center)
         Row(Modifier.padding(top = 10.dp).testTag("about-version"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(AboutCopy.version(versionName), style = VamosType.Hint, color = c.ink3)
+            Text(AboutCopy.version(versionName), style = VmType.Hint, color = c.ink3)
             if (beta) {
                 Text(
                     AboutCopy.BETA, Modifier.background(c.accentSoft, RoundedCornerShape(7.dp)).padding(horizontal = 7.dp, vertical = 1.dp),
-                    style = VamosType.Hint, fontWeight = FontWeight.SemiBold, color = c.accent,
+                    style = VmType.Hint, fontWeight = FontWeight.SemiBold, color = c.accent,
                 )
             }
-            Text("· ${AboutCopy.buildLabel(build)}", style = VamosType.Hint, color = c.ink3)
+            Text("· ${AboutCopy.buildLabel(build)}", style = VmType.Hint, color = c.ink3)
         }
     }
 }
@@ -218,7 +209,7 @@ private fun Hero(versionName: String, build: String, beta: Boolean) {
 @Composable
 internal fun TrailingValue(v: AboutCopy.CheckValue) {
     if (v.spinner) {
-        CircularProgressIndicator(Modifier.size(16.dp).testTag("update-spinner"), color = VamosTheme.colors.accent, strokeWidth = 2.dp)
+        CircularProgressIndicator(Modifier.size(16.dp).testTag("update-spinner"), color = VmTheme.colors.accent, strokeWidth = 2.dp)
         return
     }
     if (v.dot) UpdateDot()
@@ -228,12 +219,12 @@ internal fun TrailingValue(v: AboutCopy.CheckValue) {
 /** 有新版本时的小红点。 */
 @Composable
 internal fun UpdateDot(modifier: Modifier = Modifier) {
-    Box(modifier.size(8.dp).background(VamosTheme.colors.bad, CircleShape).testTag("update-dot"))
+    Box(modifier.size(8.dp).background(VmTheme.colors.bad, CircleShape).testTag("update-dot"))
 }
 
 @Composable
 private fun ExternalMark() {
-    Icon(VamosIcons.External, null, Modifier.size(15.dp), tint = VamosTheme.colors.ink3)
+    Icon(VamosIcons.External, null, Modifier.size(15.dp), tint = VmTheme.colors.ink3)
 }
 
 // ---------- 底部面板 ----------
@@ -241,20 +232,20 @@ private fun ExternalMark() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AboutSheetFrame(title: String, sub: String?, tag: String, onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = c.surface,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     ) {
         // 面板内容太高(矮屏、大字号)时整体能滚,底下的按钮总够得着
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding()
                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp).testTag(tag),
         ) {
-            Text(title, style = VamosType.Title, color = c.ink)
-            sub?.let { Text(it, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3) }
+            Text(title, style = VmType.Title, color = c.ink)
+            sub?.let { Text(it, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3) }
             content()
         }
     }
@@ -263,43 +254,44 @@ private fun AboutSheetFrame(title: String, sub: String?, tag: String, onDismiss:
 /** 更新说明(Markdown),浅底、太长时在框里滚。 */
 @Composable
 private fun NotesBox(notes: String) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
         Modifier.padding(top = 12.dp).fillMaxWidth().heightIn(max = 280.dp)
             .background(c.fill, RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState()).padding(12.dp),
     ) {
-        MarkdownText(notes, VamosType.Caption.copy(color = c.ink2))
+        MarkdownText(notes, VmType.Caption.copy(color = c.ink2))
     }
 }
 
 @Composable
-private fun UpdateSheet(r: ReleaseInfo, current: String, beta: Boolean, onOpenUrl: (String) -> Unit, onDismiss: () -> Unit) {
-    AboutSheetFrame(AboutCopy.updateTitle(r.version), AboutCopy.updateSub(current, beta, r.date), "update-sheet", onDismiss) {
-        if (r.notes.isNotBlank()) NotesBox(r.notes)
-        if (r.apkUrl != null) UpdateDownloadControls(r)
-        else VamosButton(AboutCopy.UPDATE_DOWNLOAD, { onOpenUrl(r.pageUrl) }, Modifier.fillMaxWidth().padding(top = 14.dp))
-        Text(
-            AboutCopy.UPDATE_LATER,
-            Modifier.fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onDismiss).padding(vertical = 10.dp),
-            style = VamosType.Caption, color = VamosTheme.colors.ink3, textAlign = TextAlign.Center,
-        )
+private fun VmUpdateDialog(r: ReleaseInfo, current: String, beta: Boolean, onOpenUrl: (String) -> Unit, onDismiss: () -> Unit) {
+    val c = VmTheme.colors
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Column(Modifier.fillMaxWidth().background(c.surface, RoundedCornerShape(28.dp)).padding(24.dp)) {
+            Text(AboutCopy.updateTitle(r.version), style = VmType.Title, color = c.textInk)
+            Text(AboutCopy.updateSub(current, beta, r.date), style = VmType.Caption, color = c.textInk2)
+            if (r.notes.isNotBlank()) NotesBox(r.notes)
+            if (r.apkUrl != null) UpdateDownloadControls(r)
+            else VmButton(AboutCopy.UPDATE_DOWNLOAD, { onOpenUrl(r.pageUrl) }, Modifier.fillMaxWidth().padding(top = 16.dp))
+            VmButton("稍后", onDismiss, Modifier.fillMaxWidth().padding(top = 8.dp), kind = ButtonKind.Tonal)
+        }
     }
 }
 
 @Composable
 private fun ChangelogSheet(latest: ReleaseInfo?, onOpenAll: () -> Unit, onDismiss: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     AboutSheetFrame(AboutCopy.CHANGELOG, null, "changelog-sheet", onDismiss) {
         if (latest == null) {
-            Text(AboutCopy.CHANGELOG_EMPTY, Modifier.padding(top = 10.dp), style = VamosType.Caption, color = c.ink3)
+            Text(AboutCopy.CHANGELOG_EMPTY, Modifier.padding(top = 10.dp), style = VmType.Caption, color = c.ink3)
         } else {
             Text(
                 latest.version + (latest.date?.let { " · $it" } ?: ""), Modifier.padding(top = 10.dp),
-                style = VamosType.Label, color = c.ink,
+                style = VmType.Label, color = c.ink,
             )
             if (latest.notes.isNotBlank()) NotesBox(latest.notes)
         }
-        VamosButton(AboutCopy.CHANGELOG_ALL, onOpenAll, Modifier.fillMaxWidth().padding(top = 14.dp), kind = ButtonKind.Tonal)
+        VmButton(AboutCopy.CHANGELOG_ALL, onOpenAll, Modifier.fillMaxWidth().padding(top = 14.dp), kind = ButtonKind.Tonal)
     }
 }
 
@@ -318,7 +310,7 @@ private fun FeedbackSheet(onGitHub: () -> Unit, onDiagnostics: () -> Unit, onGro
 @Composable
 private fun FeedbackOption(icon: ImageVector, title: String, sub: String, first: Boolean, onClick: () -> Unit) {
     Box(Modifier.testTag("feedback-option")) {
-        ListRow(icon, title, sub, first = first, onClick = onClick)
+        VmListItem(icon, title, sub, first = first, onClick = onClick)
     }
 }
 
@@ -328,7 +320,7 @@ private fun FeedbackOption(icon: ImageVector, title: String, sub: String, first:
  */
 @Composable
 internal fun GroupSheet(xFirst: Boolean, onSave: () -> Unit, onJoinX: () -> Unit, onDismiss: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     // 二维码最高占屏幕约三分之一,常见手机上不用滚就能看到底下的按钮
     val qrHeight = (LocalConfiguration.current.screenHeightDp * 0.34f).coerceAtMost(280f).dp
     val qr = painterResource(QrImage.RES)
@@ -342,13 +334,13 @@ internal fun GroupSheet(xFirst: Boolean, onSave: () -> Unit, onJoinX: () -> Unit
                     .pointerInput(Unit) { detectTapGestures(onLongPress = { onSave() }) }
                     .testTag("wechat-qr"),
             )
-            Text(AboutCopy.GROUP_HINT, Modifier.fillMaxWidth(), style = VamosType.Hint, color = c.ink3, textAlign = TextAlign.Center)
-            VamosButton(AboutCopy.SAVE_QR, onSave, Modifier.fillMaxWidth().padding(top = 14.dp), kind = ButtonKind.Tonal)
+            Text(AboutCopy.GROUP_HINT, Modifier.fillMaxWidth(), style = VmType.Hint, color = c.ink3, textAlign = TextAlign.Center)
+            VmButton(AboutCopy.SAVE_QR, onSave, Modifier.fillMaxWidth().padding(top = 14.dp), kind = ButtonKind.Tonal)
         }
         val x = @Composable { top: Boolean ->
             // 放在上面时不用「不用微信？」引出,直接给按钮
-            if (!top) Text(AboutCopy.GROUP_NO_WECHAT, Modifier.fillMaxWidth().padding(top = 12.dp), style = VamosType.Hint, color = c.ink3, textAlign = TextAlign.Center)
-            VamosButton(AboutCopy.GROUP_JOIN_X, onJoinX, Modifier.fillMaxWidth().padding(top = if (top) 14.dp else 8.dp).testTag("group-join-x"))
+            if (!top) Text(AboutCopy.GROUP_NO_WECHAT, Modifier.fillMaxWidth().padding(top = 12.dp), style = VmType.Hint, color = c.ink3, textAlign = TextAlign.Center)
+            VmButton(AboutCopy.GROUP_JOIN_X, onJoinX, Modifier.fillMaxWidth().padding(top = if (top) 14.dp else 8.dp).testTag("group-join-x"))
         }
         if (xFirst) {
             x(true)

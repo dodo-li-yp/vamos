@@ -64,7 +64,7 @@ import com.yongpeng.vamos.ui.Spinner
 import com.yongpeng.vamos.ui.VoiceCopy
 import com.yongpeng.vamos.ui.VoiceWave
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.voice.HoldToTalk
 import com.yongpeng.vamos.voice.SpeechEngineSpec
 import com.yongpeng.vamos.voice.VoiceSource
@@ -292,10 +292,10 @@ private const val DIM = 0.28f
 @Composable
 internal fun CapsuleVoicePanel(talk: CapsuleTalk, anchorTop: Int, anchorBottom: Int, insetTop: Int, insetBottom: Int) {
     if (!talk.active) return
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val state by talk.hold.state.collectAsState()
     val view = LocalView.current
-    val dim by animateFloatAsState(DIM, if (VamosTheme.reduceMotion) snap() else tween(200), label = "voice-dim")
+    val dim by animateFloatAsState(DIM, if (VmTheme.reduceMotion) snap() else tween(200), label = "voice-dim")
     var below by remember { mutableStateOf(false) }
     // 圆在屏幕上的位置:窗口内坐标加上窗口在屏幕上的位置
     fun Rect.onScreen(): Rect {
@@ -359,8 +359,8 @@ private fun Targets(talk: CapsuleTalk, show: Boolean, onPlaced: (Rect, Rect) -> 
 
 @Composable
 private fun Target(icon: ImageVector, label: String, hot: Boolean, bad: Boolean, onPlaced: (Rect) -> Unit) {
-    val c = VamosTheme.colors
-    val scale by animateFloatAsState(if (hot) 1.18f else 1f, if (VamosTheme.reduceMotion) snap() else tween(150), label = "target")
+    val c = VmTheme.colors
+    val scale by animateFloatAsState(if (hot) 1.18f else 1f, if (VmTheme.reduceMotion) snap() else tween(150), label = "target")
     val fill = when {
         !hot -> c.surface.copy(alpha = 0.95f)
         bad -> c.bad
@@ -385,7 +385,7 @@ private fun Target(icon: ImageVector, label: String, hot: Boolean, bad: Boolean,
 /** 面板:顶上在录的点、说给谁、用的哪个转文字、用时;中间实时的字;波形;底下松开会怎样。 */
 @Composable
 private fun Panel(talk: CapsuleTalk, state: HoldToTalk.State, below: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val listening = state as? HoldToTalk.State.Listening
     val converting = talk.released || state is HoldToTalk.State.Converting
     val aim = if (converting) CapsuleVoice.Drop.Send else talk.aim
@@ -434,7 +434,7 @@ private fun Panel(talk: CapsuleTalk, state: HoldToTalk.State, below: Boolean) {
                 Modifier.fillMaxWidth().padding(top = 10.dp).heightIn(min = 52.dp).testTag("capsule-voice-converting"),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             ) {
-                Spinner(Modifier.size(15.dp), spinning = !VamosTheme.reduceMotion, track = c.accentSoft, head = c.accent)
+                Spinner(Modifier.size(15.dp), spinning = !VmTheme.reduceMotion, track = c.accentSoft, head = c.accent)
                 Text(stringResource(R.string.voice_converting), style = SaidText, color = c.ink2, maxLines = 1)
             }
         } else {
@@ -447,7 +447,7 @@ private fun Panel(talk: CapsuleTalk, state: HoldToTalk.State, below: Boolean) {
         }
         if (!converting) {
             Box(Modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.Center) {
-                VoiceWave(listening?.level ?: 0f, flat = cancel, reduceMotion = VamosTheme.reduceMotion, color = if (cancel || edit) c.ink3 else c.accent)
+                VoiceWave(listening?.level ?: 0f, flat = cancel, reduceMotion = VmTheme.reduceMotion, color = if (cancel || edit) c.ink3 else c.accent)
             }
         }
         // 在转时中间已经写着「转文字…」,底下不再重复

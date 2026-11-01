@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.capsule
 
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import android.animation.ValueAnimator
 import android.content.ComponentCallbacks
 import android.content.Context
@@ -15,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalDensity
@@ -62,7 +63,7 @@ import com.yongpeng.vamos.ui.ExchangeStatus
 import com.yongpeng.vamos.ui.ScreenCopy
 import com.yongpeng.vamos.ui.screenThumbnail
 import com.yongpeng.vamos.ui.ToolLabels
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.animationsOff
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -825,7 +826,7 @@ class CapsuleController(
         val talkable = canTalk()
         // 说着说着不能说了(例如这时 App 交到你手上、胶囊换成那一条):这一段丢掉,不发——用户没机会松开选落点
         if (!talkable && talk.active) talk.abort()
-        window?.holdable(talkHold.takeIf { talkable }, CapsuleTalk.HOLD_MS)
+        window?.holdable(if (view?.kind?.active == true) stopHold else talkHold.takeIf { talkable }, CapsuleTalk.HOLD_MS)
         cardWindow?.draggable(cardDrag, cardHandle.takeIf { !zoomed } ?: Rect())
     }
 
@@ -941,6 +942,13 @@ class CapsuleController(
         (context.applicationContext as VamosApp).speech.choice.value != SpeechChoice.Off
 
     /** 一颗那个窗口交来的长按:开始说、手指移动算落点、松开按落点收尾。 */
+    private val stopHold = object : OverlayHold {
+        override fun start(rawX: Float, rawY: Float) { view?.runKey?.let { TaskService.cancel(context, it) } }
+        override fun move(rawX: Float, rawY: Float) = Unit
+        override fun end(rawX: Float, rawY: Float) = Unit
+        override fun cancel() = Unit
+    }
+
     private val talkHold = object : OverlayHold {
         override fun start(rawX: Float, rawY: Float) = beginTalk(byTouch = true)
 
@@ -1192,7 +1200,7 @@ class CapsuleController(
     @Composable
     private fun CardOverlay() {
         val c = card ?: return
-        VamosTheme(reduceMotion = animationsOff(context)) {
+        VmTheme(reduceMotion = animationsOff(context)) {
             val height = if (cardHeight > 0) with(LocalDensity.current) { cardHeight.toDp() } else Dp.Unspecified
             OverlayMotion(open = !closing, origin = ::cardOrigin, onClosed = ::closed, onOpened = { cardOut = true }) {
                 CapsuleCard(c, preview, zoomed, actions, { elapsed(it) }, input = inputUi, thread = thread, height = height, onHandle = ::onHandle)
@@ -1207,7 +1215,7 @@ class CapsuleController(
         val a = windowOn?.overlays()?.area()
         val top = placedY + room()
         val bottom = placedY + (window?.height ?: 0) - room()
-        VamosTheme(reduceMotion = animationsOff(context)) {
+        VmTheme(reduceMotion = animationsOff(context)) {
             CapsuleVoicePanel(talk, top, bottom.coerceAtLeast(top), a?.insetTop ?: 0, a?.insetBottom ?: 0)
         }
     }
@@ -1221,7 +1229,7 @@ class CapsuleController(
         val v = if (n == null || shown.kind == CapsuleKind.HandedOver) shown
             else shown.copy(kind = n.kind, text = n.text, detail = null, count = 0, needCount = 0, pill = true, widthEpoch = -n.id)
         val talking = talk.active && !talk.released
-        VamosTheme(reduceMotion = animationsOff(context)) {
+        VmTheme(reduceMotion = animationsOff(context)) {
             OverlayMotion(open = true, origin = { TransformOrigin(if (dock.side == DockSide.Right) 1f else 0f, 0.5f) }, onClosed = {}) {
                 CapsuleContent(
                     v,
@@ -1250,10 +1258,12 @@ class CapsuleController(
     @Composable
     private fun elapsed(startedAt: Long?): String? {
         if (startedAt == null) return null
-        val now by produceState(System.currentTimeMillis(), startedAt) {
+        val nowState = remember { mutableStateOf(System.currentTimeMillis()) }
+        val now by nowState
+        LaunchedEffect(startedAt) {
             while (true) {
-                value = System.currentTimeMillis()
-                delay(1_000L - value % 1_000L)
+                nowState.value = System.currentTimeMillis()
+                delay(1_000L - nowState.value % 1_000L)
             }
         }
         return ChatCopy.clock(now - startedAt)

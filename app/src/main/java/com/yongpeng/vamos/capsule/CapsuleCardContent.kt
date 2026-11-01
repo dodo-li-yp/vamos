@@ -3,7 +3,6 @@ package com.yongpeng.vamos.capsule
 
 import kotlinx.coroutines.delay
 
-import androidx.compose.runtime.produceState
 
 import com.yongpeng.vamos.ui.KeptPageCopy
 
@@ -97,14 +96,14 @@ import com.yongpeng.vamos.ui.UserMessage
 import androidx.compose.ui.graphics.ImageBitmap
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.VamosLogo
 import com.yongpeng.vamos.ui.components.StepItem
 import com.yongpeng.vamos.ui.components.StepState
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosMotion
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmMotion
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
 import kotlinx.coroutines.flow.first
 
 private val CardShape = RoundedCornerShape(22.dp)
@@ -235,7 +234,7 @@ fun CapsuleCard(
 fun OverlayMotion(
     open: Boolean, origin: (Size) -> TransformOrigin, onClosed: () -> Unit, onOpened: () -> Unit = {}, content: @Composable () -> Unit,
 ) {
-    val still = VamosTheme.reduceMotion
+    val still = VmTheme.reduceMotion
     val shown = remember { Animatable(if (still) 1f else 0f) }
     val closed by rememberUpdatedState(onClosed)
     val opened by rememberUpdatedState(onOpened)
@@ -249,7 +248,7 @@ fun OverlayMotion(
                 // 刚出来那一帧要排版、窗口换大小,最慢:等它画完再起步,动画的头几帧不被它吃掉
                 if (shown.value == 0f) repeat(SETTLE_FRAMES) { withFrameNanos { } }
                 opened()
-                shown.animateTo(1f, tween(CARD_IN_MS, easing = VamosMotion.Decelerate))
+                shown.animateTo(1f, tween(CARD_IN_MS, easing = VmMotion.Decelerate))
             }
         } else {
             if (!still) {
@@ -294,9 +293,9 @@ private fun InputRow(field: CardInput, ui: CardInputUi, actions: CardActions, st
 /** 输入框左边的截屏按钮:圆钮里一块屏。 */
 @Composable
 private fun CameraKey(onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
-        Modifier.testTag("capsule-camera").size(38.dp).clip(VamosShapes.Pill).background(c.ink.copy(alpha = 0.05f))
+        Modifier.testTag("capsule-camera").size(38.dp).clip(VmShapes.Pill).background(c.ink.copy(alpha = 0.05f))
             .clickable(role = Role.Button, onClickLabel = ScreenCopy.CAMERA, onClick = onClick)
             .semantics { contentDescription = ScreenCopy.CAMERA },
         contentAlignment = Alignment.Center,
@@ -308,7 +307,7 @@ private fun CameraKey(onClick: () -> Unit) {
 /** 输入框上面那一条:缩略图、「你此刻的屏幕」、App · 时刻,右边 × 不要它;不让截图的页面写「没截到」。 */
 @Composable
 private fun ScreenChip(p: PendingScreen, onRemove: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val s = p.shot.screen
     Row(
         Modifier.testTag("capsule-attachment").padding(top = 8.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp))
@@ -322,7 +321,7 @@ private fun ScreenChip(p: PendingScreen, onRemove: () -> Unit) {
             Text(ScreenCopy.detail(s), style = Sub, color = c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Box(
-            Modifier.testTag("capsule-attachment-remove").size(26.dp).clip(VamosShapes.Pill)
+            Modifier.testTag("capsule-attachment-remove").size(26.dp).clip(VmShapes.Pill)
                 .clickable(role = Role.Button, onClickLabel = ScreenCopy.REMOVE, onClick = onRemove)
                 .semantics { contentDescription = ScreenCopy.REMOVE },
             contentAlignment = Alignment.Center,
@@ -335,9 +334,9 @@ private fun ScreenChip(p: PendingScreen, onRemove: () -> Unit) {
 /** 发送键:有东西可发时是蓝底,否则灰的点不了。 */
 @Composable
 private fun SendKey(enabled: Boolean, onSend: () -> Unit, start: Dp = 0.dp) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
-        Modifier.testTag("capsule-send").padding(start = start).size(KeySize).clip(VamosShapes.Pill)
+        Modifier.testTag("capsule-send").padding(start = start).size(KeySize).clip(VmShapes.Pill)
             .background(if (enabled) c.accent else c.ink3.copy(alpha = 0.3f))
             .clickable(enabled = enabled, role = Role.Button, onClickLabel = CardCopy.SEND, onClick = onSend)
             .semantics { contentDescription = CardCopy.SEND },
@@ -349,7 +348,7 @@ private fun SendKey(enabled: Boolean, onSend: () -> Unit, start: Dp = 0.dp) {
 
 @Composable
 private fun InputField(field: CardInput, ui: CardInputUi, actions: CardActions, stop: (() -> Unit)?) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val shape = RoundedCornerShape(14.dp)
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -399,14 +398,14 @@ private fun InputField(field: CardInput, ui: CardInputUi, actions: CardActions, 
 /** 输入框右边的停止键:黑底圆钮里一个方块,同对话页输入栏。 */
 @Composable
 internal fun StopKey(onStop: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
-        Modifier.testTag("capsule-stop").size(KeySize).clip(VamosShapes.Pill).background(c.ink)
+        Modifier.testTag("capsule-stop").size(KeySize).clip(VmShapes.Pill).background(c.accentCinnabar)
             .clickable(role = Role.Button, onClickLabel = CardCopy.STOP, onClick = onStop)
             .semantics { contentDescription = CardCopy.STOP },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(VamosIcons.Stop, null, Modifier.size(20.dp), tint = c.bg)
+        Icon(VamosIcons.Stop, null, Modifier.size(20.dp), tint = c.onAccent)
     }
 }
 
@@ -420,7 +419,7 @@ private fun cardWidth() = minOf(CardWidth, (LocalConfiguration.current.screenWid
 /** 卡片的底:[fixed] 时就是 [height] 高(对话卡片),否则按内容高、最多 [height](任务卡片)。 */
 @Composable
 private fun CardFrame(height: Dp, fixed: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
         Modifier.testTag("capsule-card").width(cardWidth()).then(if (fixed) Modifier.height(height) else Modifier.heightIn(max = height))
             .glass(c, CardShape, need = false).padding(12.dp),
@@ -431,7 +430,7 @@ private fun CardFrame(height: Dp, fixed: Boolean = true, content: @Composable Co
 /** 标题栏(按着它能拖卡片,见 [CapsuleCard] 的 onHandle):左边 Vamos 图标,中间标题和状态,右边收起。 */
 @Composable
 private fun Header(title: String, sub: String, actions: CardActions, handle: Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(handle.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         VamosLogo(28.dp, corner = 14.dp)
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
@@ -445,7 +444,7 @@ private fun Header(title: String, sub: String, actions: CardActions, handle: Mod
 /** 空闲卡片的标题栏:「接着「…」聊 · 新对话」或「新对话 · 接着上次聊」;没有任何对话时只有「新对话」。 */
 @Composable
 private fun IdleHeader(card: CardView.Chat, actions: CardActions, handle: Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val continuing = !card.fresh && card.conversationId != null
     Row(handle.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         VamosLogo(28.dp, corner = 14.dp)
@@ -466,11 +465,11 @@ private fun IdleHeader(card: CardView.Chat, actions: CardActions, handle: Modifi
 @Composable
 private fun IconButton(icon: ImageVector, label: String, onClick: () -> Unit) {
     Box(
-        Modifier.size(32.dp).clip(VamosShapes.Pill).clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+        Modifier.size(32.dp).clip(VmShapes.Pill).clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
             .semantics { contentDescription = label },
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, null, Modifier.size(18.dp), tint = VamosTheme.colors.ink3)
+        Icon(icon, null, Modifier.size(18.dp), tint = VmTheme.colors.ink3)
     }
 }
 
@@ -480,7 +479,7 @@ private fun Detail(
     card: CardView.Detail, preview: Bitmap?, actions: CardActions, elapsed: @Composable (Long?) -> String?,
     height: Dp, handle: Modifier, input: @Composable () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val r = card.run
     val sub = listOfNotNull(CapsuleCards.status(r.kind), elapsed(r.startedAt)).joinToString(" · ")
     CardFrame(height, fixed = false) {
@@ -536,12 +535,14 @@ private fun Detail(
  */
 @Composable
 private fun KeptCard(card: CardView.Kept, preview: Bitmap?, actions: CardActions, height: Dp, handle: Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val p = card.page
-    val now by produceState(System.currentTimeMillis(), p.id) {
+    val nowState = remember { mutableStateOf(System.currentTimeMillis()) }
+    val now by nowState
+    LaunchedEffect(p.id) {
         while (true) {
             delay(KEPT_TICK_MS)
-            value = System.currentTimeMillis()
+            nowState.value = System.currentTimeMillis()
         }
     }
     CardFrame(height, fixed = false) {
@@ -569,7 +570,7 @@ private fun KeptCard(card: CardView.Kept, preview: Bitmap?, actions: CardActions
             Box(Modifier.weight(1f).testTag("kept-open")) { Action(tr(R.string.kept_open_chat), ButtonKind.Tonal) { actions.openVamos(p.conversationId) } }
             // 关闭是红字的淡红按钮,和别的按钮分开
             Box(
-                Modifier.weight(1f).height(40.dp).testTag("kept-close").clip(VamosShapes.Pill).background(c.badSoft)
+                Modifier.weight(1f).height(40.dp).testTag("kept-close").clip(VmShapes.Pill).background(c.badSoft)
                     .clickable(role = Role.Button, onClick = actions::closeKeptPage),
                 contentAlignment = Alignment.Center,
             ) { Text(tr(R.string.kept_close), style = Strong, color = c.bad) }
@@ -644,7 +645,7 @@ private fun ChatCard(
  */
 @Composable
 internal fun ThreadList(thread: ChatThread, conversationId: String?, actions: CardActions, footer: (@Composable () -> Unit)? = null) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val state = rememberLazyListState(initialFirstVisibleItemIndex = thread.anchor)
     var following by remember { mutableStateOf(false) }
     LaunchedEffect(state) {
@@ -728,7 +729,7 @@ private const val END_OFFSET = 1_000_000
  */
 @Composable
 internal fun Steps(steps: List<String>, max: Dp, tags: List<String?> = emptyList()) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     // 倒着排:第 0 项是最新一步,贴在底下
     val state = rememberLazyListState()
     var following by remember { mutableStateOf(true) }
@@ -780,21 +781,21 @@ private val FadeEdge = 28.dp
 
 @Composable
 private fun Action(text: String, kind: ButtonKind, onClick: () -> Unit) {
-    VamosButton(text, onClick, Modifier.fillMaxWidth(), kind = kind, size = ButtonSize.Medium)
+    VmButton(text, onClick, Modifier.fillMaxWidth(), kind = kind, size = ButtonSize.Medium)
 }
 
 @Composable
 private fun TextLink(text: String, onClick: () -> Unit) {
     Text(
-        text, Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 6.dp, vertical = 8.dp),
-        style = Sub.copy(fontSize = 13.sp), color = VamosTheme.colors.accent,
+        text, Modifier.clip(VmShapes.Pill).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 6.dp, vertical = 8.dp),
+        style = Sub.copy(fontSize = 13.sp), color = VmTheme.colors.accent,
     )
 }
 
 /** 虚拟屏小画面,点一下放大。 */
 @Composable
 private fun MiniScreen(frame: Bitmap, onZoom: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val image = remember(frame) { frame.asImageBitmap() }
     Box(
         Modifier.testTag("capsule-screen").width(ScreenWidth).aspectRatio(ratio(frame)).clip(ScreenShape)
@@ -817,7 +818,7 @@ private fun Zoomed(frame: Bitmap, actions: CardActions) {
     val image = remember(frame) { frame.asImageBitmap() }
     val width = minOf(ZoomWidth, (LocalConfiguration.current.screenWidthDp * 0.72f).dp)
     Box(
-        Modifier.testTag("capsule-zoom").width(width).aspectRatio(ratio(frame)).glass(VamosTheme.colors, CardShape, need = false)
+        Modifier.testTag("capsule-zoom").width(width).aspectRatio(ratio(frame)).glass(VmTheme.colors, CardShape, need = false)
             .clickable(role = Role.Image, onClickLabel = CardCopy.ZOOMED) { actions.zoom(false) }
             .semantics { contentDescription = CardCopy.ZOOMED },
     ) {

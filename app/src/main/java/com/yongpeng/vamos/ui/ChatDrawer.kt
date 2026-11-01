@@ -82,7 +82,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.toSize
-import com.yongpeng.vamos.ui.theme.VamosMotion
+import com.yongpeng.vamos.ui.theme.VmMotion
 import com.yongpeng.vamos.ui.components.VamosLogo
 import com.yongpeng.vamos.ui.components.keepsKeyboard
 import androidx.compose.foundation.text.KeyboardActions
@@ -96,9 +96,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.yongpeng.vamos.ui.components.cardSurface
 import com.yongpeng.vamos.ui.components.lazyListScrollbar
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -214,7 +214,7 @@ fun ChatDrawer(
     /** 长按一条存过的对话:在它原地弹出操作菜单(置顶、改名、删除);带上那一行在窗口里的位置和大小。 */
     onActions: (DrawerConversation, Rect) -> Unit = { _, _ -> },
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
         Modifier.fillMaxHeight().widthIn(max = DrawerWidth).fillMaxWidth()
             .clip(DrawerShape).background(c.bg, DrawerShape)
@@ -229,10 +229,10 @@ fun ChatDrawer(
         ) {
             VamosLogo(36.dp, corner = 10.dp)
             Column {
-                Text("Vamos", style = VamosType.Title, color = c.ink)
+                Text("Vamos", style = VmType.Title, color = c.ink)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     Box(Modifier.size(6.dp).background(if (ok) c.ok else c.warnSolid, CircleShape))
-                    Text(state, style = VamosType.Hint, fontWeight = FontWeight.Medium, color = c.ink3)
+                    Text(state, style = VmType.Hint, fontWeight = FontWeight.Medium, color = c.ink3)
                 }
             }
         }
@@ -262,7 +262,7 @@ fun ChatDrawer(
                     item("busy") {
                         Text(
                             stringResource(R.string.drawer_busy), Modifier.padding(start = 24.dp, end = 24.dp, bottom = 6.dp),
-                            style = VamosType.Hint, color = c.ink3,
+                            style = VmType.Hint, color = c.ink3,
                         )
                     }
                 }
@@ -296,7 +296,7 @@ private fun NavEntry(
     icon: ImageVector, text: String, modifier: Modifier = Modifier.fillMaxWidth(),
     enabled: Boolean = true, dot: Boolean = false, onClick: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         modifier.height(46.dp).clip(NavShape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
@@ -305,9 +305,9 @@ private fun NavEntry(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Icon(icon, null, Modifier.size(VamosSize.Icon), tint = c.ink2)
+        Icon(icon, null, Modifier.size(VmSize.Icon), tint = c.ink2)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(text, style = VamosType.Body, color = c.ink, maxLines = 1, softWrap = false)
+            Text(text, style = VmType.Body, color = c.ink, maxLines = 1, softWrap = false)
             if (dot) UpdateDot()
         }
     }
@@ -317,7 +317,7 @@ private fun NavEntry(
 private fun SectionLabel(text: String) {
     Text(
         text, Modifier.padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 6.dp),
-        style = SectionText, color = VamosTheme.colors.ink3,
+        style = SectionText, color = VmTheme.colors.ink3,
     )
 }
 
@@ -328,7 +328,7 @@ private fun SectionLabel(text: String) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ConversationEntry(item: DrawerConversation, onOpen: (DrawerConversation) -> Unit, onActions: (DrawerConversation, Rect) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val deletable = item.id != null
     val haptic = LocalHapticFeedback.current
     // 这一行在窗口里的位置和大小(不裁掉滚出列表的部分),菜单照它摆出抬起的那一行;只在回调里读,不引起重组
@@ -358,7 +358,7 @@ private fun ConversationEntry(item: DrawerConversation, onOpen: (DrawerConversat
 /** 一条对话里面的东西:进行中的小圆点、图钉、标题、时间,有副标题时下面一行。侧栏里那一行和长按抬起的那一张都用它。 */
 @Composable
 internal fun ConversationRowContent(item: DrawerConversation) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             if (item.running) Box(Modifier.size(7.dp).background(c.accent, CircleShape))
@@ -428,7 +428,7 @@ internal fun DeleteConversationDialog(title: String, impact: DeleteImpact, onCon
         text = { Text(body, Modifier.testTag("delete-conversation-body")) },
         confirmButton = {
             TextButton(onClick = onConfirm, Modifier.testTag("confirm-delete-conversation")) {
-                Text(stringResource(R.string.confirm_delete), color = VamosTheme.colors.bad)
+                Text(stringResource(R.string.confirm_delete), color = VmTheme.colors.bad)
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
@@ -509,14 +509,14 @@ fun ChatWithDrawer(
     val lift = remember { Animatable(0f) }
     LaunchedEffect(acting) {
         if (acting != null) {
-            if (reduceMotion) lift.snapTo(1f) else lift.animateTo(1f, tween(MENU_IN_MS, easing = VamosMotion.Decelerate))
+            if (reduceMotion) lift.snapTo(1f) else lift.animateTo(1f, tween(MENU_IN_MS, easing = VmMotion.Decelerate))
         }
     }
     /** 收起菜单:倒着放一遍出现的动画,放完再清掉;[then] 当场做(改名、删除的弹窗不用等菜单收完)。 */
     fun closeMenu(then: () -> Unit = {}) {
         then()
         scope.launch {
-            if (reduceMotion) lift.snapTo(0f) else lift.animateTo(0f, tween(MENU_OUT_MS, easing = VamosMotion.Decelerate))
+            if (reduceMotion) lift.snapTo(0f) else lift.animateTo(0f, tween(MENU_OUT_MS, easing = VmMotion.Decelerate))
             acting = null
         }
     }
@@ -578,7 +578,7 @@ fun ChatWithDrawer(
             // 对话页上从左往右划拉出侧栏(拖着跟手);能左右滚的内容(宽表格、代码块等)先自己滚。
             // 从左边缘往里滑是系统的返回手势,上面的返回处理同样是打开侧栏
             gesturesEnabled = true,
-            scrimColor = VamosTheme.colors.floatShadow.copy(alpha = 0.28f),
+            scrimColor = VmTheme.colors.floatShadow.copy(alpha = 0.28f),
         ) {
             content { scope.launch { if (reduceMotion) drawer.snapTo(DrawerValue.Open) else drawer.open() } }
         }

@@ -45,14 +45,14 @@ import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.PillTone
 import com.yongpeng.vamos.ui.components.RowChevron
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.StateCard
-import com.yongpeng.vamos.ui.components.StatusPill
+import com.yongpeng.vamos.ui.components.VmStatusChip
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
 import com.yongpeng.vamos.core.usage.UsageQuery
@@ -164,10 +164,10 @@ fun SettingsScreen(
             language = language, onOpenLanguage = { page = SettingsPage.Language },
             onOpenMemory = onOpenMemory,
             webSitesCount = webSites?.sites?.size, onOpenWebSites = { page = SettingsPage.WebSites },
-            sandbox = sandboxStatus, onOpenSandbox = { page = SettingsPage.Sandbox },
+            sandbox = null, onOpenSandbox = { page = SettingsPage.Sandbox },
             routes = routeCount, onOpenRoutes = { page = SettingsPage.Routes },
             onOpenRecovery = { page = SettingsPage.Recovery },
-            computerAccess = mcpOn, onOpenComputerAccess = { page = SettingsPage.ComputerAccess },
+            computerAccess = null, onOpenComputerAccess = { page = SettingsPage.ComputerAccess },
             showDeveloper = showDeveloper, onOpenDeveloper = { page = SettingsPage.Developer },
             versionName = BuildConfig.VERSION_NAME, updateVersion = updateVersion, onOpenAbout = onOpenAbout,
         )
@@ -274,31 +274,31 @@ fun SettingsContent(
 
         GroupLabel(stringResource(R.string.settings_basic))
         GroupCard {
-            ListRow(VamosIcons.Spark, stringResource(R.string.settings_model), first = true, onClick = onOpenModels) {
+            VmListItem(VamosIcons.Spark, stringResource(R.string.settings_model), first = true, onClick = onOpenModels) {
                 RowValue(mainModel ?: stringResource(R.string.settings_not_set))
                 RowChevron()
             }
             usageTokens?.let {
-                ListRow(VamosIcons.Chart, UsageCopy.TITLE, onClick = onOpenUsage) {
+                VmListItem(VamosIcons.Chart, UsageCopy.TITLE, onClick = onOpenUsage) {
                     RowValue(UsageCopy.settingsValue(it))
                     RowChevron()
                 }
             }
-            ListRow(VamosIcons.Phone, stringResource(R.string.settings_phone_ops), onClick = onOpenPhoneOps) {
+            VmListItem(VamosIcons.Phone, stringResource(R.string.settings_phone_ops), onClick = onOpenPhoneOps) {
                 PhoneOpsPill(status)
                 RowChevron()
             }
-            ListRow(VamosIcons.Moon, stringResource(R.string.settings_during_work), stringResource(R.string.settings_during_work_sub), onClick = onOpenDuringWork) { RowChevron() }
-            ListRow(VamosIcons.Message, CapsuleSettingsCopy.TITLE, CapsuleSettingsCopy.SUBTITLE, onClick = onOpenCapsule) {
+            VmListItem(VamosIcons.Moon, stringResource(R.string.settings_during_work), stringResource(R.string.settings_during_work_sub), onClick = onOpenDuringWork) { RowChevron() }
+            VmListItem(VamosIcons.Message, CapsuleSettingsCopy.TITLE, CapsuleSettingsCopy.SUBTITLE, onClick = onOpenCapsule) {
                 RowValue(CapsuleSettingsCopy.label(capsuleMode))
                 RowChevron()
             }
-            ListRow(VamosIcons.Globe, stringResource(R.string.language_title), onClick = onOpenLanguage) {
+            VmListItem(VamosIcons.Globe, stringResource(R.string.language_title), onClick = onOpenLanguage) {
                 RowValue(languageLabel(language))
                 RowChevron()
             }
             val (notifText, notifTone) = StatusCopy.notificationSummary(status.notificationOverview().summary)
-            ListRow(VamosIcons.Bell, StatusCopy.NOTIFICATIONS, stringResource(R.string.settings_notif_sub), onClick = onOpenNotifications) {
+            VmListItem(VamosIcons.Bell, StatusCopy.NOTIFICATIONS, stringResource(R.string.settings_notif_sub), onClick = onOpenNotifications) {
                 RowValue(notifText, notifTone)
                 RowChevron()
             }
@@ -311,10 +311,10 @@ fun SettingsContent(
                 var first = true
                 fun take(): Boolean = first.also { first = false }
                 onOpenMemory?.let {
-                    ListRow(VamosIcons.Heart, stringResource(R.string.memory_and_skills), stringResource(R.string.settings_memory_sub), first = take(), onClick = it) { RowChevron() }
+                    VmListItem(VamosIcons.Heart, stringResource(R.string.memory_and_skills), stringResource(R.string.settings_memory_sub), first = take(), onClick = it) { RowChevron() }
                 }
                 webSitesCount?.let {
-                    ListRow(VamosIcons.Globe, stringResource(R.string.settings_web_logins), first = take(), onClick = onOpenWebSites) { RowValue(trPlural(R.plurals.settings_count_sites, it)); RowChevron() }
+                    VmListItem(VamosIcons.Globe, stringResource(R.string.settings_web_logins), first = take(), onClick = onOpenWebSites) { RowValue(trPlural(R.plurals.settings_count_sites, it)); RowChevron() }
                 }
             }
         }
@@ -327,29 +327,29 @@ fun SettingsContent(
                 var first = true
                 fun take(): Boolean = first.also { first = false }
                 if (sandboxRow != null) {
-                    ListRow(VamosIcons.Terminal, stringResource(R.string.settings_sandbox), first = take(), onClick = onOpenSandbox) {
+                    VmListItem(VamosIcons.Terminal, stringResource(R.string.settings_sandbox), first = take(), onClick = onOpenSandbox) {
                         RowValue(sandboxValue(sandboxRow)); RowChevron()
                     }
                 }
                 routes?.let {
-                    ListRow(VamosIcons.Route, stringResource(R.string.settings_routes), first = take(), onClick = onOpenRoutes) { RowValue(trPlural(R.plurals.settings_count_routes, it)); RowChevron() }
+                    VmListItem(VamosIcons.Route, stringResource(R.string.settings_routes), first = take(), onClick = onOpenRoutes) { RowValue(trPlural(R.plurals.settings_count_routes, it)); RowChevron() }
                 }
                 if (recoveryRow) {
-                    ListRow(VamosIcons.Wrench, stringResource(R.string.settings_recovery), first = take(), onClick = onOpenRecovery) { RowChevron() }
+                    VmListItem(VamosIcons.Wrench, stringResource(R.string.settings_recovery), first = take(), onClick = onOpenRecovery) { RowChevron() }
                 }
                 computerAccess?.let { on ->
-                    ListRow(VamosIcons.Desktop, stringResource(R.string.mcp_title), first = take(), onClick = onOpenComputerAccess) {
+                    VmListItem(VamosIcons.Desktop, stringResource(R.string.mcp_title), first = take(), onClick = onOpenComputerAccess) {
                         RowValue(stringResource(if (on) R.string.state_on else R.string.state_off)); RowChevron()
                     }
                 }
                 if (showDeveloper) {
-                    ListRow(VamosIcons.Code, stringResource(R.string.settings_developer), first = take(), onClick = onOpenDeveloper) { RowChevron() }
+                    VmListItem(VamosIcons.Code, stringResource(R.string.settings_developer), first = take(), onClick = onOpenDeveloper) { RowChevron() }
                 }
             }
         }
 
         GroupCard {
-            ListRow(VamosIcons.Info, stringResource(R.string.settings_about), first = true, onClick = onOpenAbout) {
+            VmListItem(VamosIcons.Info, stringResource(R.string.settings_about), first = true, onClick = onOpenAbout) {
                 TrailingValue(AboutCopy.settingsValue(updateVersion, versionName))
                 RowChevron()
             }
@@ -361,9 +361,9 @@ fun SettingsContent(
 @Composable
 private fun PhoneOpsPill(status: SystemStatus) {
     when {
-        status.sdkInt < Prerequisites.MIN_SDK -> StatusPill(stringResource(R.string.pill_unsupported), PillTone.Neutral)
-        status.builtinShell == BuiltinShellStatus.Running && status.accessibility == AccessibilityState.On -> StatusPill(stringResource(R.string.pill_available), PillTone.Ok)
-        else -> StatusPill(stringResource(R.string.pill_needs_attention), PillTone.Warn)
+        status.sdkInt < Prerequisites.MIN_SDK -> VmStatusChip(stringResource(R.string.pill_unsupported), PillTone.Neutral)
+        status.builtinShell == BuiltinShellStatus.Running && status.accessibility == AccessibilityState.On -> VmStatusChip(stringResource(R.string.pill_available), PillTone.Ok)
+        else -> VmStatusChip(stringResource(R.string.pill_needs_attention), PillTone.Warn)
     }
 }
 
@@ -390,7 +390,7 @@ private fun StatusSummary(check: Prerequisites.Check, onProblem: (Problem) -> Un
             if (problem in check.blockers) TileTone.Bad else TileTone.Warn,
             Modifier.testTag("settings-status"),
         ) {
-            VamosButton(copy.link, { onProblem(problem) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+            VmButton(copy.link, { onProblem(problem) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
         }
     }
 }

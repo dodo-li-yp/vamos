@@ -95,12 +95,12 @@ import com.yongpeng.vamos.task.TaskService
 import com.yongpeng.vamos.task.TaskService.Companion.isActive
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.floatShadow
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -460,13 +460,14 @@ private const val PANEL_SHARE = 0.58f
 /** 页面四周的一圈淡紫光边:Vamos 正在这一页上干活。不挡触摸。 */
 @Composable
 fun PageGlow(modifier: Modifier = Modifier) {
+    val glowColor = GlowColor
     Box(
         modifier.fillMaxSize().testTag("page-glow").drawBehind {
             val w = 2.dp.toPx()
             for (i in 0 until GLOW_LAYERS) {
                 val inset = w / 2 + i * w * 2
                 drawRoundRect(
-                    GlowColor.copy(alpha = 0.7f / (i + 1)), topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
+                    glowColor.copy(alpha = 0.7f / (i + 1)), topLeft = androidx.compose.ui.geometry.Offset(inset, inset),
                     size = androidx.compose.ui.geometry.Size(size.width - inset * 2, size.height - inset * 2),
                     cornerRadius = CornerRadius(6.dp.toPx()), style = Stroke(w),
                 )
@@ -477,7 +478,7 @@ fun PageGlow(modifier: Modifier = Modifier) {
 
 private const val GLOW_LAYERS = 4
 /** Vamos 在页面上干活时光边的颜色(淡紫,和页面本身的颜色分得开)。 */
-private val GlowColor = Color(0xFF7B5CFF)
+private val GlowColor: Color @Composable get() = VmTheme.colors.agentQingbi
 
 /**
  * 平时浏览器页底部那一条:「✦ 问问 Vamos…」输入框;这一页有接着的对话时上面一行「接着「…」 · 新对话」;
@@ -485,21 +486,21 @@ private val GlowColor = Color(0xFF7B5CFF)
  */
 @Composable
 fun PageAskBar(chat: PageChat, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(modifier.fillMaxWidth().background(c.bg).padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 6.dp).testTag("page-ask-bar")) {
         val continuing = chat.conversationId
         if (continuing != null && !chat.started) {
             Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     if (chat.fresh) CardCopyText.NEW_CHAT else PageAskCopy.continuing(ChatCopy.plainTitle(AttachedPage.words(chat.title.orEmpty())).take(TITLE_MAX)),
-                    Modifier.weight(1f, fill = false), style = VamosType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    Modifier.weight(1f, fill = false), style = VmType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
-                Text(" · ", style = VamosType.Hint, color = c.ink3)
+                Text(" · ", style = VmType.Hint, color = c.ink3)
                 Text(
                     if (chat.fresh) CardCopyText.CONTINUE_LAST else CardCopyText.NEW_CHAT,
-                    Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button) { chat.fresh = !chat.fresh }.padding(horizontal = 4.dp, vertical = 2.dp)
+                    Modifier.clip(VmShapes.Pill).clickable(role = Role.Button) { chat.fresh = !chat.fresh }.padding(horizontal = 4.dp, vertical = 2.dp)
                         .testTag("page-ask-fresh"),
-                    style = VamosType.Hint, color = c.accent,
+                    style = VmType.Hint, color = c.accent,
                 )
             }
         }
@@ -519,18 +520,18 @@ private object CardCopyText {
 /** 输入框上面带着的选中文字:淡色一条,右边 × 不带它。 */
 @Composable
 private fun SelectionChip(text: String, onRemove: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.padding(bottom = 6.dp).fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(c.ink.copy(alpha = 0.05f))
             .padding(start = 10.dp, top = 6.dp, bottom = 6.dp, end = 4.dp).testTag("page-ask-selection"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text(PageAskCopy.SELECTION, style = VamosType.Hint, color = c.ink3)
-            Text(text, style = VamosType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(PageAskCopy.SELECTION, style = VmType.Hint, color = c.ink3)
+            Text(text, style = VmType.Caption, color = c.ink2, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Box(
-            Modifier.size(28.dp).clip(VamosShapes.Pill).clickable(role = Role.Button, onClick = onRemove)
+            Modifier.size(28.dp).clip(VmShapes.Pill).clickable(role = Role.Button, onClick = onRemove)
                 .semantics { contentDescription = PageAskCopy.DROP_SELECTION },
             contentAlignment = Alignment.Center,
         ) { Icon(VamosIcons.Close, null, Modifier.size(15.dp), tint = c.ink3) }
@@ -540,7 +541,7 @@ private fun SelectionChip(text: String, onRemove: () -> Unit) {
 /** 输入框:左边 ✦,写了字(或带着选中的字)右边是发送;有 [stop] 时右边一直有停止键。 */
 @Composable
 private fun AskField(chat: PageChat, hint: String, stop: (() -> Unit)?) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val shape = RoundedCornerShape(16.dp)
     val focus = remember { FocusRequester() }
     LaunchedEffect(chat.focusAsk) { if (chat.focusAsk > 0) runCatching { focus.requestFocus() } }
@@ -551,11 +552,11 @@ private fun AskField(chat: PageChat, hint: String, stop: (() -> Unit)?) {
     ) {
         Icon(VamosIcons.Spark, null, Modifier.size(17.dp), tint = GlowColor)
         Box(Modifier.weight(1f).padding(vertical = 11.dp)) {
-            if (chat.draft.isEmpty()) Text(hint, style = VamosType.Body.copy(fontSize = 14.5.sp), color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (chat.draft.isEmpty()) Text(hint, style = VmType.Body.copy(fontSize = 14.5.sp), color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicTextField(
                 chat.draft, { chat.draft = it },
                 Modifier.fillMaxWidth().focusRequester(focus).testTag("page-ask-field").semantics { contentDescription = hint },
-                textStyle = VamosType.Body.copy(fontSize = 14.5.sp, color = c.ink), maxLines = 4, cursorBrush = SolidColor(c.accent),
+                textStyle = VmType.Body.copy(fontSize = 14.5.sp, color = c.ink), maxLines = 4, cursorBrush = SolidColor(c.accent),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { if (canSend) chat.send() }),
             )
@@ -563,7 +564,7 @@ private fun AskField(chat: PageChat, hint: String, stop: (() -> Unit)?) {
         stop?.let { StopKey(it) }
         if (stop == null || canSend) {
             Box(
-                Modifier.testTag("page-ask-send").size(32.dp).clip(VamosShapes.Pill).background(if (canSend) c.ink else c.ink3.copy(alpha = 0.3f))
+                Modifier.testTag("page-ask-send").size(32.dp).clip(VmShapes.Pill).background(if (canSend) c.ink else c.ink3.copy(alpha = 0.3f))
                     .clickable(enabled = canSend, role = Role.Button, onClick = chat::send)
                     .semantics { contentDescription = tr(R.string.chat_send) },
                 contentAlignment = Alignment.Center,
@@ -583,7 +584,7 @@ private val CardShape = RoundedCornerShape(16.dp)
  */
 @Composable
 fun PagePanel(chat: PageChat, site: String, pageTitle: String, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val card = chat.card
     val content = card?.let(CapsuleCards::content)
     val live = card?.run?.state?.isActive() == true
@@ -594,27 +595,27 @@ fun PagePanel(chat: PageChat, site: String, pageTitle: String, modifier: Modifie
         Box(
             Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = tr(R.string.collapse)) { chat.open = false }.padding(vertical = 8.dp),
             contentAlignment = Alignment.Center,
-        ) { Box(Modifier.width(36.dp).height(4.dp).clip(VamosShapes.Pill).background(c.hair)) }
+        ) { Box(Modifier.width(36.dp).height(4.dp).clip(VmShapes.Pill).background(c.hair)) }
         Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Column(Modifier.weight(1f)) {
-                Text(site, style = VamosType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(site, style = VmType.Label.copy(fontWeight = FontWeight.SemiBold), color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     listOf(PageAskCopy.FROM_PAGE, pageTitle).filter(String::isNotBlank).joinToString(" · "),
-                    style = VamosType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    style = VmType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
             chat.conversationId?.let { id ->
                 Row(
-                    Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button) { chat.actions.openVamos(id) }.padding(horizontal = 6.dp, vertical = 6.dp)
+                    Modifier.clip(VmShapes.Pill).clickable(role = Role.Button) { chat.actions.openVamos(id) }.padding(horizontal = 6.dp, vertical = 6.dp)
                         .testTag("page-panel-open-chat"),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
-                    Text(PageAskCopy.OPEN_CHAT, style = VamosType.Hint.copy(fontSize = 12.5.sp), color = c.accent)
+                    Text(PageAskCopy.OPEN_CHAT, style = VmType.Hint.copy(fontSize = 12.5.sp), color = c.accent)
                     Icon(VamosIcons.External, null, Modifier.size(13.dp), tint = c.accent)
                 }
             }
             Box(
-                Modifier.size(30.dp).clip(VamosShapes.Pill).clickable(role = Role.Button, onClick = chat.actions::collapse)
+                Modifier.size(30.dp).clip(VmShapes.Pill).clickable(role = Role.Button, onClick = chat.actions::collapse)
                     .semantics { contentDescription = tr(R.string.collapse) }.testTag("page-panel-collapse"),
                 contentAlignment = Alignment.Center,
             ) { Icon(VamosIcons.Close, null, Modifier.size(17.dp), tint = c.ink3) }
@@ -629,8 +630,8 @@ fun PagePanel(chat: PageChat, site: String, pageTitle: String, modifier: Modifie
         }
         if (card != null && card.run.stage == Takeover.Stage.HandedOver) {
             Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(PageAskCopy.HANDLING, style = VamosType.Caption, color = c.ink2)
-                VamosButton(tr(R.string.action_hand_back), chat::handBack, Modifier.fillMaxWidth().testTag("page-panel-hand-back"), kind = ButtonKind.Primary, size = ButtonSize.Medium)
+                Text(PageAskCopy.HANDLING, style = VmType.Caption, color = c.ink2)
+                VmButton(tr(R.string.action_hand_back), chat::handBack, Modifier.fillMaxWidth().testTag("page-panel-hand-back"), kind = ButtonKind.Primary, size = ButtonSize.Medium)
             }
         } else if (card != null && content != null && live) {
             Box(Modifier.padding(top = 4.dp)) { Pinned(content, card.run.key, chat.actions) }
@@ -656,7 +657,7 @@ private val StepsMax = 132.dp
  */
 @Composable
 fun PageCard(chat: PageChat, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val card = chat.card ?: return
     val paused = PageAskModel.pausedForUser(card.run.state)
     val warn = paused || card.kind.needsYou
@@ -666,15 +667,15 @@ fun PageCard(chat: PageChat, modifier: Modifier = Modifier) {
             .padding(start = 12.dp, end = 8.dp, top = 10.dp, bottom = 10.dp).testTag("page-card"),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Box(Modifier.size(8.dp).clip(VamosShapes.Pill).background(if (warn) c.warnSolid else GlowColor))
+        Box(Modifier.size(8.dp).clip(VmShapes.Pill).background(if (warn) c.warnSolid else GlowColor))
         Column(Modifier.weight(1f)) {
             Text(
                 if (paused) PageAskCopy.PAUSED_CARD else card.line.ifBlank { CapsuleCards.status(card.kind) },
-                style = VamosType.Label, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                style = VmType.Label, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
-            if (paused) Text(PageAskCopy.PAUSED_HINT, style = VamosType.Hint, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (paused) Text(PageAskCopy.PAUSED_HINT, style = VmType.Hint, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        if (paused) VamosButton(tr(R.string.chat_continue), { chat.actions.resume(card.run.key) }, Modifier.testTag("page-card-resume"), kind = ButtonKind.Primary, size = ButtonSize.Small)
+        if (paused) VmButton(tr(R.string.chat_continue), { chat.actions.resume(card.run.key) }, Modifier.testTag("page-card-resume"), kind = ButtonKind.Primary, size = ButtonSize.Small)
         Icon(VamosIcons.Up, PageAskCopy.EXPAND, Modifier.size(18.dp), tint = c.ink3)
     }
 }
@@ -683,17 +684,17 @@ fun PageCard(chat: PageChat, modifier: Modifier = Modifier) {
 @Composable
 fun PausedBanner(onResume: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color(0xFF1D1F24))
+        modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(VmTheme.colors.surface)
             .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp).testTag("page-paused-banner"),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(VamosIcons.Hand, null, Modifier.size(16.dp), tint = Color.White)
-        Text(PageAskCopy.PAUSED, Modifier.weight(1f), style = VamosType.Caption, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(PageAskCopy.PAUSED, Modifier.weight(1f), style = VmType.Caption, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
             tr(R.string.chat_continue),
             Modifier.clip(RoundedCornerShape(8.dp)).background(Color.White).clickable(role = Role.Button, onClick = onResume)
                 .padding(horizontal = 12.dp, vertical = 5.dp).testTag("page-paused-resume"),
-            style = VamosType.Label.copy(fontWeight = FontWeight.SemiBold), color = Color(0xFF111111),
+            style = VmType.Label.copy(fontWeight = FontWeight.SemiBold), color = VmTheme.colors.textInk,
         )
     }
 }
@@ -701,7 +702,7 @@ fun PausedBanner(onResume: () -> Unit, modifier: Modifier = Modifier) {
 /** 对话页上那句话是在浏览器页上对着一页问的:气泡上面一小块「网页 · 网站」,带着选中的字时下面是那段字。 */
 @Composable
 internal fun SentPage(page: AttachedPage.Page, maxWidth: androidx.compose.ui.unit.Dp) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val host = com.yongpeng.vamos.core.cap.web.WebUrlPolicy.host(page.url) ?: page.url
     Column(
         Modifier.padding(bottom = 4.dp).widthIn(max = maxWidth).background(c.ink.copy(alpha = 0.05f), RoundedCornerShape(12.dp))
@@ -710,8 +711,8 @@ internal fun SentPage(page: AttachedPage.Page, maxWidth: androidx.compose.ui.uni
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             Icon(VamosIcons.Globe, null, Modifier.size(13.dp), tint = c.ink3)
-            Text("${PageAskCopy.WEB} · $host", style = VamosType.Hint, color = c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text("${PageAskCopy.WEB} · $host", style = VmType.Hint, color = c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        page.selection?.let { Text(it, style = VamosType.Caption, color = c.ink2, maxLines = 3, overflow = TextOverflow.Ellipsis) }
+        page.selection?.let { Text(it, style = VmType.Caption, color = c.ink2, maxLines = 3, overflow = TextOverflow.Ellipsis) }
     }
 }

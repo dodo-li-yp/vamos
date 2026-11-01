@@ -16,6 +16,8 @@ import com.yongpeng.vamos.i18n.tr
 import androidx.compose.ui.res.stringResource
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -66,6 +68,8 @@ import com.yongpeng.vamos.settings.ProviderConfig
 import com.yongpeng.vamos.settings.ProviderPresets
 import com.yongpeng.vamos.settings.ProviderStore
 import com.yongpeng.vamos.settings.RoleChoice
+import com.yongpeng.vamos.ui.components.VmStatusChip
+import com.yongpeng.vamos.ui.components.RowChevron
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.CapabilityTag
@@ -73,17 +77,17 @@ import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
 import com.yongpeng.vamos.ui.components.InputRow
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.PageBackground
 import com.yongpeng.vamos.ui.components.ProgressDots
 import com.yongpeng.vamos.ui.components.SelectChip
 import com.yongpeng.vamos.ui.components.TagTone
 import com.yongpeng.vamos.ui.components.TileTone
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 配置模型:用途(主模型、看图模型、轻量模型)和服务商两块。首次上手时 [onboarding] 为真
@@ -256,14 +260,14 @@ class ModelSetupActions(
  */
 @Composable
 fun ModelSetupContent(ui: ModelSetupUi, onboarding: Boolean, actions: ModelSetupActions, onBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     // 表单收起(测试通过存好了,或取消)后页面上没有要打字的地方,顺手收起键盘
     val focus = LocalFocusManager.current
     LaunchedEffect(ui.showForm) { if (!ui.showForm) focus.clearFocus() }
     val onPick: (ModelRole) -> Unit = { role -> if (ui.providers.isEmpty()) actions.openForm() else actions.pickRole(role) }
     PageBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars).windowInsetsPadding(WindowInsets.ime)) {
-            TopBar(if (onboarding) ModelSetupCopy.TITLE else ModelsCopy.TITLE, VamosIcons.Back, onBack, stringResource(R.string.back))
+            VmTopBar(if (onboarding) ModelSetupCopy.TITLE else ModelsCopy.TITLE, VamosIcons.Back, onBack, stringResource(R.string.back))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
                 Text(
                     if (onboarding) ModelSetupCopy.LEAD else ModelsCopy.LEAD, Modifier.padding(top = 4.dp, bottom = 12.dp),
@@ -284,7 +288,7 @@ fun ModelSetupContent(ui: ModelSetupUi, onboarding: Boolean, actions: ModelSetup
             if (onboarding && WindowInsets.ime.getBottom(LocalDensity.current) == 0) {
                 Column(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 12.dp)) {
                     ProgressDots(Onboarding.DOTS, Onboarding.dot(OnboardingStep.Model), Modifier.padding(bottom = 14.dp))
-                    VamosButton(ModelSetupCopy.NEXT, actions.next, Modifier.fillMaxWidth().testTag("setup-next"), enabled = ui.canNext)
+                    VmButton(ModelSetupCopy.NEXT, actions.next, Modifier.fillMaxWidth().testTag("setup-next"), enabled = ui.canNext)
                 }
             }
         }
@@ -294,7 +298,7 @@ fun ModelSetupContent(ui: ModelSetupUi, onboarding: Boolean, actions: ModelSetup
 /** 服务商:每家一行(写明在给哪些用途干活),加「添加服务商」;没有服务商或点了添加时,表单就摊在这里。 */
 @Composable
 private fun ProvidersSection(ui: ModelSetupUi, actions: ModelSetupActions) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     if (ui.providers.isNotEmpty()) {
         GroupLabel(ModelsCopy.PROVIDERS)
         GroupCard {
@@ -304,7 +308,7 @@ private fun ProvidersSection(ui: ModelSetupUi, actions: ModelSetupActions) {
                 ProviderRow(p, line, first = i == 0, warning = warning) { actions.openProvider(p.id) }
             }
             if (!ui.showForm) {
-                ListRow(
+                VmListItem(
                     VamosIcons.Plus, ModelsCopy.ADD_PROVIDER, titleColor = c.accent, tone = TileTone.Accent,
                     onClick = actions.openForm,
                 )
@@ -328,7 +332,7 @@ private fun ProvidersSection(ui: ModelSetupUi, actions: ModelSetupActions) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AddProviderForm(ui: ModelSetupUi, actions: ModelSetupActions) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val f = ui.form
     var showKey by remember { mutableStateOf(false) }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -340,24 +344,20 @@ private fun AddProviderForm(ui: ModelSetupUi, actions: ModelSetupActions) {
             )
         }
     }
-    AccountSignInGroup(ui, actions.openSignIn, actions.openProvider)
-    GroupLabel(ModelsCopy.KEY_GROUP)
-    FlowRow(
-        Modifier.fillMaxWidth().padding(bottom = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ProviderPresets.all.forEach { p ->
-            // 「自定义」按界面语言显示;服务商的名字原样
-            SelectChip(if (p == ProviderPresets.custom) stringResource(R.string.preset_custom) else p.label, f.preset == p.label, { actions.selectPreset(p.label) }, Modifier.testTag("preset-${p.label}"))
+    GroupCard(if (f.preset == "DeepSeek") Modifier.border(1.5.dp, c.brandDai, RoundedCornerShape(20.dp)) else Modifier) {
+        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(f.preset, style = VmType.BodyStrong, color = c.textInk)
+                Text(if (f.preset == "DeepSeek") "推荐 · 国内直连 · 原生看图与工具调用" else "连接你选择的模型服务", style = VmType.Caption, color = c.textInk2)
+            }
+            if (f.preset == "DeepSeek") VmStatusChip("推荐")
         }
-    }
-    GroupCard {
         if (f.isCustom) {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(ModelSetupCopy.KIND, Modifier.padding(end = 12.dp), style = VamosType.Body, color = c.ink)
+                Text(ModelSetupCopy.KIND, Modifier.padding(end = 12.dp), style = VmType.Body, color = c.ink)
                 // 四种接口一行放不下时折到下一行
                 FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     ProviderConfig.Kind.withApiKey.forEach { k -> SelectChip(ModelsCopy.kindLabel(k), f.kind == k, { actions.setKind(k) }, small = true) }
@@ -381,7 +381,7 @@ private fun AddProviderForm(ui: ModelSetupUi, actions: ModelSetupActions) {
         InputRow(
             ModelSetupCopy.API_KEY, f.apiKey, actions.setApiKey,
             if (f.keyRequired) ModelSetupCopy.KEY_HINT else ModelSetupCopy.KEY_OPTIONAL, first = !f.urlEditable,
-            keyboard = KeyboardType.Password, secret = !showKey, modifier = Modifier.testTag("setup-api-key"),
+            keyboard = KeyboardType.Password, secret = !showKey, showLastFour = true, modifier = Modifier.testTag("setup-api-key"),
         ) {
             Text(if (showKey) stringResource(R.string.hide) else stringResource(R.string.show), Modifier.clickable { showKey = !showKey }, fontSize = 13.sp, color = c.accent)
         }
@@ -406,7 +406,7 @@ private fun AddProviderForm(ui: ModelSetupUi, actions: ModelSetupActions) {
     if (f.noList) FooterNote(if (f.isCustom) ModelSetupCopy.NO_LIST_CUSTOM else ModelSetupCopy.NO_LIST_PRESET, Modifier.testTag("setup-no-list"))
     if (f.isSelfHosted) FooterNote(ModelSetupCopy.SELF_HOSTED_NOTE, Modifier.testTag("setup-self-hosted"))
     f.unencryptedWarning?.let { FooterNote(it, Modifier.testTag("setup-url-unencrypted"), color = c.warn) }
-    VamosButton(
+    VmButton(
         if (f.test == ListState.Running) ModelSetupCopy.TESTING else ModelSetupCopy.TEST_AND_SAVE,
         actions.testAndSave, Modifier.fillMaxWidth().padding(top = 2.dp).testTag("setup-test"),
         kind = ButtonKind.Secondary, size = ButtonSize.Medium, enabled = f.canTest,
@@ -418,12 +418,22 @@ private fun AddProviderForm(ui: ModelSetupUi, actions: ModelSetupActions) {
         )
     }
     FooterNote(ModelSetupCopy.TEST_NOTE, Modifier.padding(top = 6.dp))
+    GroupLabel("其他厂商")
+    GroupCard {
+        ProviderPresets.all.filter { it.label != f.preset }.forEachIndexed { index, preset ->
+            VmListItem(null, preset.label, if (preset.label == "通义千问") "备选推荐 · qwen3.7-plus" else null,
+                first = index == 0, onClick = { actions.selectPreset(preset.label) }) { RowChevron() }
+        }
+    }
+    GroupLabel("用账号登录")
+    AccountSignInGroup(ui, actions.openSignIn, actions.openProvider)
+
 }
 
 /** 自定义填的是某家的官方地址:建议改用那家的预设(不拦着),接口类型对不上时一并说;点一下就换过去,Key 留着。 */
 @Composable
 private fun PresetSuggestion(f: AddForm, label: String, onUse: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     FooterNote(ModelSetupCopy.presetSuggestion(f), Modifier.padding(top = 2.dp).testTag("setup-preset-hint"), color = c.warn)
     Text(
         ModelSetupCopy.usePreset(label),
@@ -553,7 +563,7 @@ private fun ModelContextControl(ui: ModelSetupUi, role: ModelRole,
                 if (!badWindow && (trigger.isBlank() || settings.triggerTokens != null)) Text(stringResource(R.string.model_context_effective, limits.window, limits.trigger),
                     modifier = Modifier.testTag("context-effective"))
                 TextButton(onClick = { window = ""; trigger = ""; saveFailed = false }) { Text(stringResource(R.string.reset)) }
-                if (saveFailed) Text(stringResource(R.string.model_context_save_failed), color = VamosTheme.colors.bad)
+                if (saveFailed) Text(stringResource(R.string.model_context_save_failed), color = VmTheme.colors.bad)
             }
         },
         confirmButton = { TextButton(onClick = {
@@ -572,7 +582,7 @@ internal fun Tags(o: ModelOption, forVision: Boolean = false, accent: Boolean = 
     }
 }
 
-internal val ModelIdStyle = VamosType.Body.copy(fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace)
+internal val ModelIdStyle = VmType.Body.copy(fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace)
 
 /** 配置模型页(上手时)和添加服务商表单的文字(纯函数,便于测试)。用途的说法在 [ModelsCopy]。 */
 object ModelSetupCopy {

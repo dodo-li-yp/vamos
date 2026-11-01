@@ -26,7 +26,7 @@ import com.yongpeng.vamos.core.usage.UsageRange
 import com.yongpeng.vamos.core.usage.UsageReport
 import com.yongpeng.vamos.core.usage.UsageRow
 import com.yongpeng.vamos.core.usage.UsageSnapshot
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -66,7 +66,7 @@ class UsageScreenTest {
         onPreset: (UsagePreset) -> Unit = {}, onPickCustom: () -> Unit = {},
     ) {
         compose.setContent {
-            VamosTheme(dark = dark) { UsageContent(r, preset, today, null, onPreset, onPickCustom, onSelect = {}, onBack = {}) }
+            VmTheme(dark = dark) { UsageContent(r, preset, today, null, onPreset, onPickCustom, onSelect = {}, onBack = {}) }
         }
     }
 
@@ -135,7 +135,7 @@ class UsageScreenTest {
         var selected by mutableStateOf<String?>(null)
         val r = report()
         compose.setContent {
-            VamosTheme { UsageContent(r, UsagePreset.Week, today, selected, onPreset = {}, onPickCustom = {}, onSelect = { selected = it }, onBack = {}) }
+            VmTheme { UsageContent(r, UsagePreset.Week, today, selected, onPreset = {}, onPickCustom = {}, onSelect = { selected = it }, onBack = {}) }
         }
         compose.onNodeWithTag("usage-rank-provider-p1").performScrollTo().performClick()
         assertEquals("p1", selected)

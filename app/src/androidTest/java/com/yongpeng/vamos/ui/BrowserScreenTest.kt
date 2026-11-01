@@ -30,8 +30,8 @@ import com.yongpeng.vamos.browser.SiteLook
 import com.yongpeng.vamos.browser.SiteLooks
 import com.yongpeng.vamos.browser.StartPageModel
 import com.yongpeng.vamos.settings.Prerequisites
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -57,7 +57,7 @@ class BrowserScreenTest {
 
     private fun start() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 BrowserStart(
                     sites, recent, face,
                     onBack = { calls += "back" },
@@ -76,7 +76,7 @@ class BrowserScreenTest {
     @Test
     fun drawerHasBrowserEntryThatOpensIt() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ChatDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {},
@@ -148,7 +148,7 @@ class BrowserScreenTest {
     fun pageBarAndToolbar() {
         val page = BrowserPage("https://shop.example.com/", "购物", 40, loading = true, canBack = false, canForward = false, desktop = true)
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 Column {
                     BrowserPageBar(page, face("shop.example.com"), onClose = { calls += "close" }, onSubmit = {}, onReload = {}, onStop = { calls += "stop" })
                     BrowserToolbar(page, onBackPage = {}, onForward = {}, onHome = { calls += "home" }, onShare = { calls += "share" }, onMore = { calls += "more" })
@@ -170,7 +170,7 @@ class BrowserScreenTest {
     @Test
     fun moreSheetOffersSiteActions() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 BrowserMoreSheet(
                     face("shop.example.com"), "shop.example.com", favorite = false, desktop = false,
                     onDismiss = { calls += "dismiss" }, onReload = {}, onCopy = { calls += "copy" }, onOpenOutside = {},
@@ -188,7 +188,7 @@ class BrowserScreenTest {
 
     @Test
     fun loginBannerConfirms() {
-        compose.setContent { VamosTheme { LoginBanner(desktop = true, onDone = { calls += "done" }) } }
+        compose.setContent { VmTheme { LoginBanner(desktop = true, onDone = { calls += "done" }) } }
         compose.onNodeWithTag("browser-login-banner").assertIsDisplayed()
         compose.onNodeWithText(BROWSER_LOGIN_DONE).performClick()
         assertEquals(listOf("done"), calls)
@@ -196,7 +196,7 @@ class BrowserScreenTest {
 
     @Test
     fun siteTileFallsBackToInitial() {
-        compose.setContent { VamosTheme { SiteTile(face("news.example.org"), 54.dp, RoundedCornerShape(16.dp), VamosType.Title) } }
+        compose.setContent { VmTheme { SiteTile(face("news.example.org"), 54.dp, RoundedCornerShape(16.dp), VmType.Title) } }
         compose.onNodeWithText("新").assertIsDisplayed()
     }
 }

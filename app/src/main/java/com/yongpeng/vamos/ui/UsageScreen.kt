@@ -39,7 +39,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -80,15 +79,15 @@ import com.yongpeng.vamos.core.usage.UsageTotals
 import com.yongpeng.vamos.settings.Provider
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.IconTile
-import com.yongpeng.vamos.ui.components.VamosCard
+import com.yongpeng.vamos.ui.components.VmGlassCard
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.SegmentedControl
 import com.yongpeng.vamos.ui.components.cardSurface
-import com.yongpeng.vamos.ui.theme.VamosColors
+import com.yongpeng.vamos.ui.theme.VmColors
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
@@ -139,7 +138,7 @@ object UsageCopy {
     val CHANGE_DATES: String get() = tr(R.string.usage_change_dates)
     const val UNIT = "Token"
 
-    /** 图表里有自己颜色的服务商最多几家(主题里 [VamosColors.series] 的个数),其余在趋势图里归为「其他」。 */
+    /** 图表里有自己颜色的服务商最多几家(主题里 [VmColors.series] 的个数),其余在趋势图里归为「其他」。 */
     const val COLORED = 3
 
     /**
@@ -265,8 +264,10 @@ fun UsageScreen(ledger: UsageLedger, providers: StateFlow<List<Provider>>, onBac
     val live by providers.collectAsState()
     val range = preset.range(customFrom?.let(LocalDate::ofEpochDay), customTo?.let(LocalDate::ofEpochDay))
     val zone = ZoneId.systemDefault()
-    val report by produceState<UsageReport?>(null, version, range, live) {
-        value = withContext(Dispatchers.Default) {
+    val reportState = remember { mutableStateOf<UsageReport?>(null) }
+    val report by reportState
+    LaunchedEffect(version, range, live) {
+        reportState.value = withContext(Dispatchers.Default) {
             // 连着的服务商按连接先后传进去,配色按这个先后固定
             UsageQuery.report(ledger.snapshot(), range, Instant.now(), zone, live.associate { it.id to it.name })
         }
@@ -315,7 +316,7 @@ fun UsageContent(
     onSelect: (String?) -> Unit,
     onBack: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     PageScaffold(UsageCopy.TITLE, onBack) {
         SegmentedControl(
             UsagePreset.entries.map { it.label }, preset.ordinal, { onPreset(UsagePreset.entries[it]) },
@@ -323,12 +324,12 @@ fun UsageContent(
         )
         if (report == null) return@PageScaffold
         Row(Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 12.dp), horizontalArrangement = Arrangement.Center) {
-            Text(UsageCopy.rangeText(report.range, today), style = VamosType.Hint, color = c.ink3)
+            Text(UsageCopy.rangeText(report.range, today), style = VmType.Hint, color = c.ink3)
             if (preset == UsagePreset.Custom) {
-                Text(" · ", style = VamosType.Hint, color = c.ink3)
+                Text(" · ", style = VmType.Hint, color = c.ink3)
                 Text(
                     UsageCopy.CHANGE_DATES, Modifier.clickable(role = Role.Button, onClick = onPickCustom).testTag("usage-change-dates"),
-                    style = VamosType.Hint, color = c.accent, fontWeight = FontWeight.Medium,
+                    style = VmType.Hint, color = c.accent, fontWeight = FontWeight.Medium,
                 )
             }
         }
@@ -386,20 +387,20 @@ fun UsageContent(
     }
 }
 
-private fun seriesColor(c: VamosColors, p: ProviderUsage): Color = UsageCopy.colorSlot(p)?.let { c.series.getOrNull(it) } ?: c.seriesOther
+private fun seriesColor(c: VmColors, p: ProviderUsage): Color = UsageCopy.colorSlot(p)?.let { c.series.getOrNull(it) } ?: c.seriesOther
 
 /** 总用量卡:大字是输入加输出,下面一排输入、输出、缓存命中、调用次数。 */
 @Composable
 private fun TotalsCard(t: UsageTotals) {
-    val c = VamosTheme.colors
-    VamosCard {
+    val c = VmTheme.colors
+    VmGlassCard {
         Column(Modifier.padding(start = 18.dp, end = 18.dp, top = 18.dp, bottom = 16.dp)) {
-            Text(UsageCopy.TOTAL, style = VamosType.Caption, color = c.ink3)
+            Text(UsageCopy.TOTAL, style = VmType.Caption, color = c.ink3)
             Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.Bottom) {
                 Text(UsageCopy.tokens(t.tokens), Modifier.testTag("usage-total"), style = TotalStyle, color = c.ink)
                 Text(
                     UsageCopy.UNIT, Modifier.padding(start = 4.dp, bottom = 6.dp),
-                    style = VamosType.Value, fontWeight = FontWeight.Medium, color = c.ink2,
+                    style = VmType.Value, fontWeight = FontWeight.Medium, color = c.ink2,
                 )
             }
             Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -417,10 +418,10 @@ private val TotalStyle = TextStyle(fontSize = 34.sp, lineHeight = 40.sp, fontWei
 @Composable
 private fun Stat(label: String, value: String, modifier: Modifier) {
     Column(modifier) {
-        Text(label, style = VamosType.Hint, color = VamosTheme.colors.ink3, maxLines = 1)
+        Text(label, style = VmType.Hint, color = VmTheme.colors.ink3, maxLines = 1)
         Text(
-            value, Modifier.padding(top = 2.dp), style = VamosType.Value, fontWeight = FontWeight.SemiBold,
-            color = VamosTheme.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            value, Modifier.padding(top = 2.dp), style = VmType.Value, fontWeight = FontWeight.SemiBold,
+            color = VmTheme.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -428,12 +429,12 @@ private fun Stat(label: String, value: String, modifier: Modifier) {
 /** 一张图的卡片:左边标题,右边一句小字。 */
 @Composable
 private fun ChartCard(title: String, hint: String, content: @Composable () -> Unit) {
-    val c = VamosTheme.colors
-    VamosCard(Modifier.padding(top = 12.dp)) {
+    val c = VmTheme.colors
+    VmGlassCard(Modifier.padding(top = 12.dp)) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f), style = CardTitle, color = c.ink)
-                Text(hint, style = VamosType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(hint, style = VmType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             content()
         }
@@ -445,15 +446,15 @@ private val CardTitle = TextStyle(fontSize = 15.sp, lineHeight = 20.sp, fontWeig
 /** 没有用量时:一张居中的说明卡。 */
 @Composable
 private fun EmptyCard() {
-    val c = VamosTheme.colors
-    VamosCard(Modifier.testTag("usage-empty")) {
+    val c = VmTheme.colors
+    VmGlassCard(Modifier.testTag("usage-empty")) {
         Column(
             Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             IconTile(VamosIcons.Chart)
-            Text(UsageCopy.EMPTY_TITLE, Modifier.padding(top = 12.dp), style = VamosType.BodyStrong, color = c.ink)
-            Text(UsageCopy.EMPTY_BODY, Modifier.padding(top = 6.dp), style = VamosType.Caption, color = c.ink3, textAlign = TextAlign.Center)
+            Text(UsageCopy.EMPTY_TITLE, Modifier.padding(top = 12.dp), style = VmType.BodyStrong, color = c.ink)
+            Text(UsageCopy.EMPTY_BODY, Modifier.padding(top = 6.dp), style = VmType.Caption, color = c.ink3, textAlign = TextAlign.Center)
         }
     }
 }
@@ -467,7 +468,7 @@ private fun RankRow(
     name: String, mono: Boolean, muted: Boolean, color: Color, fraction: Float, tokens: Long, share: Double,
     dim: Boolean = false, bold: Boolean = false, onClick: (() -> Unit)? = null, tag: String,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth()
             .then(if (onClick != null) Modifier.clip(RowShape).clickable(role = Role.Button, onClick = onClick) else Modifier)
@@ -508,7 +509,7 @@ private val RankShare = TextStyle(fontSize = 11.sp, lineHeight = 14.sp)
 /** 切换服务商的胶囊:选中时强调色实底;[deleted] 的名字变淡、后面写「（已删除）」。 */
 @Composable
 private fun UsageChip(text: String, selected: Boolean, onClick: () -> Unit, deleted: Boolean = false, tag: String) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val fg = when {
         selected -> c.onAccent
         deleted -> c.ink3
@@ -516,8 +517,8 @@ private fun UsageChip(text: String, selected: Boolean, onClick: () -> Unit, dele
     }
     Box(
         Modifier.height(34.dp)
-            .then(if (selected) Modifier.background(c.accent, VamosShapes.Pill) else Modifier.cardSurface(c, VamosShapes.Pill))
-            .clip(VamosShapes.Pill)
+            .then(if (selected) Modifier.background(c.accent, VmShapes.Pill) else Modifier.cardSurface(c, VmShapes.Pill))
+            .clip(VmShapes.Pill)
             .selectable(selected, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 14.dp)
             .testTag(tag),
@@ -540,7 +541,7 @@ private data class StackPart(val slot: Int?, val tokens: Long)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TrendChart(report: UsageReport, selected: String?, today: LocalDate) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val series = report.series
     if (series.isEmpty()) return
     val byId = report.providers.associateBy { it.id }
@@ -613,7 +614,7 @@ private fun TrendChart(report: UsageReport, selected: String?, today: LocalDate)
         tapped?.let { i -> TrendTip(series[i], report, i, gutter, today) }
     }
     Box(Modifier.fillMaxWidth().padding(top = 6.dp, end = gutter)) {
-        val style = VamosType.Hint
+        val style = VmType.Hint
         Text(UsageCopy.axis(series.first(), report.step, today), Modifier.align(Alignment.CenterStart), style = style, color = c.ink3)
         if (series.size > 2) {
             Text(UsageCopy.axis(series[series.size / 2], report.step, today), Modifier.align(Alignment.Center), style = style, color = c.ink3)
@@ -628,7 +629,7 @@ private fun TrendChart(report: UsageReport, selected: String?, today: LocalDate)
 private fun LegendItem(color: Color, name: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
         Box(Modifier.size(9.dp).background(color, LegendShape))
-        Text(name, style = VamosType.Hint, color = VamosTheme.colors.ink2, maxLines = 1)
+        Text(name, style = VmType.Hint, color = VmTheme.colors.ink2, maxLines = 1)
     }
 }
 
@@ -636,7 +637,7 @@ private val LegendShape = RoundedCornerShape(3.dp)
 
 @Composable
 private fun GridLabel(text: String, modifier: Modifier) {
-    Text(text, modifier.width(34.dp), style = GridText, color = VamosTheme.colors.ink3, textAlign = TextAlign.End, maxLines = 1)
+    Text(text, modifier.width(34.dp), style = GridText, color = VmTheme.colors.ink3, textAlign = TextAlign.End, maxLines = 1)
 }
 
 private val GridText = TextStyle(fontSize = 10.5.sp, lineHeight = 14.sp)
@@ -644,7 +645,7 @@ private val GridText = TextStyle(fontSize = 10.5.sp, lineHeight = 14.sp)
 /** 点中一根柱子时的说明:哪段时间、合计,下面各家服务商各一行(按用量从多到少);横向对着那根柱子,不出图的左右边。 */
 @Composable
 private fun TrendTip(b: UsageBucket, report: UsageReport, index: Int, gutter: Dp, today: LocalDate) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val rows = b.byProvider.entries.sortedByDescending { it.value }
     Column(
         Modifier.layout { m, cons ->

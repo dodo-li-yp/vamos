@@ -1,6 +1,9 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.tr
 import android.content.Context
@@ -22,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +46,7 @@ import com.yongpeng.vamos.core.cap.web.AttachedPage
 import com.yongpeng.vamos.core.userscreen.UserScreen
 import com.yongpeng.vamos.core.userscreen.UserScreenMessage
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -124,8 +126,10 @@ fun screenThumbnail(bytes: ByteArray): ImageBitmap? = runCatching {
 fun rememberShownScreen(conversationId: String?, id: String): ShownScreen? {
     val context = LocalContext.current
     val shots = LocalScreenShots.current ?: StoredScreenShots(context)
-    val shown by produceState<ShownScreen?>(null, conversationId, id) {
-        value = conversationId?.let { runCatching { shots.load(it, id) }.getOrNull() }
+    val shownState = remember { mutableStateOf<ShownScreen?>(null) }
+    val shown by shownState
+    LaunchedEffect(conversationId, id) {
+        shownState.value = conversationId?.let { runCatching { shots.load(it, id) }.getOrNull() }
     }
     return shown
 }
@@ -155,7 +159,7 @@ private val TagText = TextStyle(fontSize = 11.5.sp, lineHeight = 15.sp)
 /** 一屏:缩略图和下面那一行;还没读到时先占着位置。 */
 @Composable
 private fun ScreenItem(shown: ShownScreen?, width: Dp) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val screen = shown?.screen
     if (screen?.blocked == true) {
         Row(
@@ -181,7 +185,7 @@ private fun ScreenItem(shown: ShownScreen?, width: Dp) {
 /** 截图缩略图:按图的宽高比,圆角细边;没有图时是同样大小的一块淡灰。 */
 @Composable
 fun ScreenThumb(thumb: ImageBitmap?, width: Dp, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val ratio = thumb?.let { (it.width.toFloat() / it.height.coerceAtLeast(1)).coerceIn(0.3f, 1.8f) } ?: DEFAULT_RATIO
     Box(modifier.width(width).aspectRatio(ratio).clip(ThumbShape).border(1.dp, c.glassEdge, ThumbShape).background(c.ink.copy(alpha = 0.05f))) {
         thumb?.let { Image(it, null, Modifier.matchParentSize(), contentScale = ContentScale.Crop) }

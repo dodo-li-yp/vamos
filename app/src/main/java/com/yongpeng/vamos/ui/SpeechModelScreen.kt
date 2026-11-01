@@ -28,8 +28,8 @@ import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
 import com.yongpeng.vamos.ui.components.PillTone
 import com.yongpeng.vamos.ui.components.RadioRow
-import com.yongpeng.vamos.ui.components.StatusPill
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.components.VmStatusChip
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.voice.SpeechChoice
 import com.yongpeng.vamos.voice.SpeechOptions
 import com.yongpeng.vamos.voice.SystemSpeech
@@ -77,7 +77,7 @@ fun SpeechModelScreen(store: ProviderStore, onBack: () -> Unit) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SpeechModelContent(ui: ModelSetupUi, probe: Map<String, String>, actions: SpeechPickActions, onBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val system = ui.systemSpeech
     val choice = ui.speech
     // 没选过时有手机自带就是在用它,所以「没选过」也把它标成选中
@@ -101,9 +101,9 @@ fun SpeechModelContent(ui: ModelSetupUi, probe: Map<String, String>, actions: Sp
                 ),
                 trailing = {
                     when {
-                        system.usable -> StatusPill(tr(R.string.speech_tag_ok), PillTone.Ok)
-                        system.available -> StatusPill(tr(R.string.speech_tag_silent), PillTone.Neutral)
-                        else -> StatusPill(tr(R.string.speech_tag_none), PillTone.Neutral)
+                        system.usable -> VmStatusChip(tr(R.string.speech_tag_ok), PillTone.Ok)
+                        system.available -> VmStatusChip(tr(R.string.speech_tag_silent), PillTone.Neutral)
+                        else -> VmStatusChip(tr(R.string.speech_tag_none), PillTone.Neutral)
                     }
                 },
             )

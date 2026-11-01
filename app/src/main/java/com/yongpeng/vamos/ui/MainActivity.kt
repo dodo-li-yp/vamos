@@ -59,10 +59,27 @@ import com.yongpeng.vamos.cap.phone.PhoneServices
 import com.yongpeng.vamos.cap.phone.setup.DeveloperSettings
 import com.yongpeng.vamos.cap.phone.setup.PairingNotifier
 import com.yongpeng.vamos.core.shell.BuiltinShellStatus
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.animationsOff
 
 class MainActivity : ComponentActivity() {
+    private val volumeStop = com.yongpeng.vamos.task.VolumeStopChord()
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent): Boolean {
+        if (volumeStop.update(keyCode, true)) {
+            val app = application as VamosApp
+            if (app.taskState.busy.value) {
+                app.taskState.runs.value.forEach { TaskService.cancel(this, it.key) }
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: android.view.KeyEvent): Boolean {
+        volumeStop.update(keyCode, false)
+        return super.onKeyUp(keyCode, event)
+    }
+
     private lateinit var monitor: SystemStatusMonitor
     private var requestedConversation by mutableStateOf<String?>(null)
 
@@ -84,7 +101,7 @@ class MainActivity : ComponentActivity() {
         monitor = SystemStatusMonitor(this, PhoneServices.of(this).shellControl)
         val store = ProviderStore.get(this)
         setContent {
-            VamosTheme(reduceMotion = animationsOff(this)) {
+            VmTheme(reduceMotion = animationsOff(this)) {
                 // 在输入框外面点一下或拖动就收起键盘,全 App 统一
                 KeyboardDismissArea(Modifier.fillMaxSize()) {
                     VamosRoot(store, monitor, ::perform, requestedConversation) { requestedConversation = null }
@@ -297,7 +314,7 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
             ChatWithDrawer(
                 vm = app.chat,
                 check = check,
-                reduceMotion = VamosTheme.reduceMotion,
+                reduceMotion = VmTheme.reduceMotion,
                 conversations = { ConversationStore.shared(context).list() },
                 conversationChanges = ConversationStore.shared(context).changes,
                 conversationTitle = { ConversationStore.shared(context).title(it) },
@@ -315,7 +332,7 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
                     check = check,
                     frames = app.taskState.frames,
                     webOpen = app.tasks.webScreenOpen,
-                    reduceMotion = VamosTheme.reduceMotion,
+                    reduceMotion = VmTheme.reduceMotion,
                     onOpenDrawer = openDrawer,
                     openSettings = { nav.push(Route.Settings) },
                     openRun = { runId = it; nav.push(Route.Run) },

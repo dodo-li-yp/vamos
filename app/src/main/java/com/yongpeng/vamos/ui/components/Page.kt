@@ -18,10 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosSpace
+import com.yongpeng.vamos.ui.theme.VmSpace
 
 /**
- * 子页面的骨架:页面底 + 带返回的顶栏 + 一列可滚动的内容(左右留 [VamosSpace.Page],避开导航栏)。
+ * 子页面的骨架:页面底 + 带返回的顶栏 + 一列可滚动的内容(左右留 [VmSpace.Page],避开导航栏)。
  * 内容里直接放 [GroupLabel] / [GroupCard] / [FooterNote]。
  */
 @Composable
@@ -33,16 +33,16 @@ fun PageScaffold(
 ) {
     PageBackground(modifier) {
         Column(Modifier.fillMaxSize()) {
-            TopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back))
+            VmTopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back))
             Column(
                 Modifier.weight(1f).fillMaxWidth()
                     .verticalScroll(rememberScrollState())
                     .windowInsetsPadding(WindowInsets.navigationBars)
-                    .padding(horizontal = VamosSpace.Page),
+                    .padding(horizontal = VmSpace.Page),
             ) {
-                Spacer(Modifier.height(VamosSpace.S4))
+                Spacer(Modifier.height(VmSpace.S4))
                 content()
-                Spacer(Modifier.height(VamosSpace.S24))
+                Spacer(Modifier.height(VmSpace.S24))
             }
         }
     }

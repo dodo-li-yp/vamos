@@ -1,6 +1,7 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.tr
 import com.yongpeng.vamos.i18n.trPlural
@@ -18,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -32,18 +32,18 @@ import com.yongpeng.vamos.core.record.RunMetricsStore
 import com.yongpeng.vamos.core.record.RunStats
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.EmptyNote
+import com.yongpeng.vamos.ui.components.VmEmptyNote
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.RowActions
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.SegmentedControl
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -133,16 +133,16 @@ object RunMetricsCopy {
 /** 「查看过程」顶上的一行小结;点一下展开时间去向、token 和步数。 */
 @Composable
 fun RunMetricsSummary(m: RunMetrics) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var open by rememberSaveable { mutableStateOf(false) }
     Column(
         Modifier.fillMaxWidth().clickable(role = Role.Button) { open = !open }.testTag("run-metrics-summary")
             .padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp),
     ) {
-        Text(RunMetricsCopy.summaryLine(m), style = VamosType.Caption, color = c.ink2)
-        Text(if (open) tr(R.string.collapse) else tr(R.string.metrics_where_time), Modifier.padding(top = 2.dp), style = VamosType.Hint, color = c.accent)
+        Text(RunMetricsCopy.summaryLine(m), style = VmType.Caption, color = c.ink2)
+        Text(if (open) tr(R.string.collapse) else tr(R.string.metrics_where_time), Modifier.padding(top = 2.dp), style = VmType.Hint, color = c.accent)
     }
-    if (open) RunMetricsCopy.breakdown(m).forEach { (k, v) -> ListRow(null, k) { RowValue(v) } }
+    if (open) RunMetricsCopy.breakdown(m).forEach { (k, v) -> VmListItem(null, k) { RowValue(v) } }
 }
 
 /** 开发者选项 › 运行统计:从小结存储里读最近几次,算平均和中位数;能把这几次的小结复制或分享成 JSON。 */
@@ -150,7 +150,9 @@ fun RunMetricsSummary(m: RunMetrics) {
 fun RunStatsScreen(store: RunMetricsStore, onBack: () -> Unit) {
     val context = LocalContext.current
     var range by rememberSaveable { mutableIntStateOf(1) }
-    val all by produceState<List<RunMetrics>?>(null, store) { value = withContext(Dispatchers.IO) { store.all() } }
+    val allState = remember { mutableStateOf<List<RunMetrics>?>(null) }
+    val all by allState
+    LaunchedEffect(store) { allState.value = withContext(Dispatchers.IO) { store.all() } }
     val picked = remember(all, range) { all?.let { list -> RunMetricsCopy.RANGES[range]?.let { list.takeLast(it) } ?: list } }
     val stats = remember(picked) { picked?.takeIf { it.isNotEmpty() }?.let(RunStats::of) }
     RunStatsContent(
@@ -176,19 +178,19 @@ fun RunStatsContent(
         SegmentedControl(RunMetricsCopy.RANGE_LABELS, range, onRange, tags = RunMetricsCopy.RANGES.map { "run-stats-range-${it ?: "all"}" })
         if (!loaded) return@PageScaffold
         if (stats == null) {
-            EmptyNote(RunMetricsCopy.STATS_EMPTY, Modifier.padding(top = 48.dp))
+            VmEmptyNote(RunMetricsCopy.STATS_EMPTY, Modifier.padding(top = 48.dp))
             return@PageScaffold
         }
         GroupLabel(tr(R.string.metrics_overview))
-        GroupCard { RunMetricsCopy.statsRows(stats).forEachIndexed { i, (k, v) -> ListRow(null, k, first = i == 0) { RowValue(v) } } }
+        GroupCard { RunMetricsCopy.statsRows(stats).forEachIndexed { i, (k, v) -> VmListItem(null, k, first = i == 0) { RowValue(v) } } }
         GroupLabel(tr(R.string.metrics_time_split))
-        GroupCard { RunMetricsCopy.splitRows(stats).forEachIndexed { i, (k, v) -> ListRow(null, k, first = i == 0) { RowValue(v) } } }
+        GroupCard { RunMetricsCopy.splitRows(stats).forEachIndexed { i, (k, v) -> VmListItem(null, k, first = i == 0) { RowValue(v) } } }
         GroupLabel(tr(R.string.metrics_export))
         GroupCard {
-            ListRow(null, trPlural(R.plurals.metrics_summary_of, stats.runs), tr(R.string.metrics_summary_sub), first = true)
+            VmListItem(null, trPlural(R.plurals.metrics_summary_of, stats.runs), tr(R.string.metrics_summary_sub), first = true)
             RowActions {
-                VamosButton(RunMetricsCopy.COPY, onCopy, Modifier.testTag("run-stats-copy"), size = ButtonSize.Small)
-                VamosButton(RunMetricsCopy.SHARE, onShare, Modifier.testTag("run-stats-share"), kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                VmButton(RunMetricsCopy.COPY, onCopy, Modifier.testTag("run-stats-copy"), size = ButtonSize.Small)
+                VmButton(RunMetricsCopy.SHARE, onShare, Modifier.testTag("run-stats-share"), kind = ButtonKind.Tonal, size = ButtonSize.Small)
             }
         }
         FooterNote(RunMetricsCopy.STATS_NOTE)

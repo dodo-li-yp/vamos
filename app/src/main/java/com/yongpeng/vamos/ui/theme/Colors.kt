@@ -4,13 +4,14 @@ package com.yongpeng.vamos.ui.theme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 
 /**
- * 界面用到的全部颜色。页面一律从 [VamosTheme.colors] 取,不写死色值。
+ * 界面用到的全部颜色。页面一律从 [VmTheme.colors] 取,不写死色值。
  * 实色只用在强调(主按钮、选中、开关、用户消息)和状态(成功、需要你、出错);图标块一律中性。
  */
 @Immutable
-class VamosColors(
+class VmColors(
     /** 页面背景。 */
     val bg: Color,
     /** 卡片、分组。 */
@@ -61,73 +62,43 @@ class VamosColors(
     /** 图表的网格线。 */
     val grid: Color,
     val isDark: Boolean,
-)
+) {
+    val bgPaper get() = bg
+    val textInk get() = ink
+    val textInk2 get() = ink2
+    val brandDai get() = accent
+    val agentQingbi get() = Color(if (isDark) 0xFF5FB3A8 else 0xFF3F8F86)
+    val accentCinnabar get() = bad
+    val stateAmber get() = warnSolid
+    val glassFill get() = glass
+    val glassStroke get() = glassEdge
+    val tone get() = ink.copy(alpha = .06f)
+    val tone2 get() = ink.copy(alpha = .10f)
+}
 
-val LightColors = VamosColors(
-    bg = Color(0xFFF7F7F8),
-    surface = Color(0xFFFFFFFF),
-    fill = Color(0x0A000000),
-    ink = Color(0xFF1C1C1E),
-    ink2 = Color(0xFF5F6068),
-    ink3 = Color(0xFF9A9BA3),
-    hair = Color(0x12000000),
-    edge = Color(0x0D000000),
-    accent = Color(0xFF0A7CFF),
-    accentSoft = Color(0x1A0A7CFF),
-    onAccent = Color(0xFFFFFFFF),
-    ok = Color(0xFF1F9D55),
-    okSoft = Color(0x1F1F9D55),
-    warn = Color(0xFFB86E00),
-    warnSolid = Color(0xFFFF9F0A),
-    warnSoft = Color(0x1FFF9F0A),
-    bad = Color(0xFFE5483D),
-    badSoft = Color(0x1AE5483D),
-    neutralSoft = Color(0x0B000000),
-    answer = Color(0x09000000),
-    greySoft = Color(0x1F767680),
-    glass = Color(0xB8FFFFFF),
-    glassEdge = Color(0x0F000000),
-    cardShadow = Color(0xFF000000),
-    floatShadow = Color(0xFF000000),
-    thumb = Color(0xFFFFFFFF),
-    series = listOf(Color(0xFF2A78D6), Color(0xFFEB6834), Color(0xFF1BAF7A)),
-    seriesOther = Color(0xFFB4B5BC),
-    grid = Color(0x0F000000),
-    isDark = false,
-)
-
-val DarkColors = VamosColors(
-    bg = Color(0xFF0E0E10),
-    surface = Color(0xFF1A1A1D),
-    fill = Color(0x0FFFFFFF),
-    ink = Color(0xFFF2F2F4),
-    ink2 = Color(0xFFA4A5AD),
-    ink3 = Color(0xFF6C6D75),
-    hair = Color(0x14FFFFFF),
-    edge = Color(0x0FFFFFFF),
-    accent = Color(0xFF3D97FF),
-    accentSoft = Color(0x293D97FF),
-    onAccent = Color(0xFFFFFFFF),
-    ok = Color(0xFF3CCF7A),
-    okSoft = Color(0x243CCF7A),
-    warn = Color(0xFFFFB340),
-    warnSolid = Color(0xFFFF9F0A),
-    warnSoft = Color(0x29FF9F0A),
-    bad = Color(0xFFFF6961),
-    badSoft = Color(0x24FF6961),
-    neutralSoft = Color(0x12FFFFFF),
-    answer = Color(0x0DFFFFFF),
-    greySoft = Color(0x38767680),
-    glass = Color(0xB81A1A1D),
-    glassEdge = Color(0x14FFFFFF),
-    cardShadow = Color.Transparent,
-    floatShadow = Color(0xFF000000),
-    thumb = Color(0xFFFFFFFF),
-    series = listOf(Color(0xFF3987E5), Color(0xFFD95926), Color(0xFF199E70)),
-    seriesOther = Color(0xFF5A5B62),
-    grid = Color(0x12FFFFFF),
-    isDark = true,
-)
-
-/** 没有包在 [VamosTheme] 里时(比如界面测试)按浅色。 */
-val LocalVamosColors = staticCompositionLocalOf { LightColors }
+private fun palette(dark: Boolean): VmColors {
+    val paper = Color(if (dark) 0xFF1A1C1B else 0xFFF4F1E8)
+    val ink = Color(if (dark) 0xFFE6E2D6 else 0xFF3A3A36)
+    val ink2 = Color(if (dark) 0xFFA3A096 else 0xFF6E6C64)
+    val dai = Color(if (dark) 0xFF7FA097 else 0xFF5B7A72)
+    val cinnabar = Color(if (dark) 0xFFD0645A else 0xFFB5473A)
+    val amber = Color(if (dark) 0xFFD9A55A else 0xFFC48A3A)
+    val glass = Color.White.copy(alpha = if (dark) .08f else .28f)
+    val stroke = Color.White.copy(alpha = if (dark) .12f else .50f)
+    val surface = glass.compositeOver(ink.copy(alpha = if (dark) 0f else .035f).compositeOver(paper))
+    return VmColors(
+        bg = paper, surface = surface, fill = ink.copy(alpha = .06f),
+        ink = ink, ink2 = ink2, ink3 = ink2, hair = ink.copy(alpha = .10f), edge = stroke,
+        accent = dai, accentSoft = dai.copy(alpha = .12f), onAccent = if (dark) paper else Color.White,
+        ok = dai, okSoft = dai.copy(alpha = .12f),
+        warn = ink, warnSolid = amber, warnSoft = amber.copy(alpha = .16f),
+        bad = cinnabar, badSoft = cinnabar.copy(alpha = .12f),
+        neutralSoft = ink.copy(alpha = .10f), answer = ink.copy(alpha = .06f), greySoft = ink.copy(alpha = .10f),
+        glass = glass, glassEdge = stroke, cardShadow = Color.Transparent,
+        floatShadow = paper, thumb = if (dark) paper else Color.White,
+        series = listOf(dai, cinnabar, amber), seriesOther = ink2, grid = ink.copy(alpha = .10f), isDark = dark,
+    )
+}
+val LightColors = palette(false)
+val DarkColors = palette(true)
+val LocalVmColors = staticCompositionLocalOf { LightColors }

@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import java.util.concurrent.CopyOnWriteArrayList
 import com.yongpeng.vamos.shell.ShellProbeActivity
 
@@ -41,11 +40,9 @@ class ShellProbe(private val context: Context) : AutoCloseable {
 
     init {
         val filter = IntentFilter(BROADCAST)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            context.registerReceiver(receiver, filter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            context, receiver, filter, androidx.core.content.ContextCompat.RECEIVER_EXPORTED,
+        )
     }
 
     fun all(): List<ProbeEvent> = events.toList()

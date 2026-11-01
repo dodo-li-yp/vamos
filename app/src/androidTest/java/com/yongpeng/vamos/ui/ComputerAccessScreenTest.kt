@@ -15,7 +15,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.yongpeng.vamos.ChineseUi
 import com.yongpeng.vamos.core.remote.RemoteActivity
 import com.yongpeng.vamos.mcp.McpServerState
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -41,7 +41,7 @@ class ComputerAccessScreenTest {
     private fun page(initial: ComputerAccessUi = example) {
         state.value = initial
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ComputerAccessPage(state.value, {}, usbChanges::add, networkChanges::add, copied::add, {},
                     deviceSettings = { Text("Device settings slot") })
             }

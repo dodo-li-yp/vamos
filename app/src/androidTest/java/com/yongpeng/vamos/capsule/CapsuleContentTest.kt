@@ -17,7 +17,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.unit.height
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -33,7 +33,7 @@ class CapsuleContentTest {
 
     private fun show(view: CapsuleView.Shown) {
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleContent(view, onTap = { clicks += "open" }, onStop = { clicks += "stop" }, onHandBack = { clicks += "back" })
             }
         }
@@ -52,7 +52,7 @@ class CapsuleContentTest {
     @Test fun eachBallStateShowsItsMarks() {
         var view by mutableStateOf(CapsuleView.Shown(CapsuleKind.Running, "在搜", count = 3))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}) }
         }
         // 好几件:角上写件数
         compose.onNodeWithTag("capsule-count", useUnmergedTree = true).assertIsDisplayed()
@@ -81,7 +81,7 @@ class CapsuleContentTest {
     @Test fun pillShowsItsLineAndOpensOnTap() {
         var view by mutableStateOf(CapsuleView.Shown(CapsuleKind.NeedTakeover, "需要你：付款", pill = true))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleContent(view, { clicks += "open" }, {}, {}) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleContent(view, { clicks += "open" }, {}, {}) }
         }
         for (v in listOf(
             CapsuleView.Shown(CapsuleKind.NeedTakeover, "需要你：付款", pill = true),
@@ -104,7 +104,7 @@ class CapsuleContentTest {
     @Test fun pillShrinksBackToBall() {
         var view by mutableStateOf(CapsuleView.Shown(CapsuleKind.Done, "办好了 · 点开看结果", pill = true))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}, side = DockSide.Left) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}, side = DockSide.Left) }
         }
         val wide = compose.onNodeWithTag("capsule").getBoundsInRoot().width
         view = view.copy(pill = false)
@@ -128,7 +128,7 @@ class CapsuleContentTest {
     @Test fun widthOnlyGrowsWithinEpoch() {
         var view by mutableStateOf(CapsuleView.Shown(CapsuleKind.NeedAnswer, "Vamos 问你：要三家店里哪一家的", pill = true, widthEpoch = 1))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleContent(view, {}, {}, {}) }
         }
         val wide = compose.onNodeWithTag("capsule").getBoundsInRoot().width
         view = view.copy(text = "短")
@@ -143,7 +143,7 @@ class CapsuleContentTest {
     @Test fun fadedBallKeepsMarksAndOffersSwapSide() {
         var swapped = 0
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleContent(
                     CapsuleView.Shown(CapsuleKind.Running, "在搜", count = 2), {}, {}, {},
                     alpha = CapsuleFade.BALL, onSwapSide = { swapped++ },
@@ -161,7 +161,7 @@ class CapsuleContentTest {
     @Test fun talkActionAndHoldingRing() {
         var talked = 0
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleContent(
                     CapsuleView.Shown(CapsuleKind.Idle, ""), {}, {}, {},
                     holding = true, onTalk = { talked++ }, talkLabel = "说话",

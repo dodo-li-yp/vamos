@@ -91,11 +91,11 @@ import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.GlassBackdrop
 import com.yongpeng.vamos.ui.components.GlassBar
 import com.yongpeng.vamos.ui.components.GlassBlurSupported
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.floatShadow
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import com.yongpeng.vamos.voice.HoldToTalk
 import com.yongpeng.vamos.voice.SpeechEngineSpec
 import com.yongpeng.vamos.voice.SpeechFailure
@@ -374,7 +374,7 @@ internal fun Modifier.holdToTalk(vh: VoiceHold, onTap: () -> Unit): Modifier {
 internal fun VoiceBarCover(vh: VoiceHold, state: HoldToTalk.State, reduceMotion: Boolean, modifier: Modifier = Modifier) {
     val s = state as? HoldToTalk.State.Listening
     if (!vh.holding || s == null) return
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val label = when {
         s.cancelArmed -> stringResource(R.string.voice_release_cancel)
         s.live -> stringResource(R.string.voice_release_fill)
@@ -449,7 +449,7 @@ internal fun VoiceFloat(vh: VoiceHold, state: HoldToTalk.State, title: String, b
 /** 「上滑取消」的小胶囊;滑到了变红写「松开 取消」。 */
 @Composable
 private fun CancelHint(armed: Boolean, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val shape = RoundedCornerShape(16.dp)
     Row(
         modifier.floatShadow(c, shape).background(if (armed) c.bad else c.surface, shape)
@@ -469,7 +469,7 @@ private fun CancelHint(armed: Boolean, modifier: Modifier = Modifier) {
  */
 @Composable
 private fun ListenCard(s: HoldToTalk.State.Listening, title: String, engine: String, backdrop: GlassBackdrop?) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val shape = RoundedCornerShape(22.dp)
     GlassBar(
         Modifier.fillMaxWidth().testTag("voice-listen")
@@ -522,8 +522,8 @@ private fun ListenCard(s: HoldToTalk.State.Listening, title: String, engine: Str
 /** 卡片顶上那个点:在录时蓝色一圈一圈往外;要取消时变红、不动。 */
 @Composable
 private fun RecDot(armed: Boolean) {
-    val c = VamosTheme.colors
-    val reduce = VamosTheme.reduceMotion
+    val c = VmTheme.colors
+    val reduce = VmTheme.reduceMotion
     val halo = if (armed || reduce) 0f else rememberInfiniteTransition(label = "rec").animateFloat(
         0f, 1f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "rec-halo",
     ).value
@@ -540,7 +540,7 @@ private fun RecDot(armed: Boolean) {
 /** 输入栏上方的一句轻提示(没听清、识别服务忙……),一会儿自己消失。 */
 @Composable
 private fun VoiceToast(text: String) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Text(
         text,
         Modifier.background(c.ink.copy(alpha = 0.88f), RoundedCornerShape(18.dp)).padding(horizontal = 16.dp, vertical = 9.dp).testTag("voice-toast"),
@@ -551,20 +551,20 @@ private fun VoiceToast(text: String) {
 /** 服务商松开后在转:输入框里转圈加「转文字…」。 */
 @Composable
 internal fun VoiceConverting(modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(modifier.testTag("voice-converting"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Spinner(Modifier.size(13.dp), spinning = !VamosTheme.reduceMotion, track = c.accentSoft, head = c.accent)
-        Text(stringResource(R.string.voice_converting), style = VamosType.Body, color = c.ink2, maxLines = 1)
+        Spinner(Modifier.size(13.dp), spinning = !VmTheme.reduceMotion, track = c.accentSoft, head = c.accent)
+        Text(stringResource(R.string.voice_converting), style = VmType.Body, color = c.ink2, maxLines = 1)
     }
 }
 
 /** 能按住说话时的灰字:前面一个小话筒。 */
 @Composable
 internal fun VoicePlaceholder(mode: ComposerMode) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Icon(VamosIcons.Mic, null, Modifier.size(16.dp), tint = c.ink3)
-        Text(ChatCopy.voicePlaceholder(mode), style = VamosType.Body, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(ChatCopy.voicePlaceholder(mode), style = VmType.Body, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -587,7 +587,7 @@ internal fun Modifier.voiceDim(on: Boolean, reduceMotion: Boolean): Modifier {
 @Composable
 internal fun VoiceSheetHost(vh: VoiceHold, onPickSpeech: () -> Unit) {
     val sheet = vh.sheet ?: return
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val context = LocalContext.current
     val title: String
     val body: String
@@ -619,11 +619,11 @@ internal fun VoiceSheetHost(vh: VoiceHold, onPickSpeech: () -> Unit) {
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     ) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 18.dp).testTag("voice-sheet")) {
-            Text(title, style = VamosType.Title, color = c.ink)
+            Text(title, style = VmType.Title, color = c.ink)
             Text(body, Modifier.padding(top = 8.dp), style = SheetBody, color = c.ink2)
             Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                VamosButton(stringResource(R.string.ok_got_it), { vh.sheet = null }, Modifier.weight(1f), kind = ButtonKind.Tonal, size = ButtonSize.Medium)
-                VamosButton(action, { vh.sheet = null; go() }, Modifier.weight(1f), size = ButtonSize.Medium)
+                VmButton(stringResource(R.string.ok_got_it), { vh.sheet = null }, Modifier.weight(1f), kind = ButtonKind.Tonal, size = ButtonSize.Medium)
+                VmButton(action, { vh.sheet = null; go() }, Modifier.weight(1f), size = ButtonSize.Medium)
             }
         }
     }

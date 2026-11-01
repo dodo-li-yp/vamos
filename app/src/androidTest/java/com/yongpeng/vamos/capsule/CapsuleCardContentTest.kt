@@ -30,7 +30,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.yongpeng.vamos.confirm.ConfirmationCopy
 import com.yongpeng.vamos.core.agent.TaskState
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -69,7 +69,7 @@ class CapsuleCardContentTest {
 
     private fun show(card: CardView, preview: Bitmap? = null, zoomed: Boolean = false, thread: ChatThread? = null, input: CardInputUi = CardInputUi()) {
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 androidx.compose.runtime.CompositionLocalProvider(com.yongpeng.vamos.ui.LocalScreenShots provides shots) {
                     CapsuleCard(card, preview, zoomed, actions, { if (it == null) null else "0:23" }, thread = thread, height = 420.dp, input = input)
                 }
@@ -224,7 +224,7 @@ class CapsuleCardContentTest {
         }
         val card = detail(run("a", TaskState.Running(1, "n"), CapsuleKind.Running, "在搜"))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, typing, { null }, input = ui) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, typing, { null }, input = ui) }
         }
         compose.onNodeWithTag("capsule-field").performTextInput("换成薄荷味")
         compose.onNodeWithContentDescription(CardCopy.SEND).performClick()
@@ -315,7 +315,7 @@ class CapsuleCardContentTest {
         var card by mutableStateOf<CardView>(chat(run("b", TaskState.Succeeded("好了"), CapsuleKind.Done)))
         var thread by mutableStateOf(history(1))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, actions, { null }, thread = thread, height = 420.dp) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, actions, { null }, thread = thread, height = 420.dp) }
         }
         compose.onNodeWithTag("capsule-card").assertHeightIsEqualTo(420.dp)
         // 来回再长也是这么高,在里面滚
@@ -334,7 +334,7 @@ class CapsuleCardContentTest {
         val r = run("a", TaskState.Running(3, "n", "tap"), CapsuleKind.Running, "在搜")
         var card by mutableStateOf<CardView>(CardView.Detail(r, CardContent.Working(listOf("打开购物", "搜索牙膏", "选第一个"))))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleCard(card, frame, false, actions, { null }, thread = history(1), height = 420.dp) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleCard(card, frame, false, actions, { null }, thread = history(1), height = 420.dp) }
         }
         val task = compose.onNodeWithTag("capsule-card").fetchSemanticsNode().size.height
         val screen = compose.onNodeWithTag("capsule-screen").fetchSemanticsNode().size.height
@@ -378,7 +378,7 @@ class CapsuleCardContentTest {
         val frame = Bitmap.createBitmap(36, 80, Bitmap.Config.ARGB_8888)
         var card by mutableStateOf<CardView>(working(30))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleCard(card, frame, false, actions, { null }, height = 420.dp) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleCard(card, frame, false, actions, { null }, height = 420.dp) }
         }
         val steps = compose.onNodeWithTag("capsule-steps").fetchSemanticsNode().size.height
         val screen = compose.onNodeWithTag("capsule-screen").fetchSemanticsNode().size.height
@@ -406,7 +406,7 @@ class CapsuleCardContentTest {
     @Test fun stepsWithoutPreviewAreCappedAndFewStaysCompact() {
         var card by mutableStateOf<CardView>(working(2))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, actions, { null }, height = 420.dp) }
+            VmTheme(dark = false, reduceMotion = true) { CapsuleCard(card, null, false, actions, { null }, height = 420.dp) }
         }
         val few = compose.onNodeWithTag("capsule-card").fetchSemanticsNode().size.height
         compose.onNodeWithText("第 1 步").assertIsDisplayed()
@@ -442,7 +442,7 @@ class CapsuleCardContentTest {
         var handle: android.graphics.Rect? = null
         val card = detail(run("a", TaskState.Running(1, "n"), CapsuleKind.Running, "在搜"))
         compose.setContent {
-            VamosTheme(dark = false, reduceMotion = true) {
+            VmTheme(dark = false, reduceMotion = true) {
                 CapsuleCard(card, null, false, actions, { null }, height = 420.dp, onHandle = { handle = it })
             }
         }

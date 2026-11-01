@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentUris
@@ -16,7 +18,6 @@ import android.util.LruCache
 import android.util.Size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.ImageBitmap
@@ -218,9 +219,11 @@ fun rememberAttachImage(image: AttachImage, px: Int): ImageBitmap? {
     val context = LocalContext.current
     val given = LocalAttachImages.current
     val images = remember(given, context) { given ?: StoredAttachImages(context.applicationContext) }
-    val bmp by produceState(images.cached(image, px), image, px) {
-        value = images.cached(image, px)
-        if (value == null) value = runCatching { images.load(image, px) }.getOrNull()
+    val bmpState = remember { mutableStateOf(images.cached(image, px)) }
+    val bmp by bmpState
+    LaunchedEffect(image, px) {
+        bmpState.value = images.cached(image, px)
+        if (bmpState.value == null) bmpState.value = runCatching { images.load(image, px) }.getOrNull()
     }
     return bmp
 }

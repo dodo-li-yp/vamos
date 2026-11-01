@@ -28,9 +28,9 @@ import com.yongpeng.vamos.about.ApkUpdater
 import com.yongpeng.vamos.about.DownloadPhase
 import com.yongpeng.vamos.about.ReleaseInfo
 import com.yongpeng.vamos.ui.components.ButtonKind
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -126,13 +126,13 @@ internal fun UpdateDownloadActions(
         state.phase == DownloadPhase.Failed -> stringResource(R.string.about_update_retry)
         else -> stringResource(R.string.about_update_download_in_app)
     }
-    VamosButton(text, if (state.phase == DownloadPhase.Ready) onInstall else onDownload,
+    VmButton(text, if (state.phase == DownloadPhase.Ready) onInstall else onDownload,
         Modifier.fillMaxWidth().padding(top = 14.dp), enabled = !busy && !active)
     if (active || state.phase == DownloadPhase.Ready) {
-        VamosButton(stringResource(R.string.about_update_cancel), onCancel,
+        VmButton(stringResource(R.string.about_update_cancel), onCancel,
             Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.Tonal, enabled = !busy)
     }
     val note = error ?: if (state.phase == DownloadPhase.Failed) R.string.about_update_error else R.string.about_update_install_hint
     Text(stringResource(note),
-        Modifier.padding(top = 8.dp), style = VamosType.Caption, color = VamosTheme.colors.ink3)
+        Modifier.padding(top = 8.dp), style = VmType.Caption, color = VmTheme.colors.ink3)
 }

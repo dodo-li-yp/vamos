@@ -10,7 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
@@ -30,7 +30,7 @@ class FileViewerScreenTest {
 
     private fun show(uri: Uri, name: String) {
         val kind = FileViewer.kindOf(context, uri, name)
-        compose.setContent { VamosTheme { FileViewerScreen(uri, name, kind, onBack = {}) } }
+        compose.setContent { VmTheme { FileViewerScreen(uri, name, kind, onBack = {}) } }
         compose.waitUntil(5_000) { compose.onAllNodesWithTag("viewer.loading").fetchSemanticsNodes().isEmpty() }
     }
 

@@ -22,11 +22,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosCard
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmGlassCard
 import com.yongpeng.vamos.ui.components.SubPage
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 许可证页上第三方组件的数据;与仓库 licenses/THIRD_PARTY_NOTICES.md 的条目一一对应(LicensesTest 核对)。 */
 object Licenses {
@@ -90,14 +90,14 @@ fun LicensesScreen(onBack: () -> Unit) {
     }
     val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" } + runtime
     SubPage(AboutCopy.LICENSE_TITLE, onBack) {
-        Text(noticeText, Modifier.padding(16.dp), style = VamosType.Hint, color = VamosTheme.colors.ink)
-        Text(thirdPartyText, Modifier.padding(16.dp), style = VamosType.Caption, color = VamosTheme.colors.ink2)
+        Text(noticeText, Modifier.padding(16.dp), style = VmType.Hint, color = VmTheme.colors.ink)
+        Text(thirdPartyText, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
         if (licenseText.isNotEmpty()) {
-            VamosCard(Modifier.padding(bottom = 12.dp).testTag("license-text")) {
+            VmGlassCard(Modifier.padding(bottom = 12.dp).testTag("license-text")) {
                 Text(
                     licenseText.trimEnd(), Modifier.padding(16.dp),
-                    style = VamosType.Hint.copy(fontFamily = FontFamily.Monospace, fontSize = 11.5.sp, lineHeight = 19.sp),
-                    color = VamosTheme.colors.ink2,
+                    style = VmType.Hint.copy(fontFamily = FontFamily.Monospace, fontSize = 11.5.sp, lineHeight = 19.sp),
+                    color = VmTheme.colors.ink2,
                 )
             }
         }
@@ -105,8 +105,8 @@ fun LicensesScreen(onBack: () -> Unit) {
         GroupCard {
             thirdParty.forEachIndexed { i, e ->
                 Column {
-                    ListRow(null, e.name, e.license, first = i == 0)
-                    Text(e.note, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp), style = VamosType.Hint, color = VamosTheme.colors.ink2)
+                    VmListItem(null, e.name, e.license, first = i == 0)
+                    Text(e.note, Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp), style = VmType.Hint, color = VmTheme.colors.ink2)
                 }
             }
         }

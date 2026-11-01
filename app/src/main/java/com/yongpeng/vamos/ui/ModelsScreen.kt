@@ -67,29 +67,29 @@ import com.yongpeng.vamos.settings.RoleChoice
 import com.yongpeng.vamos.ui.components.BarIconButton
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
 import com.yongpeng.vamos.ui.components.Hairline
 import com.yongpeng.vamos.ui.components.InputRow
-import com.yongpeng.vamos.ui.components.ListRow
+import com.yongpeng.vamos.ui.components.VmListItem
 import com.yongpeng.vamos.ui.components.PageBackground
 import com.yongpeng.vamos.ui.components.PillTone
 import com.yongpeng.vamos.ui.components.RadioRow
 import com.yongpeng.vamos.ui.components.RowChevron
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.SearchField
-import com.yongpeng.vamos.ui.components.StatusPill
+import com.yongpeng.vamos.ui.components.VmStatusChip
 import com.yongpeng.vamos.ui.components.TileTone
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.components.ValueTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosRadius
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmRadius
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import com.yongpeng.vamos.voice.SpeechChoice
 import com.yongpeng.vamos.voice.SpeechOptions
 
@@ -104,7 +104,7 @@ fun ModelsScreen(store: ProviderStore, onBack: () -> Unit, onOpenSpeech: (() -> 
 internal fun Page(title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
     PageBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars).windowInsetsPadding(WindowInsets.ime)) {
-            TopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back))
+            VmTopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 24.dp)) {
                 content()
             }
@@ -115,7 +115,7 @@ internal fun Page(title: String, onBack: () -> Unit, content: @Composable () -> 
 /** 用途卡:大图标块、「名字 · 做什么」、选了什么(模型名用等宽字)、说明。 */
 @Composable
 internal fun RoleCard(icon: ImageVector, label: String, line: ModelsCopy.RoleLine, first: Boolean = false, tag: String, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column {
         if (!first) Hairline(start = 0.dp)
         Row(
@@ -134,7 +134,7 @@ internal fun RoleCard(icon: ImageVector, label: String, line: ModelsCopy.RoleLin
                 )
                 if (line.subtitle.isNotEmpty()) {
                     Text(
-                        line.subtitle, Modifier.padding(top = 1.dp), style = VamosType.Caption,
+                        line.subtitle, Modifier.padding(top = 1.dp), style = VmType.Caption,
                         color = if (line.subtitleOk) c.ok else c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -149,20 +149,20 @@ private val RoleTileShape = RoundedCornerShape(12.dp)
 /** 服务商一行:左边是名字首字的图标块;[warning] 是要提醒的一句(用提醒色另起一行)。 */
 @Composable
 internal fun ProviderRow(p: Provider, line: String, first: Boolean, warning: String? = null, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column {
         if (!first) Hairline()
         Row(
             Modifier.fillMaxWidth().clickable(onClick = onClick).testTag("provider-${p.name}").padding(horizontal = 16.dp).padding(vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Box(Modifier.size(VamosSize.Tile).background(c.neutralSoft, VamosShapes.Tile), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(VmSize.Tile).background(c.neutralSoft, VmShapes.Tile), contentAlignment = Alignment.Center) {
                 Text(p.name.take(1).uppercase(), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c.ink)
             }
             Column(Modifier.weight(1f)) {
-                Text(ModelsCopy.providerName(p), style = VamosType.Body, color = c.ink, maxLines = 1)
-                Text(line, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3)
-                warning?.let { Text(it, Modifier.padding(top = 2.dp).testTag("provider-warning-${p.name}"), style = VamosType.Caption, color = c.warn) }
+                Text(ModelsCopy.providerName(p), style = VmType.Body, color = c.ink, maxLines = 1)
+                Text(line, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
+                warning?.let { Text(it, Modifier.padding(top = 2.dp).testTag("provider-warning-${p.name}"), style = VmType.Caption, color = c.warn) }
             }
             RowChevron()
         }
@@ -194,7 +194,7 @@ internal fun fixedChoices(role: ModelRole): List<RoleChoice> = when (role) {
  */
 @Composable
 fun RolePickerContent(ui: ModelSetupUi, role: ModelRole, actions: RolePickerActions, onBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var filter by rememberSaveable { mutableStateOf("") }
     val groups = ui.providers.map { it to ui.options(it) }
     val total = groups.sumOf { it.second.size }
@@ -249,7 +249,7 @@ fun RolePickerContent(ui: ModelSetupUi, role: ModelRole, actions: RolePickerActi
         if (q.isNotEmpty() && !anyShown) FooterNote(ModelsCopy.NO_MATCH)
         if (ui.providers.isEmpty()) FooterNote(ModelsCopy.ROLE_EMPTY)
         GroupCard(Modifier.padding(top = 8.dp)) {
-            ListRow(VamosIcons.Plus, ModelsCopy.ADD_PROVIDER, first = true, titleColor = c.accent, tone = TileTone.Accent, onClick = actions.addProvider)
+            VmListItem(VamosIcons.Plus, ModelsCopy.ADD_PROVIDER, first = true, titleColor = c.accent, tone = TileTone.Accent, onClick = actions.addProvider)
         }
         FooterNote(ModelsCopy.PICKER_NOTE)
     }
@@ -265,7 +265,7 @@ internal fun ManualModel(p: Provider, state: ListState?, first: Boolean, onUse: 
     InputRow(ModelsCopy.MODEL_NAME, name, { name = it }, example, first = first, modifier = Modifier.testTag("manual-model")) {
         Text(
             if (running) ModelSetupCopy.TESTING else ModelsCopy.USE, Modifier.clickable(enabled = enabled) { onUse(name.trim()) }.testTag("manual-model-use"),
-            fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (enabled) VamosTheme.colors.accent else VamosTheme.colors.ink3,
+            fontSize = 13.sp, fontWeight = FontWeight.Medium, color = if (enabled) VmTheme.colors.accent else VmTheme.colors.ink3,
         )
     }
 }
@@ -301,7 +301,7 @@ class ProviderDetailActions(
  */
 @Composable
 fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetailActions, onBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var changingKey by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
     var using by remember { mutableStateOf<ModelOption?>(null) }
@@ -315,16 +315,16 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
             AccountConnection(ui, p, state, actions)
         } else {
             GroupCard {
-                ListRow(null, ModelsCopy.STATUS, first = true) {
+                VmListItem(null, ModelsCopy.STATUS, first = true) {
                     when (state) {
                         ListState.Running -> RowValue(ModelsCopy.LISTING)
                         is ListState.Failed -> RowValue(ModelsCopy.LIST_FAILED, ValueTone.Bad)
                         else -> RowValue(ModelsCopy.CONNECTED, ValueTone.Ok)
                     }
                 }
-                ListRow(null, ModelsCopy.KIND) { RowValue(ModelsCopy.kindLabel(p.kind)) }
-                ListRow(null, ModelsCopy.BASE_URL) { RowValue(ModelsCopy.shortUrl(p.baseUrl)) }
-                ListRow(null, ModelsCopy.API_KEY, onClick = { changingKey = true }) {
+                VmListItem(null, ModelsCopy.KIND) { RowValue(ModelsCopy.kindLabel(p.kind)) }
+                VmListItem(null, ModelsCopy.BASE_URL) { RowValue(ModelsCopy.shortUrl(p.baseUrl)) }
+                VmListItem(null, ModelsCopy.API_KEY, onClick = { changingKey = true }) {
                     RowValue(if (p.id in ui.keyed) ModelsCopy.KEY_SAVED else ModelsCopy.KEY_NONE)
                     RowValue(ModelsCopy.CHANGE, ValueTone.Link)
                 }
@@ -340,7 +340,7 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
             GroupCard {
                 list.take(MODEL_PREVIEW).forEachIndexed { i, o -> ModelRow(o, ui.rolesOf(p.id, o.id), first = i == 0) { using = o } }
                 if (list.size > MODEL_PREVIEW) {
-                    ListRow(null, ModelsCopy.viewAll(list.size), titleColor = c.accent, onClick = actions.showAll) { RowChevron() }
+                    VmListItem(null, ModelsCopy.viewAll(list.size), titleColor = c.accent, onClick = actions.showAll) { RowChevron() }
                 }
             }
             FooterNote(ModelsCopy.MODELS_NOTE)
@@ -349,7 +349,7 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
         if (unverified.isNotEmpty()) {
             val retest = ui.retest[p.id]
             FooterNote(ModelsCopy.unverifiedNote(unverified), Modifier.testTag("provider-unverified"), color = c.warn)
-            VamosButton(
+            VmButton(
                 if (retest == ListState.Running) ModelSetupCopy.TESTING else ModelsCopy.RETEST, actions.retest,
                 Modifier.fillMaxWidth().padding(bottom = 8.dp).testTag("provider-retest"),
                 kind = ButtonKind.Secondary, size = ButtonSize.Medium, enabled = retest != ListState.Running,
@@ -362,7 +362,7 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
         }
 
         GroupCard(Modifier.padding(top = 8.dp)) {
-            ListRow(VamosIcons.Trash, ModelsCopy.DELETE, titleColor = c.bad, tone = TileTone.Bad, first = true, onClick = { confirmDelete = true })
+            VmListItem(VamosIcons.Trash, ModelsCopy.DELETE, titleColor = c.bad, tone = TileTone.Bad, first = true, onClick = { confirmDelete = true })
         }
     }
 
@@ -374,11 +374,11 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
             title = { Text(ModelsCopy.CHANGE_KEY) },
             text = {
                 KeyboardDismissArea {
-                    Box(Modifier.fillMaxWidth().keepsKeyboard().background(c.fill, VamosShapes.Button).padding(12.dp)) {
-                        if (key.isEmpty()) Text(ModelsCopy.NEW_KEY_HINT, style = VamosType.Body, color = c.ink3)
+                    Box(Modifier.fillMaxWidth().keepsKeyboard().background(c.fill, VmShapes.Button).padding(12.dp)) {
+                        if (key.isEmpty()) Text(ModelsCopy.NEW_KEY_HINT, style = VmType.Body, color = c.ink3)
                         BasicTextField(
                             key, { key = it }, Modifier.fillMaxWidth().testTag("new-key"), singleLine = true,
-                            textStyle = VamosType.Body.copy(color = c.ink), cursorBrush = SolidColor(c.accent),
+                            textStyle = VmType.Body.copy(color = c.ink), cursorBrush = SolidColor(c.accent),
                             visualTransformation = PasswordVisualTransformation(),
                         )
                     }
@@ -415,11 +415,11 @@ fun ProviderDetailContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetail
  */
 @Composable
 private fun ChatGptConnection(ui: ModelSetupUi, state: ListState?, actions: ProviderDetailActions) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val account = ui.chatGptAccount
     val signedIn = account?.signedIn == true
     GroupCard {
-        ListRow(null, ModelsCopy.STATUS, first = true) {
+        VmListItem(null, ModelsCopy.STATUS, first = true) {
             when {
                 !signedIn -> RowValue(ModelsCopy.CHATGPT_SIGNED_OUT, ValueTone.Warn)
                 state == ListState.Running -> RowValue(ModelsCopy.LISTING)
@@ -427,12 +427,12 @@ private fun ChatGptConnection(ui: ModelSetupUi, state: ListState?, actions: Prov
                 else -> RowValue(ModelsCopy.CHATGPT_SIGNED_IN, ValueTone.Ok)
             }
         }
-        account?.email?.takeIf { it.isNotEmpty() }?.let { email -> ListRow(null, ModelsCopy.CHATGPT_ACCOUNT) { RowValue(email) } }
-        ListRow(null, ModelsCopy.CHATGPT_MANAGE_USAGE, titleColor = c.accent, onClick = actions.manageUsage) { RowChevron() }
+        account?.email?.takeIf { it.isNotEmpty() }?.let { email -> VmListItem(null, ModelsCopy.CHATGPT_ACCOUNT) { RowValue(email) } }
+        VmListItem(null, ModelsCopy.CHATGPT_MANAGE_USAGE, titleColor = c.accent, onClick = actions.manageUsage) { RowChevron() }
         if (signedIn) {
-            ListRow(null, ModelsCopy.CHATGPT_SIGN_OUT, titleColor = c.bad, onClick = actions.signOut)
+            VmListItem(null, ModelsCopy.CHATGPT_SIGN_OUT, titleColor = c.bad, onClick = actions.signOut)
         } else {
-            ListRow(
+            VmListItem(
                 null, if (ui.chatGptSignIn == ListState.Running) ModelsCopy.CHATGPT_WAITING else ModelsCopy.CHATGPT_CONTINUE,
                 titleColor = c.accent, onClick = actions.signIn,
             )
@@ -449,14 +449,14 @@ private fun ChatGptConnection(ui: ModelSetupUi, state: ListState?, actions: Prov
  */
 @Composable
 private fun AccountConnection(ui: ModelSetupUi, p: Provider, state: ListState?, actions: ProviderDetailActions) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val kind = if (p.kind == ProviderConfig.Kind.Xai) SignInKind.Xai else SignInKind.OpenRouter
     val account = if (kind == SignInKind.Xai) ui.xaiAccount else ui.openRouterAccount
     val signedIn = account?.signedIn == true
     val (_, waiting, failure) = ui.signInState(kind)
     GroupCard {
-        account?.label?.takeIf { it.isNotEmpty() }?.let { label -> ListRow(null, ModelsCopy.CHATGPT_ACCOUNT, first = true) { RowValue(label) } }
-        ListRow(null, ModelsCopy.STATUS, first = account?.label.isNullOrEmpty()) {
+        account?.label?.takeIf { it.isNotEmpty() }?.let { label -> VmListItem(null, ModelsCopy.CHATGPT_ACCOUNT, first = true) { RowValue(label) } }
+        VmListItem(null, ModelsCopy.STATUS, first = account?.label.isNullOrEmpty()) {
             when {
                 !signedIn -> RowValue(ModelsCopy.CHATGPT_SIGNED_OUT, ValueTone.Warn)
                 state == ListState.Running -> RowValue(ModelsCopy.LISTING)
@@ -469,13 +469,13 @@ private fun AccountConnection(ui: ModelSetupUi, p: Provider, state: ListState?, 
         // 主模型已经在这家就不放这一行
         val isMain = ui.configFor(ModelRole.Main)?.providerId == p.id
         if (signedIn && !isMain && ui.options(p).isNotEmpty()) {
-            ListRow(null, ModelsCopy.SET_MAIN, ModelsCopy.SET_MAIN_NOTE, first = true, onClick = actions.useAsMain) { RowChevron() }
+            VmListItem(null, ModelsCopy.SET_MAIN, ModelsCopy.SET_MAIN_NOTE, first = true, onClick = actions.useAsMain) { RowChevron() }
         }
-        ListRow(null, ModelsCopy.accountManage(kind), titleColor = c.accent, first = !(signedIn && !isMain && ui.options(p).isNotEmpty()), onClick = actions.manageUsage) { RowChevron() }
+        VmListItem(null, ModelsCopy.accountManage(kind), titleColor = c.accent, first = !(signedIn && !isMain && ui.options(p).isNotEmpty()), onClick = actions.manageUsage) { RowChevron() }
         if (signedIn) {
-            ListRow(null, ModelsCopy.CHATGPT_SIGN_OUT, ModelsCopy.SIGN_OUT_NOTE, titleColor = c.bad, onClick = actions.signOut)
+            VmListItem(null, ModelsCopy.CHATGPT_SIGN_OUT, ModelsCopy.SIGN_OUT_NOTE, titleColor = c.bad, onClick = actions.signOut)
         } else {
-            ListRow(null, if (waiting) ModelsCopy.SIGN_IN_RUNNING else ModelsCopy.signInStart(kind), titleColor = c.accent, onClick = actions.signIn)
+            VmListItem(null, if (waiting) ModelsCopy.SIGN_IN_RUNNING else ModelsCopy.signInStart(kind), titleColor = c.accent, onClick = actions.signIn)
         }
     }
     FooterNote(ModelsCopy.accountNote(kind, signedIn))
@@ -489,7 +489,7 @@ private fun AccountConnection(ui: ModelSetupUi, p: Provider, state: ListState?, 
  */
 @Composable
 fun AllModelsContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetailActions, onBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var filter by rememberSaveable { mutableStateOf("") }
     var using by remember { mutableStateOf<ModelOption?>(null) }
     val state = ui.listing[p.id]
@@ -498,7 +498,7 @@ fun AllModelsContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetailActio
     val shown = all.filter { q.isEmpty() || it.id.contains(q, ignoreCase = true) }
     PageBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars).windowInsetsPadding(WindowInsets.ime)) {
-            TopBar(ModelsCopy.allModelsTitle(ModelsCopy.providerName(p)), VamosIcons.Back, onBack, stringResource(R.string.back), right = {
+            VmTopBar(ModelsCopy.allModelsTitle(ModelsCopy.providerName(p)), VamosIcons.Back, onBack, stringResource(R.string.back), right = {
                 BarIconButton(VamosIcons.Refresh, ModelsCopy.REFRESH, actions.refresh, enabled = state != ListState.Running)
             })
             Box(Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp)) {
@@ -529,7 +529,7 @@ fun AllModelsContent(ui: ModelSetupUi, p: Provider, actions: ProviderDetailActio
 
 /** 一张卡拆成懒加载的行时,每行的圆角:首行上圆、末行下圆。 */
 private fun rowShape(i: Int, n: Int): RoundedCornerShape {
-    val r = VamosRadius.Card
+    val r = VmRadius.Card
     return RoundedCornerShape(topStart = if (i == 0) r else 0.dp, topEnd = if (i == 0) r else 0.dp,
         bottomStart = if (i == n - 1) r else 0.dp, bottomEnd = if (i == n - 1) r else 0.dp)
 }
@@ -544,10 +544,10 @@ private fun ModelRow(o: ModelOption, roles: List<ModelRole>, first: Boolean, onC
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Column(Modifier.weight(1f)) {
-                Text(o.id, style = ModelIdStyle, color = VamosTheme.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(o.id, style = ModelIdStyle, color = VmTheme.colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Box(Modifier.padding(top = 4.dp)) { Tags(o, accent = false) }
             }
-            roles.forEach { StatusPill(ModelsCopy.roleName(it), PillTone.Accent) }
+            roles.forEach { VmStatusChip(ModelsCopy.roleName(it), PillTone.Accent) }
             RowChevron()
         }
     }
@@ -557,11 +557,11 @@ private fun ModelRow(o: ModelOption, roles: List<ModelRole>, first: Boolean, onC
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun UseAsSheet(ui: ModelSetupUi, p: Provider, model: String, onUse: (ModelRole) -> Unit, onDismiss: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = c.surface, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 8.dp).testTag("use-as")) {
             Text(model, Modifier.padding(horizontal = 16.dp), style = ModelIdStyle, color = c.ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(ModelsCopy.useAsSubtitle(ModelsCopy.providerName(p)), Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 6.dp), style = VamosType.Caption, color = c.ink3)
+            Text(ModelsCopy.useAsSubtitle(ModelsCopy.providerName(p)), Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp, bottom = 6.dp), style = VmType.Caption, color = c.ink3)
             ModelRole.entries.forEachIndexed { i, role ->
                 val on = ui.picked(role, p.id, model)
                 RadioRow(
@@ -570,7 +570,7 @@ private fun UseAsSheet(ui: ModelSetupUi, p: Provider, model: String, onUse: (Mod
                     onClick = { onUse(role); onDismiss() },
                 )
             }
-            ListRow(null, ModelSetupCopy.CANCEL, titleColor = c.ink2, onClick = onDismiss)
+            VmListItem(null, ModelSetupCopy.CANCEL, titleColor = c.ink2, onClick = onDismiss)
         }
     }
 }

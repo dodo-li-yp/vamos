@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.tr
 import android.content.ActivityNotFoundException
@@ -27,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
@@ -42,17 +43,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 
 /** 按 Markdown 显示一段回答；流式草稿用临时闭合的语法预览。 */
 @Composable
 fun MarkdownText(markdown: String, style: TextStyle, modifier: Modifier = Modifier, streaming: Boolean = false) {
     // 流式片段更新频繁，在后台解析；上一帧保留到新片段准备好，避免主线程卡顿和文字闪空。
-    val colors = VamosTheme.colors
+    val colors = VmTheme.colors
     val styles = remember(colors) { MarkdownModel.Styles.of(colors) }
     val blocks = if (streaming) {
-        val parsed by produceState<List<MdBlock>>(emptyList(), markdown, styles) {
-            value = withContext(Dispatchers.Default) { MarkdownModel.parseStreaming(markdown, styles) }
+        val parsedState = remember { mutableStateOf<List<MdBlock>>(emptyList()) }
+        val parsed by parsedState
+        LaunchedEffect(markdown, styles) {
+            parsedState.value = withContext(Dispatchers.Default) { MarkdownModel.parseStreaming(markdown, styles) }
         }
         parsed
     } else remember(markdown, styles) { MarkdownModel.parse(markdown, styles) }
@@ -94,26 +97,26 @@ private fun Block(b: MdBlock, style: TextStyle, depth: Int) {
             ),
         )
         is MdBlock.Code -> Box(
-            Modifier.fillMaxWidth().background(VamosTheme.colors.fill, RoundedCornerShape(10.dp))
+            Modifier.fillMaxWidth().background(VmTheme.colors.fill, RoundedCornerShape(10.dp))
                 .horizontalScroll(rememberScrollState()).padding(horizontal = 11.dp, vertical = 9.dp),
         ) {
             Text(b.code, style = style.copy(fontFamily = FontFamily.Monospace, fontSize = 13.sp, lineHeight = 19.sp), softWrap = false)
         }
         is MdBlock.Quote -> Row(Modifier.height(IntrinsicSize.Min)) {
-            Box(Modifier.width(3.dp).fillMaxHeight().background(VamosTheme.colors.hair, RoundedCornerShape(2.dp)))
-            Blocks(b.blocks, style.copy(color = VamosTheme.colors.ink2), Modifier.padding(start = 10.dp), depth + 1)
+            Box(Modifier.width(3.dp).fillMaxHeight().background(VmTheme.colors.hair, RoundedCornerShape(2.dp)))
+            Blocks(b.blocks, style.copy(color = VmTheme.colors.ink2), Modifier.padding(start = 10.dp), depth + 1)
         }
         is MdBlock.ListBlock -> Column(verticalArrangement = Arrangement.spacedBy(if (b.tight) 3.dp else 8.dp)) {
             b.items.forEachIndexed { i, item ->
                 Row {
                     val marker = if (b.start != null) "${b.start + i}." else if (depth % 2 == 0) "•" else "◦"
-                    Text(marker, Modifier.widthIn(min = 18.dp).padding(end = 6.dp), style = style.copy(color = VamosTheme.colors.ink2))
+                    Text(marker, Modifier.widthIn(min = 18.dp).padding(end = 6.dp), style = style.copy(color = VmTheme.colors.ink2))
                     Blocks(item, style, depth = depth + 1, gap = if (b.tight) 3 else 8)
                 }
             }
         }
         is MdBlock.Table -> TableBlock(b, style)
-        MdBlock.Rule -> Box(Modifier.fillMaxWidth().padding(vertical = 4.dp).height(0.5.dp).background(VamosTheme.colors.hair))
+        MdBlock.Rule -> Box(Modifier.fillMaxWidth().padding(vertical = 4.dp).height(0.5.dp).background(VmTheme.colors.hair))
     }
 }
 
@@ -130,8 +133,8 @@ private fun TableBlock(t: MdBlock.Table, style: TextStyle) {
                 rows.forEachIndexed { r, row ->
                     row.forEach { cell ->
                         Box(
-                            Modifier.border(0.5.dp, VamosTheme.colors.hair)
-                                .then(if (r == 0) Modifier.background(VamosTheme.colors.fill) else Modifier)
+                            Modifier.border(0.5.dp, VmTheme.colors.hair)
+                                .then(if (r == 0) Modifier.background(VmTheme.colors.fill) else Modifier)
                                 .padding(horizontal = 9.dp, vertical = 6.dp),
                         ) {
                             Text(cell, style = if (r == 0) cellStyle.copy(fontWeight = FontWeight.SemiBold) else cellStyle)
@@ -139,7 +142,7 @@ private fun TableBlock(t: MdBlock.Table, style: TextStyle) {
                     }
                 }
             },
-            modifier = Modifier.border(0.5.dp, VamosTheme.colors.hair, RoundedCornerShape(2.dp)),
+            modifier = Modifier.border(0.5.dp, VmTheme.colors.hair, RoundedCornerShape(2.dp)),
         ) { measurables, _ ->
             val maxCol = 240.dp.roundToPx()
             val minCol = 48.dp.roundToPx()

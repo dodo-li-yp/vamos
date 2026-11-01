@@ -32,11 +32,11 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.components.VamosSwitch
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.components.VmSwitch
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 设置 › 恢复与修复 里手机操作的几个授权开关的文字(纯函数,便于测试)。和引导页一样说大白话,
@@ -180,16 +180,16 @@ fun RecoverySection(
             val copy = RecoveryCopy.switch(cap)
             val on = consent.wants(cap)
             val icon = iconOf(cap)
-            ListRow(icon, copy.title, if (busy == cap) RecoveryCopy.WORKING else copy.subtitle, first = i == 0) {
-                VamosSwitch(on, { want -> onToggle(cap, want) }, Modifier.testTag("recovery-${cap.name}"), enabled = busy == null)
+            VmListItem(icon, copy.title, if (busy == cap) RecoveryCopy.WORKING else copy.subtitle, first = i == 0) {
+                VmSwitch(on, { want -> onToggle(cap, want) }, Modifier.testTag("recovery-${cap.name}"), enabled = busy == null)
             }
-            Note(copy.explain, VamosTheme.colors.ink3)
-            notes[cap]?.let { Note(it, VamosTheme.colors.bad) }
-            if (cap == RecoveryCapability.Accessibility) restartNote?.let { Note(it, VamosTheme.colors.ink3) }
+            Note(copy.explain, VmTheme.colors.ink3)
+            notes[cap]?.let { Note(it, VmTheme.colors.bad) }
+            if (cap == RecoveryCapability.Accessibility) restartNote?.let { Note(it, VmTheme.colors.ink3) }
             if (cap == RecoveryCapability.RestoreAfterReboot && consent.isApplied(cap)) {
-                RecoveryCopy.lastRestore(lastRestore)?.let { Note(it, VamosTheme.colors.warn) }
+                RecoveryCopy.lastRestore(lastRestore)?.let { Note(it, VmTheme.colors.warn) }
             }
-            if (cap == RecoveryCapability.AutoWirelessDebugging && consent.wants(cap)) autoOnNote?.let { Note(it, VamosTheme.colors.warn) }
+            if (cap == RecoveryCapability.AutoWirelessDebugging && consent.wants(cap)) autoOnNote?.let { Note(it, VmTheme.colors.warn) }
         }
     }
 }
@@ -203,5 +203,5 @@ private fun iconOf(c: RecoveryCapability): ImageVector = when (c) {
 
 @Composable
 private fun Note(text: String, color: Color) {
-    Text(text, Modifier.fillMaxWidth().padding(start = 60.dp, end = 16.dp, bottom = 10.dp), style = VamosType.Hint, color = color)
+    Text(text, Modifier.fillMaxWidth().padding(start = 60.dp, end = 16.dp, bottom = 10.dp), style = VmType.Hint, color = color)
 }

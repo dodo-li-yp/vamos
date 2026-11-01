@@ -10,8 +10,8 @@ import com.yongpeng.vamos.core.agent.SpeedFlags
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmSwitch
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.RowChevron
 
@@ -74,8 +74,8 @@ fun DeveloperOptionsScreen(
     PageScaffold(tr(R.string.settings_developer), onBack) {
         GroupLabel(AutonomyCopy.GROUP)
         GroupCard {
-            ListRow(null, AutonomyCopy.TITLE, AutonomyCopy.SUBTITLE, first = true, onClick = { onAutonomous(!autonomous) }) {
-                VamosSwitch(autonomous, onAutonomous, Modifier.testTag("dev-autonomous"))
+            VmListItem(null, AutonomyCopy.TITLE, AutonomyCopy.SUBTITLE, first = true, onClick = { onAutonomous(!autonomous) }) {
+                VmSwitch(autonomous, onAutonomous, Modifier.testTag("dev-autonomous"))
             }
         }
         GroupLabel(tr(R.string.dev_speed))
@@ -85,15 +85,15 @@ fun DeveloperOptionsScreen(
         if (grounding != null) {
             GroupLabel(GroundingCopy.GROUP)
             GroupCard {
-                ListRow(null, GroundingCopy.TITLE, GroundingCopy.subtitle(grounding.model), first = true, onClick = { onGrounding(!grounding.verified) }) {
-                    VamosSwitch(grounding.verified, onGrounding, Modifier.testTag("dev-grounding-verified"))
+                VmListItem(null, GroundingCopy.TITLE, GroundingCopy.subtitle(grounding.model), first = true, onClick = { onGrounding(!grounding.verified) }) {
+                    VmSwitch(grounding.verified, onGrounding, Modifier.testTag("dev-grounding-verified"))
                 }
             }
         }
         if (onOpenRunStats != null) {
             GroupLabel(tr(R.string.dev_run_log))
             GroupCard {
-                ListRow(null, RunMetricsCopy.STATS_TITLE, RunMetricsCopy.STATS_SUBTITLE, first = true, onClick = onOpenRunStats) { RowChevron() }
+                VmListItem(null, RunMetricsCopy.STATS_TITLE, RunMetricsCopy.STATS_SUBTITLE, first = true, onClick = onOpenRunStats) { RowChevron() }
             }
         }
         FooterNote(DEVELOPER_NOTE)
@@ -105,8 +105,8 @@ private fun SwitchGroup(switches: List<DevSwitch>, onSpeed: (SpeedFlags) -> Unit
     GroupCard {
         switches.forEachIndexed { i, s ->
             // 整行都能点:开关小,行大
-            ListRow(null, s.title, s.subtitle, first = i == 0, onClick = { onSpeed(s.change(!s.checked)) }) {
-                VamosSwitch(s.checked, { onSpeed(s.change(it)) }, Modifier.testTag("dev-${s.id}"))
+            VmListItem(null, s.title, s.subtitle, first = i == 0, onClick = { onSpeed(s.change(!s.checked)) }) {
+                VmSwitch(s.checked, { onSpeed(s.change(it)) }, Modifier.testTag("dev-${s.id}"))
             }
         }
     }

@@ -19,10 +19,10 @@ import java.util.Locale
 import com.yongpeng.vamos.i18n.uiLocale
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
+import com.yongpeng.vamos.ui.components.VmListItem
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.ValueTone
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.components.FooterNote
@@ -52,11 +52,11 @@ fun WebSitesSection(state: WebSitesState, labeled: Boolean = true) {
     if (labeled) GroupLabel(tr(R.string.settings_web_logins))
     GroupCard {
         if (state.sites.isEmpty()) {
-            ListRow(VamosIcons.Globe, tr(R.string.web_none), tr(R.string.web_none_sub), first = true)
+            VmListItem(VamosIcons.Globe, tr(R.string.web_none), tr(R.string.web_none_sub), first = true)
         }
         val now = System.currentTimeMillis()
         state.sites.forEachIndexed { i, s ->
-            ListRow(
+            VmListItem(
                 VamosIcons.Globe, s.host,
                 subtitle = listOfNotNull(
                     tr(R.string.web_signed_in_by_you).takeIf { s.loggedInByUser },
@@ -67,8 +67,8 @@ fun WebSitesSection(state: WebSitesState, labeled: Boolean = true) {
                 onClick = { picked = s },
             ) { RowValue(tr(R.string.web_manage), ValueTone.Link) }
         }
-        ListRow(
-            VamosIcons.Close, tr(R.string.web_logout_all_title), titleColor = VamosTheme.colors.bad, tone = TileTone.Bad,
+        VmListItem(
+            VamosIcons.Close, tr(R.string.web_logout_all_title), titleColor = VmTheme.colors.bad, tone = TileTone.Bad,
             onClick = { confirmAll = true },
         )
     }
@@ -92,7 +92,7 @@ fun WebSitesSection(state: WebSitesState, labeled: Boolean = true) {
                         picked = null
                         state.onLogout(s.host)
                         notice = if (clearing) tr(R.string.web_cleared, s.host) else tr(R.string.web_signed_out, s.host, WEB_LOGOUT_PARTIAL)
-                    }) { Text(if (clearing) tr(R.string.web_clear_site) else tr(R.string.web_sign_out_site), color = VamosTheme.colors.bad) }
+                    }) { Text(if (clearing) tr(R.string.web_clear_site) else tr(R.string.web_sign_out_site), color = VmTheme.colors.bad) }
                 }
             },
             dismissButton = { TextButton({ picked = null }) { Text(tr(R.string.cancel)) } },
@@ -106,7 +106,7 @@ fun WebSitesSection(state: WebSitesState, labeled: Boolean = true) {
             text = { Text(tr(R.string.web_logout_all_body)) },
             confirmButton = {
                 TextButton({ confirmAll = false; state.onLogoutAll(); notice = tr(R.string.web_logged_out_all) }) {
-                    Text(tr(R.string.web_logout_all), color = VamosTheme.colors.bad)
+                    Text(tr(R.string.web_logout_all), color = VmTheme.colors.bad)
                 }
             },
             dismissButton = { TextButton({ confirmAll = false }) { Text(tr(R.string.cancel)) } },

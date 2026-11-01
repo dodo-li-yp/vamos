@@ -47,7 +47,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -75,12 +74,12 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.cardSurface
-import com.yongpeng.vamos.ui.theme.VamosColors
+import com.yongpeng.vamos.ui.theme.VmColors
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 对话页附件的说法。 */
 object AttachCopy {
@@ -122,8 +121,10 @@ internal fun AttachPanelHost(
     val context = LocalContext.current
     var access by remember { mutableStateOf(RecentPhotos.access(context)) }
     var refresh by remember { mutableIntStateOf(0) }
-    val recent by produceState<List<PendingAttachment>?>(null, access, refresh) {
-        value = if (access == PhotoAccess.None) emptyList() else RecentPhotos.query(context)
+    val recentState = remember { mutableStateOf<List<PendingAttachment>?>(null) }
+    val recent by recentState
+    LaunchedEffect(access, refresh) {
+        recentState.value = if (access == PhotoAccess.None) emptyList() else RecentPhotos.query(context)
     }
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         access = RecentPhotos.access(context)
@@ -201,7 +202,7 @@ internal fun AttachPanel(
     onGrant: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(modifier.fillMaxSize().testTag("attach-panel").padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Tile(VamosIcons.PhotoCamera, AttachCopy.CAMERA, onCamera)
@@ -215,15 +216,15 @@ internal fun AttachPanel(
                 verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
             ) {
                 Text(AttachCopy.NEED_ACCESS, style = PanelText, color = c.ink2, textAlign = TextAlign.Center)
-                VamosButton(AttachCopy.GRANT, onGrant, kind = ButtonKind.Primary, size = ButtonSize.Medium)
-                Text(AttachCopy.GRANT_HINT, style = VamosType.Hint, color = c.ink3, textAlign = TextAlign.Center)
+                VmButton(AttachCopy.GRANT, onGrant, kind = ButtonKind.Primary, size = ButtonSize.Medium)
+                Text(AttachCopy.GRANT_HINT, style = VmType.Hint, color = c.ink3, textAlign = TextAlign.Center)
             }
             return@Column
         }
         Row(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp, top = 14.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 if (access == PhotoAccess.Partial) AttachCopy.RECENT_PARTIAL else AttachCopy.RECENT,
-                Modifier.weight(1f), style = VamosType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                Modifier.weight(1f), style = VmType.Hint, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             if (access == PhotoAccess.Partial) PanelLink(AttachCopy.CHANGE, onGrant)
             PanelLink(AttachCopy.ALL, onAlbum)
@@ -248,7 +249,7 @@ internal fun AttachPanel(
 
 @Composable
 private fun RowScope.Tile(icon: ImageVector, label: String, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
         Modifier.weight(1f).height(76.dp).cardSurface(c, TileShape).clip(TileShape).clickable(role = Role.Button, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -263,14 +264,14 @@ private fun RowScope.Tile(icon: ImageVector, label: String, onClick: () -> Unit)
 private fun PanelLink(text: String, onClick: () -> Unit) {
     Text(
         text, Modifier.clip(RoundedCornerShape(8.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 6.dp, vertical = 4.dp),
-        style = LinkText, color = VamosTheme.colors.accent,
+        style = LinkText, color = VmTheme.colors.accent,
     )
 }
 
 /** 最近的一张照片:方块缩略图;选中时蓝框、淡蓝罩、右上角蓝底序号,没选时右上角一个空心圈。 */
 @Composable
 private fun RecentCell(photo: PendingAttachment, order: Int?, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val thumb = rememberAttachImage(AttachImage.Picked(photo.uri), RECENT_PX)
     Box(
         Modifier.testTag("recent-photo").aspectRatio(1f).clip(CellShape).background(c.fill)
@@ -295,7 +296,7 @@ private fun RecentCell(photo: PendingAttachment, order: Int?, onClick: () -> Uni
 /** 输入框上方一排待发的附件:照片是方块缩略图,文件是小卡片(类型、名字、大小),右上角 × 去掉。 */
 @Composable
 internal fun PendingTray(items: List<PendingAttachment>, onRemove: (String) -> Unit, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         modifier.fillMaxWidth().testTag("attach-tray").horizontalScroll(rememberScrollState()).padding(start = 4.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -350,7 +351,7 @@ internal fun SentAttachments(parsed: AttachmentMessage.Parsed, conversationId: S
 
 @Composable
 private fun SentPhotos(photos: List<AttachmentMessage.Item>, conversationId: String?, maxWidth: Dp, onOpen: (AttachmentMessage.Item) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val cols = PhotoGrid.columns(photos.size)
     if (cols == 1) {
         val p = photos.single()
@@ -386,7 +387,7 @@ private fun SentPhotos(photos: List<AttachmentMessage.Item>, conversationId: Str
 
 @Composable
 private fun SentFileCard(f: AttachmentMessage.Item, maxWidth: Dp, onClick: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.testTag("sent-file").widthIn(min = minOf(220.dp, maxWidth), max = maxWidth).cardSurface(c, FileCardShape).clip(FileCardShape)
             .clickable(onClickLabel = stringResource(R.string.chat_open), role = Role.Button, onClick = onClick)
@@ -406,17 +407,17 @@ private fun SentFileCard(f: AttachmentMessage.Item, maxWidth: Dp, onClick: () ->
 @Composable
 private fun TypeBadge(name: String, modifier: Modifier, small: Boolean) {
     val shape = RoundedCornerShape(if (small) 5.dp else 7.dp)
-    Box(modifier.background(badgeColor(FileBadge.kind(name), VamosTheme.colors), shape), contentAlignment = Alignment.Center) {
+    Box(modifier.background(badgeColor(FileBadge.kind(name), VmTheme.colors), shape), contentAlignment = Alignment.Center) {
         Text(FileBadge.text(name), style = if (small) BadgeSmall else BadgeLarge, color = Color.White, maxLines = 1)
     }
 }
 
-private fun badgeColor(kind: FileBadge.Kind, c: VamosColors): Color = when (kind) {
-    FileBadge.Kind.Pdf -> c.bad
+private fun badgeColor(kind: FileBadge.Kind, c: VmColors): Color = when (kind) {
+    FileBadge.Kind.Pdf -> c.brandDai
     FileBadge.Kind.Sheet -> c.ok
     FileBadge.Kind.Doc -> c.accent
-    FileBadge.Kind.Slides -> c.warnSolid
-    FileBadge.Kind.Archive, FileBadge.Kind.Other -> NeutralBadge
+    FileBadge.Kind.Slides -> c.brandDai
+    FileBadge.Kind.Archive, FileBadge.Kind.Other -> c.textInk2
 }
 
 /** 缩略图解到这么大(像素):面板格子、待发的小方块、单张大图。 */
@@ -425,7 +426,6 @@ private const val TRAY_PX = 180
 private const val SINGLE_PX = 640
 
 private val SingleWidth = 200.dp
-private val NeutralBadge = Color(0xFF8E8E93)
 private val TileShape = RoundedCornerShape(16.dp)
 private val GridShape = RoundedCornerShape(12.dp)
 private val CellShape = RoundedCornerShape(6.dp)

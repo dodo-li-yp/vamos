@@ -34,16 +34,16 @@ import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.components.VmSwitch
 import com.yongpeng.vamos.ui.components.PageScaffold
 import com.yongpeng.vamos.ui.components.RadioRow
 import com.yongpeng.vamos.ui.components.RowActions
 import com.yongpeng.vamos.ui.components.SegmentedControl
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -132,29 +132,29 @@ internal fun ComputerAccessPage(
         }
 
         GroupCard {
-            ListRow(VamosIcons.Gear, stringResource(if (advanced) R.string.mcp_advanced_hide else R.string.mcp_advanced),
+            VmListItem(VamosIcons.Gear, stringResource(if (advanced) R.string.mcp_advanced_hide else R.string.mcp_advanced),
                 stringResource(R.string.mcp_advanced_sub), first = true, onClick = { advanced = !advanced })
         }
         if (advanced) {
             GroupCard {
-                ListRow(VamosIcons.Link, stringResource(R.string.mcp_usb_title),
+                VmListItem(VamosIcons.Link, stringResource(R.string.mcp_usb_title),
                     stringResource(if (ui.usbEnabled) R.string.mcp_usb_on else R.string.mcp_usb_off_sub), first = true,
                     onClick = { onUsbEnabled(!ui.usbEnabled) }) {
-                    VamosSwitch(ui.usbEnabled, onUsbEnabled, Modifier.testTag("mcp-usb"))
+                    VmSwitch(ui.usbEnabled, onUsbEnabled, Modifier.testTag("mcp-usb"))
                 }
-                ListRow(VamosIcons.Desktop, stringResource(R.string.mcp_network_title), stringResource(R.string.mcp_network_scope),
+                VmListItem(VamosIcons.Desktop, stringResource(R.string.mcp_network_title), stringResource(R.string.mcp_network_scope),
                     onClick = { onNetworkEnabled(!ui.networkEnabled) }) {
-                    VamosSwitch(ui.networkEnabled, onNetworkEnabled, Modifier.testTag("mcp-enabled"))
+                    VmSwitch(ui.networkEnabled, onNetworkEnabled, Modifier.testTag("mcp-enabled"))
                 }
             }
             FooterNote(stringResource(R.string.mcp_port_detail, ui.port))
             if (ui.networkEnabled) {
                 GroupLabel(stringResource(R.string.mcp_token))
                 GroupCard {
-                    ListRow(VamosIcons.Key, ui.token?.let { it.take(6) + "…" + it.takeLast(4) } ?: "…", first = true)
+                    VmListItem(VamosIcons.Key, ui.token?.let { it.take(6) + "…" + it.takeLast(4) } ?: "…", first = true)
                     RowActions {
-                        VamosButton(stringResource(R.string.mcp_copy), { ui.token?.let(onCopy) }, size = ButtonSize.Small, enabled = ui.token != null)
-                        VamosButton(stringResource(R.string.mcp_regenerate), onRegenerate, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                        VmButton(stringResource(R.string.mcp_copy), { ui.token?.let(onCopy) }, size = ButtonSize.Small, enabled = ui.token != null)
+                        VmButton(stringResource(R.string.mcp_regenerate), onRegenerate, kind = ButtonKind.Tonal, size = ButtonSize.Small)
                     }
                 }
             }
@@ -178,7 +178,7 @@ private fun ConnectionStatus(ui: ComputerAccessUi) {
         else stringResource(R.string.mcp_follow_steps)
     val tone = when { ui.server is McpServerState.Failed && enabled -> TileTone.Bad; received -> TileTone.Ok; else -> TileTone.Neutral }
     GroupCard(Modifier.testTag("computer-status")) {
-        ListRow(if (received) VamosIcons.Check else VamosIcons.Desktop, title, detail, first = true, tone = tone)
+        VmListItem(if (received) VamosIcons.Check else VamosIcons.Desktop, title, detail, first = true, tone = tone)
     }
 }
 
@@ -213,7 +213,7 @@ private fun NetworkGuide(ui: ComputerAccessUi, mcp: Boolean, onNetworkEnabled: (
     val address = selectedAddress?.takeIf { it in ui.addresses } ?: ui.addresses.firstOrNull()
     GroupLabel(stringResource(if (mcp) R.string.mcp_network_address_step else R.string.mcp_address))
     GroupCard {
-        if (ui.addresses.isEmpty()) ListRow(VamosIcons.Link, stringResource(R.string.mcp_no_address), first = true)
+        if (ui.addresses.isEmpty()) VmListItem(VamosIcons.Link, stringResource(R.string.mcp_no_address), first = true)
         ui.addresses.forEachIndexed { i, a ->
             RadioRow(if (mcp) McpRuntime.url(a, ui.port) else "http://$a:${ui.port}",
                 a == address, { selectedAddress = a }, first = i == 0)
@@ -223,13 +223,13 @@ private fun NetworkGuide(ui: ComputerAccessUi, mcp: Boolean, onNetworkEnabled: (
     if (!mcp) {
         val command = address?.let { "vamos connect --url http://$it:${ui.port} --token-file /path/to/token" }
         GroupCard {
-            ListRow(VamosIcons.Code, stringResource(R.string.mcp_cli_connect), stringResource(R.string.mcp_cli_network_sub), first = true)
+            VmListItem(VamosIcons.Code, stringResource(R.string.mcp_cli_connect), stringResource(R.string.mcp_cli_network_sub), first = true)
             command?.let { CommandText(it) }
             RowActions {
-                VamosButton(stringResource(R.string.mcp_copy_command), { command?.let(onCopy) }, size = ButtonSize.Small,
+                VmButton(stringResource(R.string.mcp_copy_command), { command?.let(onCopy) }, size = ButtonSize.Small,
                     enabled = command != null && ui.token != null && ui.server is McpServerState.Listening,
                     modifier = Modifier.testTag("computer-copy-cli-network"))
-                VamosButton(stringResource(R.string.mcp_copy_token), { ui.token?.let(onCopy) }, kind = ButtonKind.Tonal,
+                VmButton(stringResource(R.string.mcp_copy_token), { ui.token?.let(onCopy) }, kind = ButtonKind.Tonal,
                     size = ButtonSize.Small, enabled = ui.token != null)
             }
         }
@@ -237,13 +237,13 @@ private fun NetworkGuide(ui: ComputerAccessUi, mcp: Boolean, onNetworkEnabled: (
         return
     }
     GroupCard {
-        ListRow(VamosIcons.Code, stringResource(R.string.mcp_network_config_step), stringResource(R.string.mcp_network_config_sub), first = true)
+        VmListItem(VamosIcons.Code, stringResource(R.string.mcp_network_config_step), stringResource(R.string.mcp_network_config_sub), first = true)
         val canCopy = address != null && ui.token != null && ui.server is McpServerState.Listening
         RowActions {
-            VamosButton(stringResource(R.string.mcp_copy_config), {
+            VmButton(stringResource(R.string.mcp_copy_config), {
                 if (canCopy) onCopy(McpRuntime.clientConfig(McpRuntime.url(address!!, ui.port), ui.token!!))
             }, size = ButtonSize.Small, enabled = canCopy, modifier = Modifier.testTag("computer-copy-config"))
-            VamosButton(stringResource(if (preview) R.string.mcp_hide_preview else R.string.mcp_show_preview), { preview = !preview },
+            VmButton(stringResource(if (preview) R.string.mcp_hide_preview else R.string.mcp_show_preview), { preview = !preview },
                 kind = ButtonKind.Text, size = ButtonSize.Small)
         }
         if (preview) {
@@ -258,16 +258,16 @@ private fun NetworkGuide(ui: ComputerAccessUi, mcp: Boolean, onNetworkEnabled: (
 @Composable
 private fun GuideStep(title: String, body: String, button: String, onClick: () -> Unit, command: String? = null) {
     GroupCard {
-        ListRow(null, title, body, first = true)
+        VmListItem(null, title, body, first = true)
         if (command != null) CommandText(command)
-        RowActions { VamosButton(button, onClick, size = ButtonSize.Small) }
+        RowActions { VmButton(button, onClick, size = ButtonSize.Small) }
     }
 }
 
 @Composable
 private fun CommandText(text: String, modifier: Modifier = Modifier) {
     Text(text, modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        fontFamily = FontFamily.Monospace, fontSize = 14.sp, lineHeight = 20.sp, color = VamosTheme.colors.ink)
+        fontFamily = FontFamily.Monospace, fontSize = 14.sp, lineHeight = 20.sp, color = VmTheme.colors.ink)
 }
 
 private fun clock(ms: Long): String =

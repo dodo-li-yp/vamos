@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.yongpeng.vamos.ui.components.KeyboardDismissArea
 import com.yongpeng.vamos.ui.components.keepsKeyboard
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -39,7 +39,7 @@ class KeyboardDismissTest {
     private var clicks = 0
 
     private fun page() = compose.setContent {
-        VamosTheme {
+        VmTheme {
             KeyboardDismissArea(Modifier.fillMaxSize()) {
                 Column(Modifier.fillMaxSize()) {
                     Box(Modifier.fillMaxWidth().height(300.dp).testTag("outside"))

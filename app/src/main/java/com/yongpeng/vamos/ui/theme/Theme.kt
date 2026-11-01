@@ -19,8 +19,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 
-/** 动效:时长和曲线。系统关了动画时([VamosTheme.reduceMotion])直接到位。 */
-object VamosMotion {
+/** 动效:时长和曲线。系统关了动画时([VmTheme.reduceMotion])直接到位。 */
+object VmMotion {
     const val PAGE_MS = 220
     const val SWITCH_MS = 200
     /** 减速曲线:起步快、落地慢。 */
@@ -36,9 +36,9 @@ fun animationsOff(context: Context): Boolean =
 
 val LocalReduceMotion = staticCompositionLocalOf { false }
 
-object VamosTheme {
-    val colors: VamosColors
-        @Composable @ReadOnlyComposable get() = LocalVamosColors.current
+object VmTheme {
+    val colors: VmColors
+        @Composable @ReadOnlyComposable get() = LocalVmColors.current
 
     val reduceMotion: Boolean
         @Composable @ReadOnlyComposable get() = LocalReduceMotion.current
@@ -46,17 +46,17 @@ object VamosTheme {
 
 /** 深浅色跟随系统;同时把 Material 组件(弹窗、输入框、底部面板)的颜色对上。 */
 @Composable
-fun VamosTheme(dark: Boolean = isSystemInDarkTheme(), reduceMotion: Boolean = false, content: @Composable () -> Unit) {
+fun VmTheme(dark: Boolean = isSystemInDarkTheme(), reduceMotion: Boolean = false, content: @Composable () -> Unit) {
     val colors = if (dark) DarkColors else LightColors
     val scheme = if (dark) DarkScheme else LightScheme
-    CompositionLocalProvider(LocalVamosColors provides colors, LocalReduceMotion provides reduceMotion) {
+    CompositionLocalProvider(LocalVmColors provides colors, LocalReduceMotion provides reduceMotion) {
         MaterialTheme(colorScheme = scheme) {
             CompositionLocalProvider(LocalContentColor provides colors.ink, content = content)
         }
     }
 }
 
-private fun scheme(c: VamosColors): ColorScheme {
+private fun scheme(c: VmColors): ColorScheme {
     val base = if (c.isDark) darkColorScheme() else lightColorScheme()
     return base.copy(
         primary = c.accent, onPrimary = c.onAccent, primaryContainer = c.accentSoft, onPrimaryContainer = c.accent,

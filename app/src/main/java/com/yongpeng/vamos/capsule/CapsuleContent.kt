@@ -70,12 +70,12 @@ import androidx.compose.ui.unit.sp
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.ui.ScreenCopy
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.VamosLogo
-import com.yongpeng.vamos.ui.theme.VamosColors
+import com.yongpeng.vamos.ui.theme.VmColors
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
 import kotlin.math.ceil
 
 /** 胶囊外面留给阴影的边:浮层窗口按内容大小,阴影画在窗口里面;留得越少,窗口挡住下面 App 的透明边越窄。 */
@@ -148,7 +148,7 @@ fun CapsuleContent(
     talkLabel: String = "",
 ) {
     // 淡下去、恢复都慢慢来;关了动画时直接换
-    val shown = if (VamosTheme.reduceMotion) alpha else animateFloatAsState(alpha, tween(FADE_MS), label = "fade").value
+    val shown = if (VmTheme.reduceMotion) alpha else animateFloatAsState(alpha, tween(FADE_MS), label = "fade").value
     val a11y = Modifier.semantics {
         customActions = listOfNotNull(
             onSwapSide?.let { f -> CustomAccessibilityAction(CapsuleCopy.SWAP_SIDE) { f(); true } },
@@ -165,14 +165,14 @@ fun CapsuleContent(
 /** 一颗或展开的胶囊:同一块玻璃底,看得见的宽度在两者之间慢慢变(只在画的时候变,见 [Morph]);[end] 时贴右边(图标在右)。 */
 @Composable
 private fun Capsule(view: CapsuleView.Shown, end: Boolean, onTap: () -> Unit, tapLabel: String, a11y: Modifier, alpha: Float, flash: Int, holding: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     // 长按说话中:放大一点、外面一圈蓝边(画在阴影边里,窗口大小不变)
-    val press = if (VamosTheme.reduceMotion) (if (holding) 1f else 0f)
+    val press = if (VmTheme.reduceMotion) (if (holding) 1f else 0f)
         else animateFloatAsState(if (holding) 1f else 0f, tween(HOLD_MS), label = "hold").value
     val need = view.kind.needsYou || view.needCount > 0
     // 截到屏幕:白光从亮到无,和截图时屏幕闪一下一个意思;关了动画时不闪
     val glow = remember { Animatable(0f) }
-    val still = VamosTheme.reduceMotion
+    val still = VmTheme.reduceMotion
     val morph = rememberMorph(animate = !still)
     LaunchedEffect(flash) {
         if (flash == 0 || still) return@LaunchedEffect
@@ -216,7 +216,7 @@ private fun Capsule(view: CapsuleView.Shown, end: Boolean, onTap: () -> Unit, ta
 /** 展开的胶囊里那一行:图标、状态标记、字;贴右边时图标在最右,和一颗时的位置一样。 */
 @Composable
 private fun PillRow(view: CapsuleView.Shown, end: Boolean, need: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val maxWidth = (LocalConfiguration.current.screenWidthDp * 0.6f).dp
     // 同一件事、同一个状态里换句只变宽:记下这一段里最宽的时候
     var widest by remember(view.widthEpoch) { mutableIntStateOf(0) }
@@ -242,7 +242,7 @@ private fun PillRow(view: CapsuleView.Shown, end: Boolean, need: Boolean) {
 /** 文字前面的状态标记:要你处理是呼吸点,办好了是勾,没办成是叹号,已停止是停止,后台网页运行中是绿点。 */
 @Composable
 private fun Leading(kind: CapsuleKind) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     when {
         kind.needsYou -> BreathingDot(c)
         kind == CapsuleKind.Done -> Icon(VamosIcons.Check, null, Modifier.size(16.dp), tint = c.ok)
@@ -255,40 +255,40 @@ private fun Leading(kind: CapsuleKind) {
 
 /** 后台网页运行中:绿色圆点,外面一圈淡绿。 */
 @Composable
-private fun LiveDot(c: VamosColors) {
+private fun LiveDot(c: VmColors) {
     Box(Modifier.size(14.dp).testTag("capsule-live-dot"), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(14.dp).background(c.okSoft, VamosShapes.Pill))
-        Box(Modifier.size(8.dp).background(c.ok, VamosShapes.Pill))
+        Box(Modifier.size(14.dp).background(c.okSoft, VmShapes.Pill))
+        Box(Modifier.size(8.dp).background(c.ok, VmShapes.Pill))
     }
 }
 
 /** 需要你:橙色圆点,外面一圈淡橙一呼一吸;关了动画时不动。 */
 @Composable
-private fun BreathingDot(c: VamosColors) {
+private fun BreathingDot(c: VmColors) {
     val halo = breathe(still = 0f)
     Box(Modifier.size(14.dp), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(14.dp).graphicsLayer { alpha = halo }.background(c.warnSoft, VamosShapes.Pill))
-        Box(Modifier.size(8.dp).background(c.warnSolid, VamosShapes.Pill))
+        Box(Modifier.size(14.dp).graphicsLayer { alpha = halo }.background(c.warnSoft, VmShapes.Pill))
+        Box(Modifier.size(8.dp).background(c.warnSolid, VmShapes.Pill))
     }
 }
 
 /** 一呼一吸(0..1 来回);关了动画时停在 [still]。 */
 @Composable
-private fun breathe(still: Float): Float = if (VamosTheme.reduceMotion) still else rememberInfiniteTransition(label = "breathe").animateFloat(
+private fun breathe(still: Float): Float = if (VmTheme.reduceMotion) still else rememberInfiniteTransition(label = "breathe").animateFloat(
     0f, 1f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "breathe",
 ).value
 
 /** 一颗图标的外圈:干活中一段蓝弧绕着转(关了动画时是一整圈不动),等条件灰色一整圈,要你处理橙色一整圈一呼一吸;其余没有。 */
 @Composable
 private fun Ring(kind: CapsuleKind, need: Boolean, modifier: Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val color = when {
         need -> c.warnSolid
         kind == CapsuleKind.Running -> c.accent
         kind == CapsuleKind.Held -> c.ink3
         else -> return
     }
-    val spin = kind == CapsuleKind.Running && !need && !VamosTheme.reduceMotion
+    val spin = kind == CapsuleKind.Running && !need && !VmTheme.reduceMotion
     val angle = if (!spin) 0f else rememberInfiniteTransition(label = "spin").animateFloat(
         0f, 360f, infiniteRepeatable(tween(SPIN_MS, easing = LinearEasing)), label = "spin",
     ).value
@@ -309,7 +309,7 @@ private fun Ring(kind: CapsuleKind, need: Boolean, modifier: Modifier) {
 /** 一颗图标角上的标:好几件时写件数(要你处理橙、等条件灰、其余蓝);只一件时办好了绿勾,没办成、已停止灰色。 */
 @Composable
 private fun Badge(view: CapsuleView.Shown, need: Boolean, modifier: Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     if (view.count >= 2) {
         val fill = when {
             need -> c.warnSolid
@@ -317,8 +317,8 @@ private fun Badge(view: CapsuleView.Shown, need: Boolean, modifier: Modifier) {
             else -> c.accent
         }
         Box(
-            modifier.testTag("capsule-count").background(c.surface, VamosShapes.Pill).padding(1.5.dp)
-                .sizeIn(minWidth = 15.dp, minHeight = 15.dp).background(fill, VamosShapes.Pill).padding(horizontal = 3.dp),
+            modifier.testTag("capsule-count").background(c.surface, VmShapes.Pill).padding(1.5.dp)
+                .sizeIn(minWidth = 15.dp, minHeight = 15.dp).background(fill, VmShapes.Pill).padding(horizontal = 3.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text("${view.count}", style = CountText, color = c.onAccent, maxLines = 1)
@@ -332,8 +332,8 @@ private fun Badge(view: CapsuleView.Shown, need: Boolean, modifier: Modifier) {
         else -> return
     }
     Box(
-        modifier.testTag("capsule-badge").size(16.dp).background(c.surface, VamosShapes.Pill).padding(1.5.dp)
-            .background(tint, VamosShapes.Pill),
+        modifier.testTag("capsule-badge").size(16.dp).background(c.surface, VmShapes.Pill).padding(1.5.dp)
+            .background(tint, VmShapes.Pill),
         contentAlignment = Alignment.Center,
     ) {
         Icon(icon, null, Modifier.size(9.dp), tint = c.surface)
@@ -379,7 +379,7 @@ private fun Modifier.morphLayout(m: Morph, end: Boolean): Modifier = layout { me
  * 玻璃底(同 [glass]),只画看得见的那一段宽、贴着停靠的那一边:阴影、裁切、底色和描边都按它,宽度变时只重画图层。
  * [alpha] 淡底和里面的图标。
  */
-private fun Modifier.morphGlass(m: Morph, end: Boolean, c: VamosColors, need: Boolean, alpha: Float): Modifier =
+private fun Modifier.morphGlass(m: Morph, end: Boolean, c: VmColors, need: Boolean, alpha: Float): Modifier =
     graphicsLayer {
         this.alpha = alpha
         shadowElevation = 8.dp.toPx()
@@ -411,11 +411,11 @@ private class EdgePill(private val width: Float, private val end: Boolean, priva
 /** App 在你手上时顶部那一条:「你来处理」和下面一行小字,右边「不做了」「处理好了」。 */
 @Composable
 private fun TakeoverBar(view: CapsuleView.Shown, onStop: () -> Unit, onHandBack: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val maxWidth = (LocalConfiguration.current.screenWidthDp - 32).coerceAtLeast(200).dp
     Row(
         Modifier.testTag("capsule-bar")
-            .glass(c, VamosShapes.Pill, need = false)
+            .glass(c, VmShapes.Pill, need = false)
             .widthIn(max = maxWidth)
             .height(BarHeight)
             .padding(horizontal = 6.dp),
@@ -428,13 +428,13 @@ private fun TakeoverBar(view: CapsuleView.Shown, onStop: () -> Unit, onHandBack:
             view.detail?.let { Text(it, style = BarDetail, color = c.ink3, maxLines = 1, overflow = TextOverflow.Ellipsis) }
         }
         Box(
-            Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button, onClick = onStop)
+            Modifier.clip(VmShapes.Pill).clickable(role = Role.Button, onClick = onStop)
                 .heightIn(min = 36.dp).padding(horizontal = 10.dp),
             contentAlignment = Alignment.Center,
         ) {
             Text(CapsuleCopy.STOP, style = CapsuleText.copy(fontWeight = FontWeight.Normal), color = c.ink2, maxLines = 1)
         }
-        VamosButton(stringResource(R.string.action_hand_back), onHandBack, size = ButtonSize.Small)
+        VmButton(stringResource(R.string.action_hand_back), onHandBack, size = ButtonSize.Small)
     }
 }
 
@@ -448,7 +448,7 @@ private fun CapsuleLogo() {
  * 浮在别的 App 上的玻璃底:浮层窗口里拿不到下面 App 的画面做模糊,用接近不透明的卡片底、细描边和悬浮阴影;
  * 需要你时叠一层淡橙、描边变橙。
  */
-internal fun Modifier.glass(c: VamosColors, shape: Shape, need: Boolean): Modifier =
+internal fun Modifier.glass(c: VmColors, shape: Shape, need: Boolean): Modifier =
     shadow(8.dp, shape, clip = false, ambientColor = c.floatShadow.copy(alpha = 0.25f), spotColor = c.floatShadow.copy(alpha = 0.3f))
         .clip(shape)
         .background(c.surface.copy(alpha = 0.95f))

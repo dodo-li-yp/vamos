@@ -33,13 +33,13 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /**
  * 二级页的骨架:页面底 + 顶栏(左上角返回)+ 下面可滚动的内容(左右各 16)。
- * 内容很长、要懒加载的页面不用它,自己在 [TopBar] 下面放 LazyColumn。
+ * 内容很长、要懒加载的页面不用它,自己在 [VmTopBar] 下面放 LazyColumn。
  */
 @Composable
 fun SubPage(
@@ -51,7 +51,7 @@ fun SubPage(
 ) {
     PageBackground {
         Column(Modifier.fillMaxSize()) {
-            TopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back), right = right)
+            VmTopBar(title, VamosIcons.Back, onBack, stringResource(R.string.back), right = right)
             Column(
                 modifier.fillMaxSize().verticalScroll(rememberScrollState()).navigationBarsPadding()
                     .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
@@ -81,18 +81,18 @@ fun SearchField(
     modifier: Modifier = Modifier,
     onSubmit: (() -> Unit)? = null,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
-        Modifier.fillMaxWidth().height(40.dp).keepsKeyboard().background(c.fill, VamosShapes.Button).padding(horizontal = 12.dp),
+        Modifier.fillMaxWidth().height(40.dp).keepsKeyboard().background(c.fill, VmShapes.Button).padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Icon(VamosIcons.Search, null, Modifier.size(18.dp), tint = c.ink3)
         Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-            if (value.isEmpty()) Text(placeholder, style = VamosType.Body, color = c.ink3)
+            if (value.isEmpty()) Text(placeholder, style = VmType.Body, color = c.ink3)
             BasicTextField(
                 value, onValueChange, modifier.fillMaxWidth(), singleLine = true,
-                textStyle = VamosType.Body.copy(color = c.ink), cursorBrush = SolidColor(c.accent),
+                textStyle = VmType.Body.copy(color = c.ink), cursorBrush = SolidColor(c.accent),
                 keyboardOptions = if (onSubmit != null) KeyboardOptions(imeAction = ImeAction.Go) else KeyboardOptions.Default,
                 keyboardActions = KeyboardActions(onGo = { onSubmit?.invoke() }),
             )
@@ -102,9 +102,9 @@ fun SearchField(
 
 /** 空状态:一两句居中的说明。 */
 @Composable
-fun EmptyNote(text: String, modifier: Modifier = Modifier) {
+fun VmEmptyNote(text: String, modifier: Modifier = Modifier) {
     Text(
         text, modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 28.dp),
-        style = VamosType.Body, color = VamosTheme.colors.ink3, textAlign = TextAlign.Center,
+        style = VmType.Body, color = VmTheme.colors.ink3, textAlign = TextAlign.Center,
     )
 }

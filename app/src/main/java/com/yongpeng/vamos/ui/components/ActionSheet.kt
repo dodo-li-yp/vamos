@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 操作面板里的一项;[destructive] 为真时文字用出错红。 */
 class SheetAction(val label: String, val destructive: Boolean = false, val onClick: () -> Unit)
@@ -27,7 +27,7 @@ class SheetAction(val label: String, val destructive: Boolean = false, val onCli
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionSheet(title: String?, actions: List<SheetAction>, onDismiss: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -38,11 +38,11 @@ fun ActionSheet(title: String?, actions: List<SheetAction>, onDismiss: () -> Uni
             if (!title.isNullOrEmpty()) {
                 Text(
                     title, Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    style = VamosType.Caption, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    style = VmType.Caption, color = c.ink3, maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
             }
             actions.forEachIndexed { i, a ->
-                ListRow(
+                VmListItem(
                     null, a.label, first = i == 0,
                     titleColor = if (a.destructive) c.bad else c.ink,
                     onClick = { a.onClick(); onDismiss() },

@@ -66,14 +66,14 @@ import com.yongpeng.vamos.browser.StartPageModel
 import com.yongpeng.vamos.browser.Suggestion
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.Hairline
-import com.yongpeng.vamos.ui.components.TopBar
+import com.yongpeng.vamos.ui.components.VmTopBar
 import com.yongpeng.vamos.ui.components.cardSurface
 import com.yongpeng.vamos.ui.components.keepsKeyboard
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSpace
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSpace
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 val BROWSER_SEARCH_HINT: String get() = tr(R.string.browser_search_hint)
 val BROWSER_ENGINE_NOTE: String get() = tr(R.string.browser_engine_note)
@@ -101,7 +101,7 @@ fun BrowserStart(
     onClearRecent: () -> Unit,
     now: Long = System.currentTimeMillis(),
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var query by rememberSaveable { mutableStateOf("") }
     var editing by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = editing || query.isNotEmpty()) {
@@ -109,25 +109,25 @@ fun BrowserStart(
     }
     Column(Modifier.fillMaxSize()) {
         if (editing) {
-            TopBar(tr(R.string.browser_edit_favorites), right = {
+            VmTopBar(tr(R.string.browser_edit_favorites), right = {
                 Text(
-                    tr(R.string.done), Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button) { editing = false }.padding(horizontal = 12.dp, vertical = 8.dp),
-                    style = VamosType.BodyStrong, color = c.accent,
+                    tr(R.string.done), Modifier.clip(VmShapes.Pill).clickable(role = Role.Button) { editing = false }.padding(horizontal = 12.dp, vertical = 8.dp),
+                    style = VmType.BodyStrong, color = c.accent,
                 )
             })
         } else {
-            TopBar(tr(R.string.drawer_browser), VamosIcons.Back, onBack, tr(R.string.back))
+            VmTopBar(tr(R.string.drawer_browser), VamosIcons.Back, onBack, tr(R.string.back))
         }
         Column(
             Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
-                .windowInsetsPadding(WindowInsets.navigationBars).padding(horizontal = VamosSpace.Page),
+                .windowInsetsPadding(WindowInsets.navigationBars).padding(horizontal = VmSpace.Page),
         ) {
             if (editing) {
                 SectionHeader(tr(R.string.browser_tap_x))
                 SiteGrid(sites, face, editing = true, onOpen = {}, onRemove = onRemoveSite, onEdit = {}, onAdd = null)
                 Legend(tr(R.string.browser_long_press), dot = false)
             } else {
-                Spacer(Modifier.height(VamosSpace.S20))
+                Spacer(Modifier.height(VmSpace.S20))
                 BigSearchField(query, { query = it }, onGo = {
                     if (query.isNotBlank()) {
                         val q = query
@@ -151,7 +151,7 @@ fun BrowserStart(
                     Caption(BROWSER_TYPING_NOTE)
                 }
             }
-            Spacer(Modifier.height(VamosSpace.S24))
+            Spacer(Modifier.height(VmSpace.S24))
         }
     }
 }
@@ -159,11 +159,11 @@ fun BrowserStart(
 /** 大搜索框:52 高的白色胶囊,聚焦时一圈强调色;键盘上是「前往」。 */
 @Composable
 private fun BigSearchField(value: String, onChange: (String) -> Unit, onGo: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     var focused by remember { mutableStateOf(false) }
     Row(
-        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().cardSurface(c, VamosShapes.Pill)
-            .then(if (focused) Modifier.border(1.5.dp, c.accent, VamosShapes.Pill) else Modifier)
+        Modifier.fillMaxWidth().height(52.dp).keepsKeyboard().cardSurface(c, VmShapes.Pill)
+            .then(if (focused) Modifier.border(1.5.dp, c.accent, VmShapes.Pill) else Modifier)
             .padding(start = 18.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -190,25 +190,25 @@ private fun BigSearchField(value: String, onChange: (String) -> Unit, onGo: () -
     }
 }
 
-private val BigText = VamosType.Body.copy(fontSize = 16.sp)
+private val BigText = VmType.Body.copy(fontSize = 16.sp)
 
 @Composable
 private fun Caption(text: String) {
     Text(
-        text, Modifier.fillMaxWidth().padding(top = 8.dp), style = VamosType.Hint, color = VamosTheme.colors.ink3, textAlign = TextAlign.Center,
+        text, Modifier.fillMaxWidth().padding(top = 8.dp), style = VmType.Hint, color = VmTheme.colors.ink3, textAlign = TextAlign.Center,
     )
 }
 
 /** 分组标题,右边可带一个小字链接([action])。 */
 @Composable
 private fun SectionHeader(title: String, action: String? = null, onAction: () -> Unit = {}) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(Modifier.fillMaxWidth().padding(top = 18.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, Modifier.weight(1f), style = VamosType.Label, color = c.ink3)
+        Text(title, Modifier.weight(1f), style = VmType.Label, color = c.ink3)
         if (action != null) {
             Text(
-                action, Modifier.clip(VamosShapes.Pill).clickable(role = Role.Button, onClick = onAction).padding(horizontal = 6.dp, vertical = 2.dp),
-                style = VamosType.Label, color = c.accent,
+                action, Modifier.clip(VmShapes.Pill).clickable(role = Role.Button, onClick = onAction).padding(horizontal = 6.dp, vertical = 2.dp),
+                style = VmType.Label, color = c.accent,
             )
         }
     }
@@ -216,10 +216,10 @@ private fun SectionHeader(title: String, action: String? = null, onAction: () ->
 
 @Composable
 private fun Legend(text: String, dot: Boolean) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(Modifier.fillMaxWidth().padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         if (dot) Box(Modifier.size(9.dp).background(c.ok, CircleShape))
-        Text(text, style = VamosType.Hint, color = c.ink3)
+        Text(text, style = VmType.Hint, color = c.ink3)
     }
 }
 
@@ -261,8 +261,8 @@ private fun SiteCell(
     onRemove: () -> Unit,
     onEdit: () -> Unit,
 ) {
-    val c = VamosTheme.colors
-    val reduce = VamosTheme.reduceMotion
+    val c = VmTheme.colors
+    val reduce = VmTheme.reduceMotion
     val angle = if (editing && !reduce) {
         rememberInfiniteTransition(label = "wiggle").animateFloat(
             -WIGGLE_DEG, WIGGLE_DEG, infiniteRepeatable(tween(WIGGLE_MS), RepeatMode.Reverse), label = "wiggle-angle",
@@ -298,13 +298,13 @@ private fun SiteCell(
                 ) { Icon(VamosIcons.Close, tr(R.string.browser_remove_site, face.name), Modifier.size(11.dp), tint = c.bg) }
             }
         }
-        Text(face.name, style = VamosType.Hint, color = c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        Text(face.name, style = VmType.Hint, color = c.ink2, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
 private fun AddCell(onAdd: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
         Modifier.clip(RoundedCornerShape(12.dp)).clickable(onClickLabel = tr(R.string.browser_add_favorite), role = Role.Button, onClick = onAdd)
             .padding(horizontal = 2.dp, vertical = 4.dp),
@@ -314,23 +314,23 @@ private fun AddCell(onAdd: () -> Unit) {
         Box(Modifier.size(54.dp).cardSurface(c, TileShape), contentAlignment = Alignment.Center) {
             Icon(VamosIcons.Plus, null, Modifier.size(24.dp), tint = c.ink3)
         }
-        Text(tr(R.string.add), style = VamosType.Hint, color = c.ink2, maxLines = 1)
+        Text(tr(R.string.add), style = VmType.Hint, color = c.ink2, maxLines = 1)
     }
 }
 
 @Composable
 private fun RecentCard(recent: List<RecentItem>, face: (String) -> SiteFace, now: Long, onOpen: (String) -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     GroupCard {
         if (recent.isEmpty()) {
-            Text(tr(R.string.browser_no_recent), Modifier.fillMaxWidth().padding(16.dp), style = VamosType.Body, color = c.ink3)
+            Text(tr(R.string.browser_no_recent), Modifier.fillMaxWidth().padding(16.dp), style = VmType.Body, color = c.ink3)
         }
         recent.forEachIndexed { i, r ->
             if (i > 0) Hairline(start = 56.dp)
             SmallRow(
                 r.title, r.subtitle, onClick = { onOpen(r.url) },
                 lead = { if (r.search || r.host == null) SearchMini() else SiteTile(face(r.host), 28.dp, MiniShape, InitialSmall) },
-                trailing = { Text(StartPageModel.relativeTime(r.openedAtMs, now), style = VamosType.Hint, color = c.ink3, maxLines = 1) },
+                trailing = { Text(StartPageModel.relativeTime(r.openedAtMs, now), style = VmType.Hint, color = c.ink3, maxLines = 1) },
             )
         }
     }
@@ -365,7 +365,7 @@ private fun SmallRow(
     lead: @Composable () -> Unit,
     trailing: @Composable () -> Unit = {},
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).heightIn(min = 56.dp).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -373,8 +373,8 @@ private fun SmallRow(
     ) {
         lead()
         Column(Modifier.weight(1f).padding(vertical = 9.dp)) {
-            Text(title, style = VamosType.Body, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (subtitle.isNotEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3, maxLines = 1)
+            Text(title, style = VmType.Body, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (subtitle.isNotEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3, maxLines = 1)
         }
         trailing()
     }
@@ -382,13 +382,13 @@ private fun SmallRow(
 
 @Composable
 private fun SearchMini(icon: ImageVector = VamosIcons.Search) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(Modifier.size(28.dp).background(c.neutralSoft, MiniShape), contentAlignment = Alignment.Center) {
         Icon(icon, null, Modifier.size(16.dp), tint = c.ink2)
     }
 }
 
 private val TileShape = RoundedCornerShape(16.dp)
-private val InitialLarge = VamosType.Title.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+private val InitialLarge = VmType.Title.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
 private const val WIGGLE_DEG = 1.5f
 private const val WIGGLE_MS = 250

@@ -26,7 +26,7 @@ import com.yongpeng.vamos.capsule.ChatThread
 import com.yongpeng.vamos.capsule.ThreadItem
 import com.yongpeng.vamos.core.agent.TaskState
 import com.yongpeng.vamos.task.TaskGate
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -51,7 +51,7 @@ class PageAskTest {
 
     private fun start() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 val scope = rememberCoroutineScope()
                 chat = remember { PageChat(ctx, UserBrowser.of(ctx), scope) }
                 Column(Modifier.fillMaxSize()) {
@@ -116,7 +116,7 @@ class PageAskTest {
     @Test
     fun drawerRowShowsTheWebTagAndSite() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 Column {
                     ConversationRowContent(DrawerConversation("a", "挑一个降噪耳机", "", false, false, true, site = "shop.example.com"))
                     ConversationRowContent(DrawerConversation("b", "明早的闹钟", "", false, false, true))

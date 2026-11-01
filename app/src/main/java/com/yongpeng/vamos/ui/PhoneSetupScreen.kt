@@ -73,22 +73,22 @@ import com.yongpeng.vamos.settings.SystemStatus
 import com.yongpeng.vamos.cap.phone.PhoneServices
 import com.yongpeng.vamos.ui.components.PageBackground
 import com.yongpeng.vamos.ui.components.GroupCard
-import com.yongpeng.vamos.ui.components.TopBar
-import com.yongpeng.vamos.ui.components.ListRow
+import com.yongpeng.vamos.ui.components.VmTopBar
+import com.yongpeng.vamos.ui.components.VmListItem
 import com.yongpeng.vamos.ui.components.RowValue
 import com.yongpeng.vamos.ui.components.ValueTone
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import com.yongpeng.vamos.ui.theme.VamosIcons
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.components.RowChevron
-import com.yongpeng.vamos.ui.components.VamosButton
+import com.yongpeng.vamos.ui.components.VmButton
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
 import com.yongpeng.vamos.ui.components.cardSurface
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.ProgressDots
-import com.yongpeng.vamos.ui.theme.VamosType
-import com.yongpeng.vamos.ui.theme.VamosShapes
+import com.yongpeng.vamos.ui.theme.VmType
+import com.yongpeng.vamos.ui.theme.VmShapes
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -263,15 +263,15 @@ fun PhoneSetupContent(
     val canRevisit = view.phase == SetupPhase.Guide || view.phase == SetupPhase.Failed
     fun revisitable(step: SetupStep) = canRevisit && step != view.current && step in PhoneSetupFlow.REVISITABLE &&
         view.marks.getValue(step) in setOf(StepMark.Done, StepMark.Skipped, StepMark.Failed)
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     PageBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars)) {
-            TopBar(PhoneSetupCopy.BAR_TITLE, VamosIcons.Back, onClose, stringResource(R.string.back))
+            VmTopBar(PhoneSetupCopy.BAR_TITLE, VamosIcons.Back, onClose, stringResource(R.string.back))
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                 if (view.phase == SetupPhase.Success) {
                     Text(
                         PhoneSetupCopy.SUCCESS_LINE, Modifier.padding(top = 4.dp, bottom = 16.dp).testTag("setup-success"),
-                        style = VamosType.Body, fontWeight = FontWeight.SemiBold, color = c.ok,
+                        style = VmType.Body, fontWeight = FontWeight.SemiBold, color = c.ok,
                     )
                 } else {
                     Text(
@@ -305,23 +305,23 @@ fun PhoneSetupContent(
                 if (view.phase == SetupPhase.Success) {
                     Text(
                         PhoneSetupCopy.successNote(view.restart), Modifier.fillMaxWidth().padding(bottom = 10.dp),
-                        style = VamosType.Caption, color = c.ink3, textAlign = TextAlign.Center,
+                        style = VmType.Caption, color = c.ink3, textAlign = TextAlign.Center,
                     )
                 }
                 if (onboarding) ProgressDots(Onboarding.DOTS, Onboarding.dot(OnboardingStep.Phone), Modifier.padding(bottom = 8.dp))
                 when (view.phase) {
-                    SetupPhase.Success -> VamosButton(
+                    SetupPhase.Success -> VmButton(
                         if (onboarding) PhoneSetupCopy.START_USING else PhoneSetupCopy.SUCCESS_DONE, onClose,
                         Modifier.fillMaxWidth().testTag("setup-done"),
                     )
                     // 正在连接、连不上时也能先离开,之后在设置里接着弄
-                    SetupPhase.Guide, SetupPhase.Working, SetupPhase.Failed -> VamosButton(
+                    SetupPhase.Guide, SetupPhase.Working, SetupPhase.Failed -> VmButton(
                         PhoneSetupCopy.LATER, onClose, Modifier.fillMaxWidth().testTag("setup-later"),
                         kind = ButtonKind.Text, size = ButtonSize.Medium,
                     )
                 }
                 onDiagnostics?.let {
-                    VamosButton(
+                    VmButton(
                         PhoneSetupCopy.DIAGNOSTICS, it, Modifier.fillMaxWidth().testTag("setup-diagnostics"),
                         kind = ButtonKind.Text, size = ButtonSize.Small,
                     )
@@ -337,7 +337,7 @@ fun PhoneSetupContent(
  */
 @Composable
 private fun UsbStartCard(restart: HelperRestart, command: String, onCopy: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val (title, body) = PhoneSetupCopy.usbCard(restart)
     Column(Modifier.padding(top = 10.dp).fillMaxWidth().background(c.accentSoft, RoundedCornerShape(12.dp)).padding(12.dp).testTag("setup-usb")) {
         Text(title, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, color = c.ink)
@@ -353,7 +353,7 @@ private fun UsbStartCard(restart: HelperRestart, command: String, onCopy: () -> 
 @Composable
 private fun StepRow(step: SetupStep, mark: StepMark, current: Boolean, first: Boolean, onClick: (() -> Unit)?, body: @Composable () -> Unit) {
     val copy = PhoneSetupCopy.step(step)
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).testTag("setup-step-${step.name}")) {
         if (!first) Box(Modifier.padding(start = 58.dp).fillMaxWidth().height(0.5.dp).background(c.hair))
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -361,14 +361,14 @@ private fun StepRow(step: SetupStep, mark: StepMark, current: Boolean, first: Bo
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        copy.title, Modifier.weight(1f), style = VamosType.Body,
+                        copy.title, Modifier.weight(1f), style = VmType.Body,
                         fontWeight = if (mark == StepMark.Current || mark == StepMark.Failed) FontWeight.SemiBold else FontWeight.Medium,
                         color = if (mark == StepMark.Todo || mark == StepMark.Skipped) c.ink3 else c.ink,
                     )
                     if (mark == StepMark.Done) RowValue(copy.done, ValueTone.Ok)
                     if (mark == StepMark.Skipped) RowValue(PhoneSetupCopy.ACCESSIBILITY_SKIPPED)
                 }
-                if (!current) Text(copy.brief, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = if (mark == StepMark.Todo) c.ink3 else c.ink2)
+                if (!current) Text(copy.brief, Modifier.padding(top = 2.dp), style = VmType.Caption, color = if (mark == StepMark.Todo) c.ink3 else c.ink2)
                 body()
             }
         }
@@ -377,7 +377,7 @@ private fun StepRow(step: SetupStep, mark: StepMark, current: Boolean, first: Bo
 
 @Composable
 private fun StepBadge(n: Int, mark: StepMark) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val bg = when (mark) {
         StepMark.Done -> c.ok
         StepMark.Current -> c.accent
@@ -412,14 +412,14 @@ private fun CurrentStepBody(
     onConnectPort: ((Int) -> Unit)?,
 ) {
     val copy = PhoneSetupCopy.step(step)
-    Text(copy.body, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = VamosTheme.colors.ink2)
+    Text(copy.body, Modifier.padding(top = 2.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
     view.failure?.let { f ->
         val fc = PhoneSetupCopy.failure(f.reason)
         Column(
-            Modifier.padding(top = 10.dp).fillMaxWidth().background(VamosTheme.colors.badSoft, RoundedCornerShape(12.dp)).padding(12.dp),
+            Modifier.padding(top = 10.dp).fillMaxWidth().background(VmTheme.colors.badSoft, RoundedCornerShape(12.dp)).padding(12.dp),
         ) {
-            Text(fc.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = VamosTheme.colors.bad)
-            Text(fc.body, Modifier.padding(top = 2.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.ink2)
+            Text(fc.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = VmTheme.colors.bad)
+            Text(fc.body, Modifier.padding(top = 2.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.ink2)
         }
         // 要再运行 USB 命令时,下面的卡片里就有命令和复制按钮,不再重复一个
         if (f.fix != BuiltinShellFix.RunUsbCommand || !view.usbFallback) {
@@ -433,9 +433,9 @@ private fun CurrentStepBody(
     view.suspect?.let { s ->
         Text(
             PhoneSetupCopy.suspect(s),
-            Modifier.padding(top = 10.dp).fillMaxWidth().background(VamosTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
+            Modifier.padding(top = 10.dp).fillMaxWidth().background(VmTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
                 .testTag("setup-suspect"),
-            fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.ink,
+            fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.ink,
         )
         PillButton(PhoneSetupCopy.goBackTo(s.step), primary = view.failure == null, tag = "setup-suspect-back") { onRevisit(s.step) }
     }
@@ -444,20 +444,20 @@ private fun CurrentStepBody(
     if (step == SetupStep.PairingCode) {
         when (view.notifyIssue) {
             PairingNotifyIssue.NotificationsOff -> {
-                Text(PhoneSetupCopy.NEED_NOTIFICATIONS, Modifier.padding(top = 8.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.warn)
+                Text(PhoneSetupCopy.NEED_NOTIFICATIONS, Modifier.padding(top = 8.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.warn)
                 PillButton(PhoneSetupCopy.ALLOW_NOTIFICATIONS, primary = fixNotificationsFirst, tag = "setup-notify-fix") { onAllowNotifications() }
             }
             PairingNotifyIssue.ChannelOff -> {
-                Text(PhoneSetupCopy.PAIRING_CHANNEL_OFF, Modifier.padding(top = 8.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.warn)
+                Text(PhoneSetupCopy.PAIRING_CHANNEL_OFF, Modifier.padding(top = 8.dp), fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.warn)
                 PillButton(PhoneSetupCopy.OPEN_PAIRING_CHANNEL, primary = fixNotificationsFirst, tag = "setup-notify-fix") { onOpenPairingChannel() }
             }
             // 不弹出也能下拉去填:只提醒,不抢主按钮;无障碍开着时用不上通知,不提
             PairingNotifyIssue.NotHeadsUp -> if (!view.autoRead) {
                 Text(
                     PhoneSetupCopy.PAIRING_LOWERED,
-                    Modifier.padding(top = 10.dp).fillMaxWidth().background(VamosTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
+                    Modifier.padding(top = 10.dp).fillMaxWidth().background(VmTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
                         .testTag("setup-pairing-lowered"),
-                    fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.ink,
+                    fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.ink,
                 )
                 PillButton(PhoneSetupCopy.OPEN_HEADS_UP, primary = false, tag = "setup-pairing-lowered-open") { onOpenPairingChannel() }
             }
@@ -465,15 +465,15 @@ private fun CurrentStepBody(
         }
         if (headsUpLowered && !view.needsNotifications) {
             Column(
-                Modifier.padding(top = 10.dp).fillMaxWidth().background(VamosTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
+                Modifier.padding(top = 10.dp).fillMaxWidth().background(VmTheme.colors.warnSoft, RoundedCornerShape(12.dp)).padding(12.dp)
                     .testTag("setup-heads-up"),
             ) {
-                Text(PhoneSetupCopy.HEADS_UP_LOWERED, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, color = VamosTheme.colors.warn)
+                Text(PhoneSetupCopy.HEADS_UP_LOWERED, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold, color = VmTheme.colors.warn)
             }
             PillButton(PhoneSetupCopy.OPEN_HEADS_UP, primary = false, tag = "setup-heads-up-open") { onOpenHeadsUp() }
         }
         if (view.autoRead) AutoReadHint() else NotifyGuide()
-        if (view.portFound && !view.autoRead) Text(PhoneSetupCopy.PORT_FOUND, Modifier.padding(top = 8.dp), fontSize = 13.sp, color = VamosTheme.colors.ok)
+        if (view.portFound && !view.autoRead) Text(PhoneSetupCopy.PORT_FOUND, Modifier.padding(top = 8.dp), fontSize = 13.sp, color = VmTheme.colors.ok)
     }
     // 无障碍一步推荐跳过:配对后 Vamos 自己打开,也不会被「受限制的设置」拦住
     val a11y = step == SetupStep.Accessibility
@@ -492,14 +492,14 @@ private fun CurrentStepBody(
 private fun LinkText(text: String, tag: String?, onClick: () -> Unit) {
     Text(
         text, Modifier.padding(top = 6.dp).clickable(onClick = onClick).padding(vertical = 4.dp).then(if (tag != null) Modifier.testTag(tag) else Modifier),
-        fontSize = 13.sp, color = VamosTheme.colors.accent,
+        fontSize = 13.sp, color = VmTheme.colors.accent,
     )
 }
 
 /** 无障碍开着:去系统设置前说一句,Vamos 会自己读配对码。 */
 @Composable
 private fun AutoReadHint() {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.padding(top = 10.dp).fillMaxWidth().background(c.okSoft, RoundedCornerShape(12.dp))
             .padding(12.dp).testTag("setup-pairing-hint"),
@@ -513,7 +513,7 @@ private fun AutoReadHint() {
 /** 无障碍没开:用三行编号小图示说清楚配对码怎么填进通知,不用离开配对窗口。 */
 @Composable
 private fun NotifyGuide() {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val icons = listOf(VamosIcons.Phone, VamosIcons.Bell, VamosIcons.Key)
     Column(
         Modifier.padding(top = 10.dp).fillMaxWidth().background(c.accentSoft, RoundedCornerShape(12.dp))
@@ -541,10 +541,10 @@ private fun ManualCode(askPort: Boolean, onSubmit: (String, Int?) -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     Text(
         PhoneSetupCopy.MANUAL_TOGGLE, Modifier.padding(top = 8.dp).clickable { open = !open }.padding(vertical = 4.dp).testTag("setup-manual"),
-        fontSize = 13.sp, color = VamosTheme.colors.accent,
+        fontSize = 13.sp, color = VmTheme.colors.accent,
     )
     if (!open) return
-    Text(PhoneSetupCopy.MANUAL_HINT, fontSize = 12.5.sp, lineHeight = 17.sp, color = VamosTheme.colors.ink3)
+    Text(PhoneSetupCopy.MANUAL_HINT, fontSize = 12.5.sp, lineHeight = 17.sp, color = VmTheme.colors.ink3)
     OutlinedTextField(
         code, { code = it; error = null }, Modifier.fillMaxWidth().padding(top = 6.dp).keepsKeyboard().testTag("setup-code"),
         label = { Text(PhoneSetupCopy.CODE_LABEL) }, singleLine = true,
@@ -557,7 +557,7 @@ private fun ManualCode(askPort: Boolean, onSubmit: (String, Int?) -> Unit) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
     }
-    error?.let { Text(it, Modifier.padding(top = 4.dp), fontSize = 12.5.sp, color = VamosTheme.colors.bad) }
+    error?.let { Text(it, Modifier.padding(top = 4.dp), fontSize = 12.5.sp, color = VmTheme.colors.bad) }
     PillButton(PhoneSetupCopy.SUBMIT, primary = true, tag = "setup-submit") {
         val c = PairingCode.normalize(code)
         val p = if (askPort && port.isNotBlank()) PairingCode.port(port) else null
@@ -587,7 +587,7 @@ private fun ConnectPort(onConnect: (Int) -> Unit) {
     OutlinedTextField(
         port, { port = it; invalid = false }, Modifier.fillMaxWidth().padding(top = 10.dp).keepsKeyboard().testTag("setup-connect-port"),
         label = { Text(PhoneSetupCopy.CONNECT_PORT_LABEL) },
-        supportingText = { Text(if (invalid) PhoneSetupCopy.PORT_INVALID else PhoneSetupCopy.CONNECT_PORT_HINT, color = if (invalid) VamosTheme.colors.bad else VamosTheme.colors.ink3) },
+        supportingText = { Text(if (invalid) PhoneSetupCopy.PORT_INVALID else PhoneSetupCopy.CONNECT_PORT_HINT, color = if (invalid) VmTheme.colors.bad else VmTheme.colors.ink3) },
         singleLine = true, isError = invalid,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
     )
@@ -601,17 +601,17 @@ private fun ConnectPort(onConnect: (Int) -> Unit) {
 @Composable
 private fun WorkingLine(scanning: Boolean) {
     Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        CircularProgressIndicator(Modifier.size(16.dp), color = VamosTheme.colors.accent, strokeWidth = 2.dp)
+        CircularProgressIndicator(Modifier.size(16.dp), color = VmTheme.colors.accent, strokeWidth = 2.dp)
         Text(
             if (scanning) PhoneSetupCopy.SCANNING_PORTS else PhoneSetupCopy.WORKING, Modifier.testTag("setup-working"),
-            fontSize = 13.5.sp, color = VamosTheme.colors.ink2,
+            fontSize = 13.5.sp, color = VmTheme.colors.ink2,
         )
     }
 }
 
 @Composable
 private fun PillButton(text: String, primary: Boolean, tag: String? = null, onClick: () -> Unit) {
-    VamosButton(
+    VmButton(
         text, onClick, Modifier.padding(top = 10.dp).then(if (tag != null) Modifier.testTag(tag) else Modifier),
         kind = if (primary) ButtonKind.Primary else ButtonKind.Tonal, size = ButtonSize.Small,
     )
@@ -625,16 +625,16 @@ fun PhoneHelperSection(status: BuiltinShellStatus, onRepair: () -> Unit, onUnpai
     var confirming by remember { mutableStateOf(false) }
     GroupCard {
         val (value, tone) = PhoneSetupCopy.statusValue(status)
-        ListRow(VamosIcons.Phone, PhoneSetupCopy.ROW_TITLE, PhoneSetupCopy.statusLine(status, usbDebugging), first = true) {
+        VmListItem(VamosIcons.Phone, PhoneSetupCopy.ROW_TITLE, PhoneSetupCopy.statusLine(status, usbDebugging), first = true) {
             RowValue(value, tone)
         }
-        ListRow(VamosIcons.Link, PhoneSetupCopy.REPAIR, PhoneSetupCopy.REPAIR_SUBTITLE, onClick = onRepair) {
+        VmListItem(VamosIcons.Link, PhoneSetupCopy.REPAIR, PhoneSetupCopy.REPAIR_SUBTITLE, onClick = onRepair) {
             RowChevron()
         }
         val paired = status != BuiltinShellStatus.NotPaired
-        ListRow(
+        VmListItem(
             VamosIcons.Close, PhoneSetupCopy.UNPAIR, PhoneSetupCopy.UNPAIR_SUBTITLE,
-            titleColor = if (paired) VamosTheme.colors.bad else VamosTheme.colors.ink3, tone = if (paired) TileTone.Bad else TileTone.Neutral, onClick = if (paired) ({ confirming = true }) else null,
+            titleColor = if (paired) VmTheme.colors.bad else VmTheme.colors.ink3, tone = if (paired) TileTone.Bad else TileTone.Neutral, onClick = if (paired) ({ confirming = true }) else null,
         )
     }
     if (confirming) {
@@ -642,7 +642,7 @@ fun PhoneHelperSection(status: BuiltinShellStatus, onRepair: () -> Unit, onUnpai
             onDismissRequest = { confirming = false },
             title = { Text(PhoneSetupCopy.UNPAIR_TITLE) },
             text = { Text(PhoneSetupCopy.UNPAIR_BODY) },
-            confirmButton = { TextButton({ confirming = false; onUnpair() }) { Text(PhoneSetupCopy.UNPAIR_CONFIRM, color = VamosTheme.colors.bad) } },
+            confirmButton = { TextButton({ confirming = false; onUnpair() }) { Text(PhoneSetupCopy.UNPAIR_CONFIRM, color = VmTheme.colors.bad) } },
             dismissButton = { TextButton({ confirming = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
@@ -653,16 +653,16 @@ fun PhoneHelperSection(status: BuiltinShellStatus, onRepair: () -> Unit, onUnpai
 /** 任务要用手机而手机操作没准备好时,任务卡片下面的一行。 */
 @Composable
 fun PhoneSetupLine(onOpen: () -> Unit) {
-    val shape = VamosShapes.Card
+    val shape = VmShapes.Card
     Row(
-        Modifier.fillMaxWidth().padding(bottom = 12.dp).cardSurface(VamosTheme.colors, shape)
+        Modifier.fillMaxWidth().padding(bottom = 12.dp).cardSurface(VmTheme.colors, shape)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(PhoneSetupCopy.DEGRADED_LINE, Modifier.weight(1f), fontSize = 13.sp, lineHeight = 18.sp, color = VamosTheme.colors.ink2)
+        Text(PhoneSetupCopy.DEGRADED_LINE, Modifier.weight(1f), fontSize = 13.sp, lineHeight = 18.sp, color = VmTheme.colors.ink2)
         Text(
             PhoneSetupCopy.DEGRADED_ACTION, Modifier.clickable(onClick = onOpen).padding(4.dp).testTag("phone-setup-open"),
-            fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = VamosTheme.colors.accent,
+            fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = VmTheme.colors.accent,
         )
     }
 }

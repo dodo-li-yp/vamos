@@ -25,7 +25,7 @@ import com.yongpeng.vamos.core.shell.BuiltinShellStatus
 import com.yongpeng.vamos.settings.AccessibilityState
 import com.yongpeng.vamos.settings.Prerequisites
 import com.yongpeng.vamos.settings.SystemStatus
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -55,7 +55,7 @@ class AboutScreenTest {
     private fun about(update: UpdateState = UpdateState()): Calls {
         val calls = Calls()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 AboutScreen(
                     versionName = "0.1.0", build = "abc1234", beta = true, update = update, issueUrl = "issue://prefilled",
                     onCheck = { calls.checks++ }, onOpenUrl = { calls.urls += it },
@@ -170,7 +170,7 @@ class AboutScreenTest {
     /** 英文界面([GroupSheet] 的 xFirst):X 群聊按钮在微信码上面,不再写「不用微信？」。 */
     @Test
     fun groupSheetPutsXFirstWhenAsked() {
-        compose.setContent { VamosTheme { GroupSheet(xFirst = true, onSave = {}, onJoinX = {}, onDismiss = {}) } }
+        compose.setContent { VmTheme { GroupSheet(xFirst = true, onSave = {}, onJoinX = {}, onDismiss = {}) } }
         compose.awaitOne(AboutCopy.GROUP_SHEET_SUB)
         assertTrue(top("group-join-x") < top("wechat-qr"))
         compose.onAllNodesWithText("不用微信？").assertCountEquals(0)
@@ -228,7 +228,7 @@ class AboutScreenTest {
         var installs = 0
         var deletes = 0
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 androidx.compose.foundation.layout.Column {
                     UpdateDownloadActions(com.yongpeng.vamos.about.ApkDownloadState(com.yongpeng.vamos.about.DownloadPhase.Ready),
                         false, null, {}, { installs++ }, { deletes++ })
@@ -245,7 +245,7 @@ class AboutScreenTest {
     fun downloadingShowsProgressAndCanBeCancelled() {
         var deletes = 0
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 androidx.compose.foundation.layout.Column {
                     UpdateDownloadActions(com.yongpeng.vamos.about.ApkDownloadState(com.yongpeng.vamos.about.DownloadPhase.Downloading, 50, 100),
                         false, null, {}, {}, { deletes++ })
@@ -261,7 +261,7 @@ class AboutScreenTest {
     fun failedDownloadCanBeRetried() {
         var retries = 0
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 androidx.compose.foundation.layout.Column {
                     UpdateDownloadActions(com.yongpeng.vamos.about.ApkDownloadState(com.yongpeng.vamos.about.DownloadPhase.Failed),
                         false, null, { retries++ }, {}, {})
@@ -288,7 +288,7 @@ class AboutScreenTest {
     fun drawerFooterHasSettingsAndAbout() {
         val calls = mutableListOf<String>()
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ChatDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {}, onBrowser = {},
@@ -318,7 +318,7 @@ class AboutScreenTest {
     @Test
     fun drawerFooterNoDotWithoutUpdate() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 ChatDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {}, onBrowser = {}, onSettings = {}, onOpen = {},
@@ -333,7 +333,7 @@ class AboutScreenTest {
     @Test
     fun settingsAboutRowShowsUpdate() {
         compose.setContent {
-            VamosTheme {
+            VmTheme {
                 SettingsContent(
                     status = SystemStatus(34, BuiltinShellStatus.Running, AccessibilityState.On, notificationsAllowed = true),
                     androidRelease = "14", mainModel = "DeepSeek", onBack = {}, onProblem = {}, onOpenModels = {},

@@ -32,12 +32,12 @@ import com.yongpeng.vamos.ui.components.ActionSheet
 import com.yongpeng.vamos.ui.components.BarIconButton
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.EmptyNote
+import com.yongpeng.vamos.ui.components.VmEmptyNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.components.VmSwitch
 import com.yongpeng.vamos.ui.components.RowActions
 import com.yongpeng.vamos.ui.components.SearchField
 import com.yongpeng.vamos.ui.components.SegmentedControl
@@ -45,8 +45,8 @@ import com.yongpeng.vamos.ui.components.SheetAction
 import com.yongpeng.vamos.ui.components.SubPage
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 private val SEGMENT_TAGS = Segment.entries.map { "segment-${it.name}" }
 
@@ -72,7 +72,7 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
         }) else null,
     ) {
         ui.brokenNotice?.let {
-            GroupCard { Text(stringResource(R.string.memory_unreadable), Modifier.padding(16.dp), style = VamosType.Caption, color = VamosTheme.colors.warn) }
+            GroupCard { Text(stringResource(R.string.memory_unreadable), Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.warn) }
         }
 
         val pendingLabel = if (ui.pendingCount > 0) stringResource(R.string.memory_pending_n, ui.pendingCount) else stringResource(R.string.memory_pending)
@@ -88,7 +88,7 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
             Segment.Memories -> {
                 if (ui.rows.isEmpty()) {
                     GroupLabel("")
-                    EmptyNote(if (ui.query.isBlank()) stringResource(R.string.memory_empty) else stringResource(R.string.not_found))
+                    VmEmptyNote(if (ui.query.isBlank()) stringResource(R.string.memory_empty) else stringResource(R.string.not_found))
                 }
                 KIND_GROUPS.forEach { (kind, label) ->
                     val rows = ui.rows.filter { it.kind == kind }
@@ -103,14 +103,14 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
                 }
                 GroupLabel("")
                 GroupCard {
-                    ListRow(VamosIcons.Plus, stringResource(R.string.memory_add), first = true, titleColor = VamosTheme.colors.accent, tone = TileTone.Accent, onClick = { adding = true })
+                    VmListItem(VamosIcons.Plus, stringResource(R.string.memory_add), first = true, titleColor = VmTheme.colors.accent, tone = TileTone.Accent, onClick = { adding = true })
                 }
             }
             Segment.Skills -> SkillsSection(vm, ui.skills, pending = false)
             Segment.Pending -> {
                 if (ui.pendingCount == 0) {
                     GroupLabel("")
-                    EmptyNote(stringResource(R.string.memory_nothing_pending))
+                    VmEmptyNote(stringResource(R.string.memory_nothing_pending))
                 }
                 if (ui.pending.isNotEmpty()) {
                     GroupLabel(stringResource(R.string.memory_pending_title))
@@ -119,8 +119,8 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
                             Column {
                                 MemoryRow(r, first = i == 0, onClick = null)
                                 RowActions {
-                                    VamosButton(stringResource(R.string.ok_yes), { vm.approve(r.id) }, size = ButtonSize.Small)
-                                    VamosButton(stringResource(R.string.no_thanks), { vm.reject(r.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
+                                    VmButton(stringResource(R.string.ok_yes), { vm.approve(r.id) }, size = ButtonSize.Small)
+                                    VmButton(stringResource(R.string.no_thanks), { vm.reject(r.id) }, kind = ButtonKind.Tonal, size = ButtonSize.Small)
                                 }
                             }
                         }
@@ -137,7 +137,7 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
             SwitchRow(stringResource(R.string.memory_learn), stringResource(R.string.memory_learn_sub), ui.switches.learnSkills) { on -> vm.setSwitches { it.copy(learnSkills = on) } }
         }
         GroupCard {
-            ListRow(VamosIcons.Close, stringResource(R.string.routes_clear_all), stringResource(R.string.memory_clear_sub), first = true, titleColor = VamosTheme.colors.bad, tone = TileTone.Bad, onClick = vm::requestClear)
+            VmListItem(VamosIcons.Close, stringResource(R.string.routes_clear_all), stringResource(R.string.memory_clear_sub), first = true, titleColor = VmTheme.colors.bad, tone = TileTone.Bad, onClick = vm::requestClear)
         }
     }
 
@@ -174,7 +174,7 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
 
 @Composable
 private fun SwitchRow(title: String, subtitle: String, on: Boolean, first: Boolean = false, onChange: (Boolean) -> Unit) {
-    ListRow(null, title, subtitle, first = first) { VamosSwitch(on, onChange) }
+    VmListItem(null, title, subtitle, first = first) { VmSwitch(on, onChange) }
 }
 
 @Composable
@@ -184,13 +184,13 @@ private fun MemoryRow(r: Row, first: Boolean, onClick: (() -> Unit)?) {
         r.replaces?.let { stringResource(R.string.memory_was, it) },
     ).joinToString("\n")
     androidx.compose.foundation.layout.Box(Modifier.testTag("memory-row")) {
-        ListRow(null, r.content, subtitle, first = first, onClick = onClick)
+        VmListItem(null, r.content, subtitle, first = first, onClick = onClick)
     }
 }
 
 @Composable
 internal fun Link(text: String, onClick: () -> Unit) {
-    Text(text, Modifier.clickable(onClick = onClick).padding(horizontal = 6.dp, vertical = 2.dp), style = VamosType.Hint, fontWeight = FontWeight.Medium, color = VamosTheme.colors.accent)
+    Text(text, Modifier.clickable(onClick = onClick).padding(horizontal = 6.dp, vertical = 2.dp), style = VmType.Hint, fontWeight = FontWeight.Medium, color = VmTheme.colors.accent)
 }
 
 @Composable

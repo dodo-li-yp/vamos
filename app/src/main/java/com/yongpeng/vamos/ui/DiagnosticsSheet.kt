@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yongpeng.vamos.about.Diagnostics
 import com.yongpeng.vamos.ui.components.ButtonKind
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -46,7 +46,7 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiagnosticsSheet(load: () -> String, onDismiss: () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val context = LocalContext.current
     // 打开那一刻收一次;之后状态再变也不换,用户看到的就是要复制的
     val text by produceState<String?>(null) {
@@ -56,8 +56,8 @@ fun DiagnosticsSheet(load: () -> String, onDismiss: () -> Unit) {
     }
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = c.surface, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp).testTag("diagnostics-sheet")) {
-            Text(AboutCopy.DIAGNOSTICS_TITLE, style = VamosType.Title, color = c.ink)
-            Text(AboutCopy.DIAGNOSTICS_NOTE, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3)
+            Text(AboutCopy.DIAGNOSTICS_TITLE, style = VmType.Title, color = c.ink)
+            Text(AboutCopy.DIAGNOSTICS_NOTE, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
             Box(
                 Modifier.padding(top = 12.dp).fillMaxWidth().heightIn(min = 120.dp, max = 360.dp)
                     .background(c.fill, RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState())
@@ -70,11 +70,11 @@ fun DiagnosticsSheet(load: () -> String, onDismiss: () -> Unit) {
             }
             Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 val ready = text != null
-                VamosButton(
+                VmButton(
                     AboutCopy.DIAGNOSTICS_COPY, { text?.let { copyDiagnostics(context, it) } },
                     Modifier.weight(1f).testTag("diagnostics-copy"), enabled = ready,
                 )
-                VamosButton(
+                VmButton(
                     AboutCopy.DIAGNOSTICS_SHARE, { text?.let { shareDiagnostics(context, it) } },
                     Modifier.weight(1f).testTag("diagnostics-share"), kind = ButtonKind.Tonal, enabled = ready,
                 )

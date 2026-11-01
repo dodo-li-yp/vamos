@@ -98,6 +98,9 @@ class WebDevtools(private val relay: ((String) -> ParcelFileDescriptor?)?) {
     // ---------- 标签生命周期(WebTab 调) ----------
 
     /** 标签刚建好(主线程):打开调试接口,换成桌面版的 WebView 设置,关掉 X-Requested-With 头。 */
+    // AndroidX 1.12.1 restricts the legacy feature constant, but its public setter
+    // still requires this support check for older WebViews. Keep the privacy guard.
+    @android.annotation.SuppressLint("RestrictedApi")
     fun prepare(tab: WebTab, context: Context) {
         val st = tab.view.settings
         init(context, st)

@@ -45,11 +45,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.yongpeng.vamos.ui.theme.VamosMotion
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmMotion
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import androidx.compose.runtime.getValue
 
 // ---------- 开关 ----------
@@ -59,16 +59,16 @@ import androidx.compose.runtime.getValue
  * [onCheckedChange] 为空时只显示(整行可点时用)。
  */
 @Composable
-fun VamosSwitch(
+fun VmSwitch(
     checked: Boolean,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    val c = VamosTheme.colors
-    val reduce = VamosTheme.reduceMotion
-    val position by animateFloatAsState(if (checked) 1f else 0f, VamosMotion.switch(reduce), label = "switch")
-    val track by animateColorAsState(if (checked) c.accent else c.greySoft, VamosMotion.switch(reduce), label = "switch-track")
+    val c = VmTheme.colors
+    val reduce = VmTheme.reduceMotion
+    val position by animateFloatAsState(if (checked) 1f else 0f, VmMotion.switch(reduce), label = "switch")
+    val track by animateColorAsState(if (checked) c.accent else c.greySoft, VmMotion.switch(reduce), label = "switch-track")
     val thumb = c.thumb
     val ring = c.floatShadow.copy(alpha = 0.12f)
     Box(
@@ -98,8 +98,8 @@ enum class PillTone { Ok, Warn, Neutral, Accent }
 
 /** 状态胶囊:可用、需要你、已停用;强调色的标明「在用」(例如模型在给哪个用途干活)。 */
 @Composable
-fun StatusPill(text: String, tone: PillTone = PillTone.Neutral, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+fun VmStatusChip(text: String, tone: PillTone = PillTone.Neutral, modifier: Modifier = Modifier) {
+    val c = VmTheme.colors
     val (bg, fg) = when (tone) {
         PillTone.Ok -> c.okSoft to c.ok
         PillTone.Warn -> c.warnSoft to c.warn
@@ -107,7 +107,7 @@ fun StatusPill(text: String, tone: PillTone = PillTone.Neutral, modifier: Modifi
         PillTone.Neutral -> c.greySoft to c.ink2
     }
     Text(
-        text, modifier.background(bg, VamosShapes.Pill).padding(horizontal = 9.dp, vertical = 3.dp),
+        text, modifier.background(bg, VmShapes.Pill).padding(horizontal = 9.dp, vertical = 3.dp),
         style = PillText, color = fg, maxLines = 1,
     )
 }
@@ -121,14 +121,14 @@ enum class ButtonKind { Primary, Secondary, Tonal, Text }
 
 /** 大:页面底部 52;中:卡片里并排 42;小:行内 32 的胶囊。 */
 enum class ButtonSize(val height: Dp, val shape: RoundedCornerShape, val text: TextStyle, val padding: Dp) {
-    Large(VamosSize.Button, VamosShapes.Button, TextStyle(fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold), 20.dp),
-    Medium(42.dp, RoundedCornerShape(12.dp), TextStyle(fontSize = 14.5.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold), 14.dp),
-    Small(32.dp, RoundedCornerShape(16.dp), TextStyle(fontSize = 13.5.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), 14.dp),
+    Large(VmSize.Button, VmShapes.Button, TextStyle(fontSize = 16.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold), 20.dp),
+    Medium(48.dp, RoundedCornerShape(12.dp), TextStyle(fontSize = 14.5.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold), 14.dp),
+    Small(48.dp, RoundedCornerShape(16.dp), TextStyle(fontSize = 13.5.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold), 14.dp),
 }
 
 /** 按钮。宽度由 [modifier] 定(铺满、按权重分或包住文字)。 */
 @Composable
-fun VamosButton(
+fun VmButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -136,7 +136,7 @@ fun VamosButton(
     size: ButtonSize = ButtonSize.Large,
     enabled: Boolean = true,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val shape = size.shape
     val (bg, fg) = when (kind) {
         ButtonKind.Primary -> c.accent to c.onAccent
@@ -169,7 +169,7 @@ fun SegmentedControl(
     modifier: Modifier = Modifier,
     tags: List<String>? = null,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(modifier.fillMaxWidth().background(c.fill, SegmentOuter).padding(2.dp)) {
         options.forEachIndexed { i, label ->
             val on = i == selected
@@ -210,15 +210,15 @@ fun BarIconButton(
     enabled: Boolean = true,
     badge: Boolean = false,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
-        Modifier.size(VamosSize.IconButton)
+        Modifier.size(VmSize.IconButton)
             .then(if (glass) Modifier.floatShadow(c, CircleShape).background(c.surface, CircleShape) else Modifier)
             .clip(CircleShape)
             .clickable(enabled = enabled, onClickLabel = label, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, label, Modifier.size(VamosSize.Icon).alpha(if (enabled) 1f else 0.35f), tint = c.ink)
+        Icon(icon, label, Modifier.size(VmSize.Icon).alpha(if (enabled) 1f else 0.35f), tint = c.ink)
         if (badge) {
             Box(
                 Modifier.align(Alignment.TopEnd).padding(top = 8.dp, end = 7.dp).size(8.dp)
@@ -233,7 +233,7 @@ fun BarIconButton(
  * 底色默认是页面底色,内容在它下面滚动时不透字。
  */
 @Composable
-fun TopBar(
+fun VmTopBar(
     title: String,
     left: ImageVector? = null,
     onLeft: () -> Unit = {},
@@ -243,27 +243,27 @@ fun TopBar(
     right: (@Composable RowScope.() -> Unit)? = null,
     subtitle: String? = null,
     subtitleColor: Color = Color.Unspecified,
-    background: Color = VamosTheme.colors.bg,
+    background: Color = VmTheme.colors.bg,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(Modifier.fillMaxWidth().background(background).windowInsetsPadding(WindowInsets.statusBars)) {
         Row(
-            Modifier.fillMaxWidth().height(VamosSize.TopBar).padding(horizontal = 8.dp),
+            Modifier.fillMaxWidth().height(VmSize.VmTopBar).padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            if (left != null) BarIconButton(left, leftLabel, onLeft, badge = leftBadge) else Spacer(Modifier.size(VamosSize.IconButton))
-            Column(Modifier.weight(1f).padding(horizontal = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(title, style = VamosType.Title, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (left != null) BarIconButton(left, leftLabel, onLeft, badge = leftBadge) else Spacer(Modifier.size(VmSize.IconButton))
+            Column(Modifier.weight(1f).padding(horizontal = 4.dp), horizontalAlignment = Alignment.Start) {
+                Text(title, style = VmType.Title, color = c.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (!subtitle.isNullOrEmpty()) {
                     Text(
-                        subtitle, style = VamosType.Hint, fontWeight = FontWeight.Medium,
+                        subtitle, style = VmType.Hint, fontWeight = FontWeight.Medium,
                         color = if (subtitleColor == Color.Unspecified) c.ink3 else subtitleColor, maxLines = 1,
                     )
                 }
             }
             if (right != null) Row(verticalAlignment = Alignment.CenterVertically, content = right)
-            else Spacer(Modifier.size(VamosSize.IconButton))
+            else Spacer(Modifier.size(VmSize.IconButton))
         }
     }
 }
@@ -273,8 +273,8 @@ fun TopBar(
 /** 可选的胶囊(服务商、接口类型):34 高,白卡底;选中时深色实底、反色字。[small] 是行内的小号。 */
 @Composable
 fun SelectChip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, small: Boolean = false) {
-    val c = VamosTheme.colors
-    val shape = if (small) SmallChipShape else VamosShapes.Pill
+    val c = VmTheme.colors
+    val shape = if (small) SmallChipShape else VmShapes.Pill
     Box(
         modifier
             .then(
@@ -308,7 +308,7 @@ enum class TagTone { Neutral, Accent }
 /** 能力小标签(工具调用、看图、64K):11 / 600,圆角 7。 */
 @Composable
 fun CapabilityTag(text: String, tone: TagTone = TagTone.Neutral) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val (bg, fg) = if (tone == TagTone.Accent) c.accentSoft to c.accent else c.greySoft to c.ink2
     Text(text, Modifier.background(bg, TagShape).padding(horizontal = 7.dp, vertical = 2.dp), style = TagText, color = fg, maxLines = 1)
 }
@@ -321,7 +321,7 @@ private val TagText = TextStyle(fontSize = 11.sp, lineHeight = 15.sp, fontWeight
 /** 上手流程底部的分页点:当前一步是 18 宽的强调色短条,其余是 6 的灰点。 */
 @Composable
 fun ProgressDots(count: Int, current: Int, modifier: Modifier = Modifier) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)) {
         repeat(count) { i ->
             Box(Modifier.size(if (i == current) 18.dp else 6.dp, 6.dp).background(if (i == current) c.accent else c.hair, CircleShape))

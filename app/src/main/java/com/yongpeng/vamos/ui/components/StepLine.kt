@@ -15,22 +15,22 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.theme.VamosColors
-import com.yongpeng.vamos.ui.theme.VamosTheme
+import com.yongpeng.vamos.ui.theme.VmColors
+import com.yongpeng.vamos.ui.theme.VmTheme
 
 /** 竖线步骤上一个点的状态:完成是灰点,当前是带光圈的蓝点,暂停是橙点,出错是红点。 */
 enum class StepState { Done, Current, Paused, Failed }
 
-private fun StepState.color(c: VamosColors) = when (this) {
-    StepState.Done -> c.ink3
-    StepState.Current -> c.accent
+private fun StepState.color(c: VmColors) = when (this) {
+    StepState.Done -> c.brandDai
+    StepState.Current -> c.agentQingbi
     StepState.Paused -> c.warnSolid
     StepState.Failed -> c.bad
 }
 
-private fun StepState.halo(c: VamosColors) = when (this) {
+private fun StepState.halo(c: VmColors) = when (this) {
     StepState.Done -> null
-    StepState.Current -> c.accentSoft
+    StepState.Current -> c.agentQingbi.copy(alpha = .22f)
     StepState.Paused -> c.warnSoft
     StepState.Failed -> c.badSoft
 }
@@ -48,7 +48,7 @@ fun StepItem(
     dotY: Dp = 14.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(modifier.height(IntrinsicSize.Min)) {
         Box(
             Modifier.width(GutterWidth).fillMaxHeight().drawBehind {

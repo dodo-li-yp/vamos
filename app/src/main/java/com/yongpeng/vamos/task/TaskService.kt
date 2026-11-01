@@ -824,7 +824,7 @@ class TaskService : Service() {
         /** 通知按钮所属任务的编号([TaskRun.key])。 */
         const val EXTRA_RUN = "com.yongpeng.vamos.task.RUN"
         /** 等用户回答确认最多这么久,到时按不同意(不在手机旁时任务不会一直挂着,也绝不自动同意)。 */
-        const val CONFIRM_TIMEOUT_MS = 15 * 60_000L
+        const val CONFIRM_TIMEOUT_MS = 60_000L
         private const val KEY_REPLY = "reply"
         const val CHANNEL_ATTENTION = "task_attention"
         const val CHANNEL_PROGRESS = "task_progress"

@@ -48,10 +48,10 @@ import com.yongpeng.vamos.R
 import com.yongpeng.vamos.ui.components.GlassBlurSupported
 import com.yongpeng.vamos.ui.components.floatShadow
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -86,7 +86,7 @@ internal fun ConversationMenu(
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     LongPressMenu(
         bounds, progress, pane = stringResource(R.string.drawer_actions), tag = "drawer-menu",
         entries = listOf(
@@ -119,7 +119,7 @@ internal fun LongPressMenu(
     alignEnd: Boolean = false,
     lifted: @Composable () -> Unit,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val insets = WindowInsets.safeDrawing
     val view = LocalView.current
     val close = stringResource(R.string.collapse)
@@ -178,7 +178,7 @@ internal fun LongPressMenu(
 /** 抬起的那一行:和侧栏里那一行一样的内容,换成白底圆角、带阴影。 */
 @Composable
 private fun LiftedRow(item: DrawerConversation) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Box(
         Modifier
             .floatShadow(c, NavShape)
@@ -192,11 +192,11 @@ private fun LiftedRow(item: DrawerConversation) {
 
 @Composable
 private fun MenuCard(content: @Composable () -> Unit) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Column(
-        Modifier.floatShadow(c, VamosShapes.Card).clip(VamosShapes.Card)
+        Modifier.floatShadow(c, VmShapes.Card).clip(VmShapes.Card)
             .background(c.surface)
-            .border(0.5.dp, c.edge, VamosShapes.Card)
+            .border(0.5.dp, c.edge, VmShapes.Card)
             .semantics { popup() },
     ) { content() }
 }
@@ -210,8 +210,8 @@ private fun MenuItem(text: String, icon: ImageVector, tag: String, color: Color,
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text, Modifier.weight(1f), style = VamosType.Body, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Icon(icon, null, Modifier.padding(start = 12.dp).size(VamosSize.Icon), tint = color)
+        Text(text, Modifier.weight(1f), style = VmType.Body, color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Icon(icon, null, Modifier.padding(start = 12.dp).size(VmSize.Icon), tint = color)
     }
 }
 

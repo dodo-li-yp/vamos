@@ -32,21 +32,21 @@ import com.yongpeng.vamos.task.TriggerRuntime
 import com.yongpeng.vamos.ui.components.ActionSheet
 import com.yongpeng.vamos.ui.components.ButtonKind
 import com.yongpeng.vamos.ui.components.ButtonSize
-import com.yongpeng.vamos.ui.components.EmptyNote
+import com.yongpeng.vamos.ui.components.VmEmptyNote
 import com.yongpeng.vamos.ui.components.FooterNote
 import com.yongpeng.vamos.ui.components.GroupCard
 import com.yongpeng.vamos.ui.components.GroupLabel
-import com.yongpeng.vamos.ui.components.ListRow
-import com.yongpeng.vamos.ui.components.VamosButton
-import com.yongpeng.vamos.ui.components.VamosSwitch
+import com.yongpeng.vamos.ui.components.VmListItem
+import com.yongpeng.vamos.ui.components.VmButton
+import com.yongpeng.vamos.ui.components.VmSwitch
 import com.yongpeng.vamos.ui.components.SegmentedControl
 import com.yongpeng.vamos.ui.components.SheetAction
 import com.yongpeng.vamos.ui.components.StateCard
 import com.yongpeng.vamos.ui.components.SubPage
 import com.yongpeng.vamos.ui.components.TileTone
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 import java.time.Instant
 import com.yongpeng.vamos.i18n.uiLocale
 import java.time.LocalDateTime
@@ -86,16 +86,16 @@ fun PlansScreen(context: Context, onBack: () -> Unit, onOpenConversation: (Strin
             StateCard(
                 VamosIcons.Alarm, ExactAlarmGuide.TITLE, tr(R.string.plans_alarm_body),
                 tone = TileTone.Warn,
-            ) { VamosButton(tr(R.string.turn_on_go), { act { context.startActivity(TriggerRuntime.exactAlarmSettings(context)) } }, kind = ButtonKind.Primary, size = ButtonSize.Small) }
+            ) { VmButton(tr(R.string.turn_on_go), { act { context.startActivity(TriggerRuntime.exactAlarmSettings(context)) } }, kind = ButtonKind.Primary, size = ButtonSize.Small) }
         }
         SegmentedControl(
             listOf(tr(R.string.plans_running_n, running.size), tr(R.string.plans_stopped_n, stopped.size)), segment, { segment = it },
             tags = listOf("plans-segment-running", "plans-segment-stopped"),
         )
-        error?.let { Text(it, Modifier.padding(top = 8.dp), style = VamosType.Caption, color = VamosTheme.colors.bad) }
+        error?.let { Text(it, Modifier.padding(top = 8.dp), style = VmType.Caption, color = VmTheme.colors.bad) }
         if (shown.isEmpty()) {
             GroupLabel("")
-            EmptyNote(
+            VmEmptyNote(
                 if (snapshot.triggers.isEmpty()) tr(R.string.plans_empty)
                 else if (segment == 0) tr(R.string.plans_none_running) else tr(R.string.plans_none_stopped),
             )
@@ -141,7 +141,7 @@ fun PlansScreen(context: Context, onBack: () -> Unit, onOpenConversation: (Strin
         AlertDialog(onDismissRequest = { deleting = null }, title = { Text(tr(R.string.plans_delete_title)) },
             text = { Text(plan.goal) },
             confirmButton = { TextButton(onClick = { act { TriggerRuntime.remove(context, plan.id) }; deleting = null }) {
-                Text(tr(R.string.confirm_delete), color = VamosTheme.colors.bad)
+                Text(tr(R.string.confirm_delete), color = VmTheme.colors.bad)
             } }, dismissButton = { TextButton(onClick = { deleting = null }) { Text(tr(R.string.cancel)) } })
     }
 }
@@ -169,16 +169,16 @@ private fun PlanRow(plan: TriggerDefinition, last: TriggerWindow?, first: Boolea
     }
     val when_ = if (plan.enabled) tr(R.string.plans_next, repeat, formatPlanTime(plan.nextAtMs)) else "$repeat · $status"
     val subtitle = plan.conditionGoal?.let { tr(R.string.plans_condition, it, when_) } ?: when_
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     val delivered = last?.state == TriggerWindowState.Delivered
     // 一次性的任务做完后不能再打开;循环的和从没跑过的可以
     val canToggle = plan.enabled || plan.intervalMs != null || plan.calendarTime != null || last == null
-    ListRow(
+    VmListItem(
         null, plan.reminderText ?: plan.goal, subtitle, first = first,
         detail = last?.let { tr(R.string.plans_last, formatPlanTime(it.dueAtMs), windowLabel(it.state)) } ?: tr(R.string.plans_never_run),
         detailColor = if (delivered) c.ok else c.ink3,
         onClick = onClick,
-    ) { VamosSwitch(plan.enabled, onToggle, enabled = canToggle) }
+    ) { VmSwitch(plan.enabled, onToggle, enabled = canToggle) }
 }
 
 private val PLAN_TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")

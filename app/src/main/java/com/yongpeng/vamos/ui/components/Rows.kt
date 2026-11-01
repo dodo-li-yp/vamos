@@ -38,17 +38,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.yongpeng.vamos.ui.theme.VamosColors
+import com.yongpeng.vamos.ui.theme.VmColors
 import com.yongpeng.vamos.ui.theme.VamosIcons
-import com.yongpeng.vamos.ui.theme.VamosShapes
-import com.yongpeng.vamos.ui.theme.VamosSize
-import com.yongpeng.vamos.ui.theme.VamosTheme
-import com.yongpeng.vamos.ui.theme.VamosType
+import com.yongpeng.vamos.ui.theme.VmShapes
+import com.yongpeng.vamos.ui.theme.VmSize
+import com.yongpeng.vamos.ui.theme.VmTheme
+import com.yongpeng.vamos.ui.theme.VmType
 
 /** 分组小标题:13 / 500,辅助文字色。 */
 @Composable
 fun GroupLabel(text: String, modifier: Modifier = Modifier) {
-    Text(text, modifier.padding(top = 8.dp, bottom = 8.dp), style = VamosType.Label, color = VamosTheme.colors.ink3)
+    Text(text, modifier.padding(top = 8.dp, bottom = 8.dp), style = VmType.Label, color = VmTheme.colors.ink3)
 }
 
 /** 分组下面的说明,和卡片里的文字对齐。 */
@@ -56,7 +56,7 @@ fun GroupLabel(text: String, modifier: Modifier = Modifier) {
 fun FooterNote(text: String, modifier: Modifier = Modifier, color: Color = Color.Unspecified) {
     Text(
         text, modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-        style = VamosType.Hint, color = color.takeOrElse { VamosTheme.colors.ink3 },
+        style = VmType.Hint, color = color.takeOrElse { VmTheme.colors.ink3 },
     )
 }
 
@@ -64,7 +64,7 @@ fun FooterNote(text: String, modifier: Modifier = Modifier, color: Color = Color
 enum class TileTone {
     Neutral, Accent, Ok, Warn, Bad;
 
-    fun colors(c: VamosColors): Pair<Color, Color> = when (this) {
+    fun colors(c: VmColors): Pair<Color, Color> = when (this) {
         Neutral -> c.neutralSoft to c.ink
         Accent -> c.accentSoft to c.accent
         Ok -> c.okSoft to c.ok
@@ -76,9 +76,9 @@ enum class TileTone {
 /** 行左边的图标块:30dp、圆角 9,里面图形 18dp。 */
 @Composable
 fun IconTile(icon: ImageVector, tone: TileTone = TileTone.Neutral) {
-    val (bg, fg) = tone.colors(VamosTheme.colors)
-    Box(Modifier.size(VamosSize.Tile).background(bg, VamosShapes.Tile), contentAlignment = Alignment.Center) {
-        Icon(icon, null, Modifier.size(VamosSize.TileIcon), tint = fg)
+    val (bg, fg) = tone.colors(VmTheme.colors)
+    Box(Modifier.size(VmSize.Tile).background(bg, VmShapes.Tile), contentAlignment = Alignment.Center) {
+        Icon(icon, null, Modifier.size(VmSize.TileIcon), tint = fg)
     }
 }
 
@@ -100,7 +100,7 @@ private val TextStartPlain = 16.dp
  * [first] 为分组首行时不画上分隔线;[onClick] 为空时整行不可点。
  */
 @Composable
-fun ListRow(
+fun VmListItem(
     icon: ImageVector?,
     title: String,
     subtitle: String? = null,
@@ -112,21 +112,21 @@ fun ListRow(
     onClick: (() -> Unit)? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth()
             .topHairline(first, if (icon != null) TextStartWithIcon else TextStartPlain, c.hair)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .heightIn(min = VamosSize.RowMin)
+            .heightIn(min = VmSize.RowMin)
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         if (icon != null) IconTile(icon, tone)
         Column(Modifier.weight(1f).padding(vertical = 11.dp)) {
-            Text(title, style = VamosType.Body, color = titleColor.takeOrElse { c.ink })
-            if (!subtitle.isNullOrEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3)
-            if (!detail.isNullOrEmpty()) Text(detail, Modifier.padding(top = 2.dp), style = VamosType.Hint, color = detailColor.takeOrElse { c.ink3 })
+            Text(title, style = VmType.Body, color = titleColor.takeOrElse { c.ink })
+            if (!subtitle.isNullOrEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
+            if (!detail.isNullOrEmpty()) Text(detail, Modifier.padding(top = 2.dp), style = VmType.Hint, color = detailColor.takeOrElse { c.ink3 })
         }
         trailing()
     }
@@ -137,9 +137,9 @@ enum class ValueTone { Plain, Ok, Warn, Bad, Link }
 /** 行尾的值。 */
 @Composable
 fun RowValue(text: String, tone: ValueTone = ValueTone.Plain) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Text(
-        text, style = VamosType.Value,
+        text, style = VmType.Value,
         fontWeight = if (tone == ValueTone.Link) FontWeight.Medium else FontWeight.Normal,
         color = when (tone) {
             ValueTone.Plain -> c.ink3
@@ -155,7 +155,7 @@ fun RowValue(text: String, tone: ValueTone = ValueTone.Plain) {
 /** 行尾的小箭头:点进去还有一页。 */
 @Composable
 fun RowChevron() {
-    Icon(VamosIcons.Chevron, null, Modifier.size(VamosSize.SmallIcon), tint = VamosTheme.colors.ink3)
+    Icon(VamosIcons.Chevron, null, Modifier.size(VmSize.SmallIcon), tint = VmTheme.colors.ink3)
 }
 
 /** 单选行:左边圆圈,选中时实心强调色。分隔线从文字处开始。 */
@@ -167,12 +167,12 @@ fun RadioRow(
     subtitle: String? = null,
     first: Boolean = false,
     enabled: Boolean = true,
-    titleStyle: TextStyle = VamosType.Body,
+    titleStyle: TextStyle = VmType.Body,
     /** 标题下面的附加内容(例如能力小标签)。 */
     below: (@Composable () -> Unit)? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth()
             .topHairline(first, 50.dp, c.hair)
@@ -185,7 +185,7 @@ fun RadioRow(
         RadioMark(selected, enabled)
         Column(Modifier.weight(1f).padding(vertical = 9.dp)) {
             Text(title, style = titleStyle, color = if (enabled) c.ink else c.ink3)
-            if (!subtitle.isNullOrEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VamosType.Caption, color = c.ink3)
+            if (!subtitle.isNullOrEmpty()) Text(subtitle, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
             if (below != null) Box(Modifier.padding(top = 4.dp)) { below() }
         }
         trailing()
@@ -194,7 +194,7 @@ fun RadioRow(
 
 @Composable
 private fun RadioMark(selected: Boolean, enabled: Boolean = true) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     if (selected && enabled) {
         Box(Modifier.size(22.dp).background(c.accent, CircleShape), contentAlignment = Alignment.Center) {
             Box(Modifier.size(10.dp).background(c.onAccent, CircleShape))
@@ -217,25 +217,29 @@ fun InputRow(
     first: Boolean = false,
     keyboard: KeyboardType = KeyboardType.Text,
     secret: Boolean = false,
+    showLastFour: Boolean = false,
     labelWidth: Dp = 84.dp,
     modifier: Modifier = Modifier,
     trailing: (@Composable () -> Unit)? = null,
 ) {
-    val c = VamosTheme.colors
+    val c = VmTheme.colors
     Row(
         Modifier.fillMaxWidth().topHairline(first, TextStartPlain, c.hair).keepsKeyboard()
-            .heightIn(min = VamosSize.RowMin).padding(horizontal = 16.dp, vertical = 12.dp),
+            .heightIn(min = VmSize.RowMin).padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label, Modifier.width(labelWidth), style = VamosType.Body, color = c.ink)
+        Text(label, Modifier.width(labelWidth), style = VmType.Body, color = c.ink)
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) Text(placeholder, style = VamosType.Body, color = c.ink3, maxLines = 1)
+            if (value.isEmpty()) Text(placeholder, style = VmType.Body, color = c.ink3, maxLines = 1)
             BasicTextField(
                 value, onChange, modifier.fillMaxWidth(), singleLine = true,
-                textStyle = VamosType.Body.copy(color = c.ink),
+                textStyle = VmType.Body.copy(color = c.ink),
                 cursorBrush = SolidColor(c.accent),
                 keyboardOptions = KeyboardOptions(keyboardType = keyboard, autoCorrectEnabled = false),
-                visualTransformation = if (secret) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (secret && showLastFour) androidx.compose.ui.text.input.VisualTransformation { text ->
+                    val masked = "•".repeat((text.length - 4).coerceAtLeast(0)) + text.takeLast(4)
+                    androidx.compose.ui.text.input.TransformedText(androidx.compose.ui.text.AnnotatedString(masked), androidx.compose.ui.text.input.OffsetMapping.Identity)
+                } else if (secret) PasswordVisualTransformation() else VisualTransformation.None,
             )
         }
         if (trailing != null) Box(Modifier.padding(start = 8.dp)) { trailing() }
@@ -245,5 +249,5 @@ fun InputRow(
 /** 卡片里自己排版的块之间的分隔线,从 [start] 画到右边。 */
 @Composable
 fun Hairline(start: Dp = TextStartWithIcon) {
-    Box(Modifier.fillMaxWidth().padding(start = start).height(0.5.dp).background(VamosTheme.colors.hair))
+    Box(Modifier.fillMaxWidth().padding(start = start).height(0.5.dp).background(VmTheme.colors.hair))
 }
