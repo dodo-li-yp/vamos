@@ -61,6 +61,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -279,8 +280,17 @@ fun ChatScreen(
     }
     val menuHost = remember(selecting) { MessageMenuHost(selecting) { menu = it } }
     val menuOpen = menu != null
+    var expiredGoal by rememberSaveable { mutableStateOf<String?>(null) }
+    expiredGoal?.let { goal ->
+        androidx.compose.material3.AlertDialog(onDismissRequest={},title={Text("确认已超时")},text={Text("已视为拒绝，任务已暂停。重新确认会重新读取当前界面，不会沿用上次授权。")},
+            confirmButton={TextButton({ if(vm.send(goal,check)) expiredGoal=null },enabled=ui.composer==ComposerMode.Idle){Text("重新确认")}},
+            dismissButton={TextButton({expiredGoal=null}){Text("结束任务")}})
+    }
     PageBackground {
-        CompositionLocalProvider(LocalMessageMenu provides menuHost) {
+        CompositionLocalProvider(com.yongpeng.vamos.ui.components.LocalVmFrame provides frame,
+            com.yongpeng.vamos.ui.components.LocalVmExpandPreview provides vm::expandPip,
+            com.yongpeng.vamos.ui.components.LocalVmConfirmationTimeout provides { expiredGoal=last?.goal; vm.cancel() },
+            LocalMessageMenu provides menuHost) {
             LazyColumn(
                 Modifier.fillMaxSize().behindMenu(menuOpen) { lift.value }.voiceDim(voiceHolding, reduceMotion).glassSource(backdrop),
                 state = listState,
@@ -362,7 +372,7 @@ fun ChatScreen(
         )
 
         AgentPip(
-            pip = ui.pip,
+            pip = ui.pip.copy(visible=ui.pip.visible && (!ui.operatingPhone || ui.pip.expanded || ui.pip.mode==PipMode.Done)),
             frame = frame,
             webContent = webContent,
             reduceMotion = reduceMotion,
@@ -468,7 +478,7 @@ private fun LazyListScope.exchange(
     val active = ex.status.isActive()
     val answering = ex.status == ExchangeStatus.Working && !ex.draft.isNullOrBlank()
     if (active) {
-        if (!answering) item("s$index") { WorkBlock(ex, reduceMotion, backgroundNote) }
+        if (!answering) item("s$index") { VmTaskCard(ex, reduceMotion, backgroundNote) }
     } else if (ex.steps.isNotEmpty() || ex.runId != null) {
         item("s$index") { DoneLine(ex, reduceMotion, openRun) }
     }
@@ -628,11 +638,11 @@ private fun Modifier.answerSurface(): Modifier =
  * 在后台操作手机时最下面一行小字。
  */
 @Composable
-private fun WorkBlock(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boolean) {
+private fun VmTaskCard(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boolean) {
     val c = VmTheme.colors
     val paused = ChatCopy.paused(ex.status)
     val elapsed = rememberElapsed(ex.startedAt)
-    Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).cardSurface(c, VmShapes.Card).padding(16.dp)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 28.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -640,7 +650,7 @@ private fun WorkBlock(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boole
         ) {
             Spinner(
                 Modifier.size(16.dp), spinning = !paused && !reduceMotion,
-                track = if (paused) c.warnSoft else c.accentSoft, head = if (paused) c.warnSolid else c.accent,
+                track = if (paused) c.warnSoft else c.agentQingbi.copy(alpha=.18f), head = if (paused) c.warnSolid else c.agentQingbi,
             )
             Text(
                 ChatCopy.progressLine(ex), Modifier.weight(1f), style = NowText, color = c.ink,
@@ -648,7 +658,10 @@ private fun WorkBlock(ex: Exchange, reduceMotion: Boolean, backgroundNote: Boole
             )
             if (elapsed != null) Text(ChatCopy.clock(elapsed), style = ClockText, color = c.ink3)
         }
-        if (ex.steps.isNotEmpty()) StepLine(ex.steps, live = true, paused = paused)
+        Row(Modifier.padding(top=12.dp),horizontalArrangement=Arrangement.spacedBy(16.dp)) {
+            if(backgroundNote) com.yongpeng.vamos.ui.components.VmBackgroundScreenPreview(com.yongpeng.vamos.ui.components.LocalVmFrame.current,!paused && !ex.waitingForModel,reduceMotion,Modifier.clickable(onClick=com.yongpeng.vamos.ui.components.LocalVmExpandPreview.current))
+            Column(Modifier.weight(1f)) {if (ex.steps.isNotEmpty()) VmTaskTimeline(ex.steps, live = true, paused = paused)}
+        }
         if (backgroundNote) {
             Row(
                 Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically,
@@ -683,14 +696,14 @@ private enum class Dot { Done, Current, Paused, Dim }
  * 前面的收成一行,点开看全部。
  */
 @Composable
-private fun StepLine(steps: List<StepRow>, live: Boolean, paused: Boolean) {
+private fun VmTaskTimeline(steps: List<StepRow>, live: Boolean, paused: Boolean) {
     val c = VmTheme.colors
     var all by rememberSaveable { mutableStateOf(!live) }
     val hidden = if (all) 0 else (steps.size - ChatCopy.VISIBLE_STEPS).coerceAtLeast(0)
     Column(
         Modifier.padding(top = 6.dp).fillMaxWidth().drawBehind {
             val x = StepRail.toPx()
-            drawLine(c.hair, Offset(x, 0f), Offset(x, size.height), strokeWidth = 1.5.dp.toPx())
+            drawLine(c.hair, Offset(x, 0f), Offset(x, size.height), strokeWidth = 2.dp.toPx())
         },
     ) {
         if (hidden > 0) {
@@ -740,9 +753,9 @@ private fun StepItem(text: String, subtitle: String, dot: Dot, current: Boolean,
 private fun StepDot(dot: Dot) {
     val c = VmTheme.colors
     val (fill, ring) = when (dot) {
-        Dot.Done -> c.ink3 to null
+        Dot.Done -> c.brandDai to null
         Dot.Dim -> c.hair to null
-        Dot.Current -> c.accent to c.accentSoft
+        Dot.Current -> c.agentQingbi to c.agentQingbi.copy(alpha=.22f)
         Dot.Paused -> c.warnSolid to c.warnSoft
     }
     // 底色先盖住竖线,点才是干净的
@@ -754,7 +767,7 @@ private fun StepDot(dot: Dot) {
                 drawCircle(bg, 7.dp.toPx(), center)
                 drawCircle(ring, 7.dp.toPx(), center)
             }
-            drawCircle(fill, 4.dp.toPx(), center)
+            drawCircle(fill, 6.dp.toPx(), center)
         },
     )
 }
@@ -783,7 +796,7 @@ internal fun Spinner(modifier: Modifier, spinning: Boolean, track: Color, head: 
 private fun DoneLine(ex: Exchange, reduceMotion: Boolean, openRun: (String) -> Unit) {
     val c = VmTheme.colors
     var open by rememberSaveable { mutableStateOf(false) }
-    Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+    Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).cardSurface(c, VmShapes.Card).padding(16.dp)) {
         Row(
             Modifier.heightIn(min = 28.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -804,7 +817,7 @@ private fun DoneLine(ex: Exchange, reduceMotion: Boolean, openRun: (String) -> U
                 )
             }
         }
-        Reveal(open && ex.steps.isNotEmpty(), reduceMotion) { StepLine(ex.steps, live = false, paused = false) }
+        Reveal(open && ex.steps.isNotEmpty(), reduceMotion) { VmTaskTimeline(ex.steps, live = false, paused = false) }
     }
 }
 
@@ -873,7 +886,7 @@ private fun StatusCard(
         // 敏感操作需要你同意,每次只同意这一次
         is ExchangeStatus.NeedsConfirmation -> androidx.compose.runtime.key(status.key) {
             com.yongpeng.vamos.ui.components.VmConfirmSheet(status.title, status.body,
-                onDeny = { vm.decline(status.key) }, onAllow = { vm.approve(status.key) })
+                onDeny = { vm.decline(status.key) }, onAllow = { vm.approve(status.key) }, deadlineMillis=status.deadlineMillis)
         }
 
         is ExchangeStatus.Paused -> NeedCard(stringResource(R.string.chat_paused), status.why) {
@@ -1156,8 +1169,11 @@ internal fun Composer(
                 }
             }
             if (vh != null) {
-                val title = if (busy && !steerTarget.isNullOrBlank()) stringResource(R.string.voice_steer_to, steerTarget)
-                else stringResource(R.string.voice_listening)
+                val title = if (busy && !steerTarget.isNullOrBlank()) {
+                    stringResource(R.string.voice_steer_to, steerTarget)
+                } else {
+                    stringResource(R.string.voice_listening)
+                }
                 VoiceFloat(vh, vState, title, backdrop, reduceMotion)
             }
             Box(Modifier.fillMaxWidth()) {

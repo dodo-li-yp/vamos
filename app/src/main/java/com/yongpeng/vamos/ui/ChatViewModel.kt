@@ -106,7 +106,7 @@ sealed interface ExchangeStatus {
      * 等用户同意一次要花钱的操作(只能同意这一次);[title]「要你同意:<动作>」,[body] 一行一个字段(App、对象、完整内容、金额)。
      * [key] 是这次申报的编号,按钮带着它,点在旧卡片上不算数。
      */
-    data class NeedsConfirmation(val title: String, val body: String, val key: Int) : ExchangeStatus
+    data class NeedsConfirmation(val title: String, val body: String, val key: Int, val deadlineMillis: Long = 0L) : ExchangeStatus
     data class Paused(val why: String) : ExchangeStatus
     /**
      * [verified] 为 false 表示办完了但没能核实,[note] 是原因;这时不打绿勾。[unconfirmed] 是回答里核对后仍没找到出处的几处,
@@ -1141,7 +1141,7 @@ class ChatViewModel(
                 draft = null,
                 status = ExchangeStatus.NeedsConfirmation(
                     ConfirmationCopy.title(s.request), ConfirmationCopy.detail(s.request, appLabel(s.request.app)),
-                    ConfirmationNotifier.requestKey(s),
+                    ConfirmationNotifier.requestKey(s), s.deadlineMillis,
                 ),
             )
             // 回答原样显示(不再有模型写的依据段);来源由运行记录里代码记下的那份给出

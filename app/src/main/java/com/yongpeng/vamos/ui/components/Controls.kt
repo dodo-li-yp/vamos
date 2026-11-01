@@ -64,7 +64,9 @@ fun VmSwitch(
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    locked: Boolean = false,
 ) {
+    val enabled = enabled && !locked
     val c = VmTheme.colors
     val reduce = VmTheme.reduceMotion
     val position by animateFloatAsState(if (checked) 1f else 0f, VmMotion.switch(reduce), label = "switch")

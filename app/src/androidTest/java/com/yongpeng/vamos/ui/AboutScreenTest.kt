@@ -289,7 +289,7 @@ class AboutScreenTest {
         val calls = mutableListOf<String>()
         compose.setContent {
             VmTheme {
-                ChatDrawer(
+                VmDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {}, onBrowser = {},
                     onSettings = { calls += "settings" }, onOpen = {},
@@ -319,7 +319,7 @@ class AboutScreenTest {
     fun drawerFooterNoDotWithoutUpdate() {
         compose.setContent {
             VmTheme {
-                ChatDrawer(
+                VmDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {}, onBrowser = {}, onSettings = {}, onOpen = {},
                 )

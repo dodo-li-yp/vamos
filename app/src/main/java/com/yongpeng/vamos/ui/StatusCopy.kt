@@ -25,7 +25,7 @@ enum class Fix {
     /** 本 App 的「应用信息」页:系统拦着不让开无障碍时,在这里允许受限制的设置。 */
     OpenAppInfo,
     // 内置助手
-    OpenPhoneSetup, RepairPhoneHelper, RetryPhoneHelper, UnpairPhoneHelper,
+    OpenPhoneSetup, RepairPhoneHelper, RetryPhoneHelper, UnpairPhoneHelper, ClosePhoneControl,
     OpenAboutPhone, OpenDeveloperOptions, OpenUsbDebugging, OpenWirelessDebugging, OpenWifi,
 }
 

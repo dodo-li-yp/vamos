@@ -48,6 +48,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -264,9 +265,20 @@ fun PhoneSetupContent(
     fun revisitable(step: SetupStep) = canRevisit && step != view.current && step in PhoneSetupFlow.REVISITABLE &&
         view.marks.getValue(step) in setOf(StepMark.Done, StepMark.Skipped, StepMark.Failed)
     val c = VmTheme.colors
+    var skipping by remember { mutableStateOf(false) }
+    if(skipping) androidx.compose.ui.window.Dialog(onDismissRequest={skipping=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false)) {
+        Box(Modifier.fillMaxSize(),contentAlignment=Alignment.BottomCenter) {
+            Column(Modifier.fillMaxWidth().background(c.surface,RoundedCornerShape(topStart=28.dp,topEnd=28.dp)).padding(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                Text("暂时跳过手机控制？",style=VmType.Title,color=c.textInk)
+                Text("仍可对话和浏览网页。操作手机 App 前，需要返回设置完成配对。",style=VmType.Body,color=c.textInk2)
+                VmButton("继续设置",{skipping=false},Modifier.fillMaxWidth())
+                VmButton("暂时跳过",{skipping=false;onClose()},Modifier.fillMaxWidth(),kind=ButtonKind.Text)
+            }
+        }
+    }
     PageBackground {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.navigationBars)) {
-            VmTopBar(PhoneSetupCopy.BAR_TITLE, VamosIcons.Back, onClose, stringResource(R.string.back))
+            VmTopBar(PhoneSetupCopy.BAR_TITLE, VamosIcons.Back, onClose, stringResource(R.string.back),right={TextButton({skipping=true}){Text("跳过")}})
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                 if (view.phase == SetupPhase.Success) {
                     Text(
@@ -279,10 +291,10 @@ fun PhoneSetupContent(
                         fontSize = 14.5.sp, lineHeight = 23.sp, color = c.ink2,
                     )
                 }
-                GroupCard {
+                VmPairingStepList {
                     SetupStep.entries.forEach { step ->
-                        StepRow(
-                            step, view.marks.getValue(step), current = step == view.current, first = step.ordinal == 0,
+                        VmPairingStep(
+                            step, view.marks.getValue(step), current = step == view.current, first = step.ordinal == 0, connecting=step==SetupStep.Connect && view.phase==SetupPhase.Working,
                             onClick = if (revisitable(step)) ({ onRevisit(step) }) else null,
                         ) {
                             if (step == view.current) CurrentStepBody(
@@ -316,7 +328,7 @@ fun PhoneSetupContent(
                     )
                     // 正在连接、连不上时也能先离开,之后在设置里接着弄
                     SetupPhase.Guide, SetupPhase.Working, SetupPhase.Failed -> VmButton(
-                        PhoneSetupCopy.LATER, onClose, Modifier.fillMaxWidth().testTag("setup-later"),
+                        PhoneSetupCopy.LATER, {skipping=true}, Modifier.fillMaxWidth().testTag("setup-later"),
                         kind = ButtonKind.Text, size = ButtonSize.Medium,
                     )
                 }
@@ -351,13 +363,13 @@ private fun UsbStartCard(restart: HelperRestart, command: String, onCopy: () -> 
 }
 
 @Composable
-private fun StepRow(step: SetupStep, mark: StepMark, current: Boolean, first: Boolean, onClick: (() -> Unit)?, body: @Composable () -> Unit) {
+private fun VmPairingStep(step: SetupStep, mark: StepMark, current: Boolean, first: Boolean, onClick: (() -> Unit)?, connecting:Boolean=false, body: @Composable () -> Unit) {
     val copy = PhoneSetupCopy.step(step)
     val c = VmTheme.colors
-    Box(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).testTag("setup-step-${step.name}")) {
+    Box(Modifier.fillMaxWidth().background(if(current)c.tone2 else androidx.compose.ui.graphics.Color.Transparent,RoundedCornerShape(16.dp)).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).testTag("setup-step-${step.name}")) {
         if (!first) Box(Modifier.padding(start = 58.dp).fillMaxWidth().height(0.5.dp).background(c.hair))
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            StepBadge(step.ordinal + 1, mark)
+            StepBadge(step.ordinal + 1, mark, connecting)
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -376,15 +388,18 @@ private fun StepRow(step: SetupStep, mark: StepMark, current: Boolean, first: Bo
 }
 
 @Composable
-private fun StepBadge(n: Int, mark: StepMark) {
+private fun StepBadge(n: Int, mark: StepMark, connecting:Boolean) {
     val c = VmTheme.colors
     val bg = when (mark) {
         StepMark.Done -> c.ok
-        StepMark.Current -> c.accent
+        StepMark.Current -> if(connecting)c.agentQingbi else c.brandDai
         StepMark.Failed -> c.bad
         StepMark.Todo, StepMark.Skipped -> c.greySoft
     }
-    Box(Modifier.size(28.dp).background(bg, CircleShape), contentAlignment = Alignment.Center) {
+    val reduce = VmTheme.reduceMotion
+    val scale = remember(mark) {androidx.compose.animation.core.Animatable(if(mark==StepMark.Done && !reduce).8f else 1f)}
+    LaunchedEffect(mark) {if(!reduce) scale.animateTo(1f,androidx.compose.animation.core.spring())}
+    Box(Modifier.size(28.dp).graphicsLayer {scaleX=scale.value;scaleY=scale.value}.background(bg, CircleShape), contentAlignment = Alignment.Center) {
         when (mark) {
             StepMark.Done -> Icon(VamosIcons.Check, null, Modifier.size(15.dp), tint = c.onAccent)
             StepMark.Failed -> Icon(VamosIcons.Exclaim, null, Modifier.size(15.dp), tint = c.onAccent)
@@ -545,11 +560,8 @@ private fun ManualCode(askPort: Boolean, onSubmit: (String, Int?) -> Unit) {
     )
     if (!open) return
     Text(PhoneSetupCopy.MANUAL_HINT, fontSize = 12.5.sp, lineHeight = 17.sp, color = VmTheme.colors.ink3)
-    OutlinedTextField(
-        code, { code = it; error = null }, Modifier.fillMaxWidth().padding(top = 6.dp).keepsKeyboard().testTag("setup-code"),
-        label = { Text(PhoneSetupCopy.CODE_LABEL) }, singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-    )
+    Text(PhoneSetupCopy.CODE_LABEL, style=VmType.Caption,color=VmTheme.colors.textInk2)
+    com.yongpeng.vamos.ui.components.VmPinInput(code,{code=it;error=null},Modifier.padding(top=8.dp).keepsKeyboard().testTag("setup-code"))
     if (askPort) {
         OutlinedTextField(
             port, { port = it; error = null }, Modifier.fillMaxWidth().padding(top = 6.dp).keepsKeyboard().testTag("setup-port"),
@@ -666,3 +678,6 @@ fun PhoneSetupLine(onOpen: () -> Unit) {
         )
     }
 }
+
+@Composable
+private fun VmPairingStepList(content:@Composable androidx.compose.foundation.layout.ColumnScope.()->Unit) {GroupCard(content=content)}

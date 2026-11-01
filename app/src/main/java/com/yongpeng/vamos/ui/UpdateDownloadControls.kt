@@ -7,6 +7,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
@@ -104,7 +105,7 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
         onDownload = {
             val network = context.getSystemService(android.net.ConnectivityManager::class.java)
             val wifi = network.getNetworkCapabilities(network.activeNetwork)?.hasTransport(android.net.NetworkCapabilities.TRANSPORT_WIFI) == true
-            if(wifi) run { withContext(Dispatchers.IO) { updater.download(release) } } else mobilePrompt = true
+            if(wifi || !network.isActiveNetworkMetered) run { withContext(Dispatchers.IO) { updater.download(release) } } else mobilePrompt = true
         },
         onCancel = { run { withContext(Dispatchers.IO) { updater.cancel() } } },
         onInstall = {
@@ -143,6 +144,10 @@ internal fun UpdateDownloadActions(
         state.phase == DownloadPhase.Ready -> stringResource(R.string.about_update_install)
         state.phase == DownloadPhase.Failed -> stringResource(R.string.about_update_retry)
         else -> stringResource(R.string.about_update_download_in_app)
+    }
+    if(active || state.phase==DownloadPhase.Paused) {
+        Text(state.percent?.let { "$it%" } ?: "连接中",style=VmType.Display,color=VmTheme.colors.textInk)
+        androidx.compose.material3.LinearProgressIndicator(progress={ (state.percent ?: 0)/100f },modifier=Modifier.fillMaxWidth().height(8.dp),color=if(state.phase==DownloadPhase.Paused)VmTheme.colors.textInk2 else VmTheme.colors.brandDai,trackColor=VmTheme.colors.tone2)
     }
     VmButton(text, if (state.phase == DownloadPhase.Ready) onInstall else onDownload,
         Modifier.fillMaxWidth().padding(top = 14.dp), enabled = !busy && !active)

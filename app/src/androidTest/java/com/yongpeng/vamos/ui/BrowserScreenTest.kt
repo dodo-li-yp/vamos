@@ -77,7 +77,7 @@ class BrowserScreenTest {
     fun drawerHasBrowserEntryThatOpensIt() {
         compose.setContent {
             VmTheme {
-                ChatDrawer(
+                VmDrawer(
                     Prerequisites.Check(emptyList()), DrawerSections(emptyList(), emptyList()), canSwitch = true,
                     onNew = {}, onPlans = {}, onMemory = {},
                     onBrowser = { calls += "browser" },

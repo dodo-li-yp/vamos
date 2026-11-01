@@ -33,6 +33,7 @@ object Licenses {
     data class Entry(val name: String, val license: String, val note: String)
 
     val ENTRIES = listOf(
+        Entry("Noto Serif SC", "SIL OFL 1.1", "思源宋体 UI 子集，500/600 字重。Copyright 2012 Google Inc. All Rights Reserved. 生成脚本 tools/fonts/subset_noto.py。"),
         Entry("Google ML Kit Text Recognition", "Google APIs / ML Kit terms", "本机 OCR，版本 16.0.1（中文与拉丁文字）。https://developers.google.com/ml-kit/terms"),
         Entry("EdDSA-Java", "CC0-1.0", "net.i2p.crypto:eddsa:0.3.0，COS 更新清单 Ed25519 验签。https://github.com/str4d/ed25519-java"),
         Entry("Vamos", "Apache-2.0", "Vamos Android 应用。许可证全文见本页顶上。"),
@@ -60,7 +61,7 @@ fun LicensesScreen(onBack: () -> Unit) {
         runCatching { context.assets.open(LICENSE_ASSET).use { it.readBytes().decodeToString() } }.getOrDefault("")
     }
     val noticeText = remember { context.assets.open("licenses/NOTICE.txt").bufferedReader().use { it.readText() } }
-    val thirdPartyText = remember { context.assets.open("licenses/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() } }
+    val thirdPartyText = remember { context.assets.open("licenses/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() } + "\n\n" + context.assets.open("licenses/OFL-Noto-Serif.txt").bufferedReader().use { it.readText() } }
     val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" }
     SubPage(AboutCopy.LICENSE_TITLE, onBack) {
         Text(noticeText, Modifier.padding(16.dp), style = VmType.Hint, color = VmTheme.colors.ink)

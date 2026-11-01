@@ -20,6 +20,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +57,9 @@ import com.yongpeng.vamos.ui.theme.VmType
 @Composable
 fun PageBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     val c = VmTheme.colors
-    Box(modifier.fillMaxSize().background(c.bgPaper).drawBehind {
+    val backdrop = rememberGlassBackdrop()
+    Box(modifier.fillMaxSize()) {
+    Box(Modifier.matchParentSize().glassSource(backdrop).background(c.bgPaper).drawBehind {
         val h = 240.dp.toPx()
         val w = size.width
         val mountain = androidx.compose.ui.graphics.Path().apply {
@@ -63,7 +68,9 @@ fun PageBackground(modifier: Modifier = Modifier, content: @Composable BoxScope.
             cubicTo(w * .24f, h * .73f, w * .14f, h * .49f, 0f, h * .83f); close()
         }
         drawPath(mountain, c.brandDai.copy(alpha = .10f))
-    }, content = content)
+    })
+    CompositionLocalProvider(LocalVmBackdrop provides backdrop) { content() }
+    }
 }
 
 /** 卡片的底:白底 + 黑 5% 描边 + 极淡阴影;深色下只有描边。 */
@@ -80,8 +87,19 @@ fun Modifier.floatShadow(colors: VmColors, shape: Shape): Modifier =
 
 /** 一张卡片,内容裁在圆角里(行的按压效果不出角)。 */
 @Composable
-fun VmGlassCard(modifier: Modifier = Modifier, shape: Shape = VmShapes.Card, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth().cardSurface(VmTheme.colors, shape).clip(shape), content = content)
+fun VmGlassCard(modifier: Modifier = Modifier, shape: Shape = VmShapes.Card, elevated: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
+    val c = VmTheme.colors
+    val backdrop = LocalVmBackdrop.current
+    var origin by remember { mutableStateOf(Offset.Zero) }
+    val blur = with(LocalDensity.current) { BlurEffect(24.dp.toPx(),24.dp.toPx(),TileMode.Clamp) }
+    Box(modifier.fillMaxWidth().clip(shape).onGloballyPositioned {origin=it.positionInRoot()}) {
+        if(backdrop != null) Box(Modifier.matchParentSize().graphicsLayer {renderEffect=blur;clip=true}.drawBehind {
+            val d=backdrop.origin-origin
+            translate(d.x,d.y) {drawLayer(backdrop.layer)}
+        })
+        val fill = if(backdrop == null) c.surface.copy(alpha=.92f) else if(elevated) c.glassFill.copy(alpha=if(c.isDark).14f else .42f) else c.glassFill
+        Column(Modifier.fillMaxWidth().background(c.textInk.copy(alpha=if(c.isDark)0f else .035f)).background(fill).border(.5.dp,c.glassStroke,shape),content=content)
+    }
 }
 
 /**
@@ -151,7 +169,7 @@ fun Modifier.glassSource(backdrop: GlassBackdrop?): Modifier =
             drawLayer(backdrop.layer)
         }
 
-private val GlassBlur = BlurEffect(24f, 24f, TileMode.Clamp)
+private val LocalVmBackdrop = staticCompositionLocalOf<GlassBackdrop?> {null}
 
 /**
  * 玻璃输入栏的外壳:半透明底 + 背景模糊 + 悬浮阴影,高至少 52。
@@ -166,6 +184,7 @@ fun GlassBar(
 ) {
     val c = VmTheme.colors
     var origin by remember { mutableStateOf(Offset.Zero) }
+    val glassBlur = with(LocalDensity.current) {BlurEffect(24.dp.toPx(),24.dp.toPx(),TileMode.Clamp)}
     Box(
         modifier.floatShadow(c, shape).clip(shape)
             .then(if (backdrop != null) Modifier.onGloballyPositioned { origin = it.positionInRoot() } else Modifier),
@@ -173,7 +192,7 @@ fun GlassBar(
         if (backdrop != null) {
             Box(
                 Modifier.matchParentSize()
-                    .graphicsLayer { renderEffect = GlassBlur; clip = true }
+                    .graphicsLayer { renderEffect = glassBlur; clip = true }
                     .drawBehind {
                         val d = backdrop.origin - origin
                         translate(d.x, d.y) { drawLayer(backdrop.layer) }

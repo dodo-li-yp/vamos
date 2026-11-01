@@ -154,8 +154,17 @@ class MainActivity : ComponentActivity() {
             // 换页由 VamosRoot 处理
             Fix.OpenPhoneSetup, Fix.RepairPhoneHelper -> Unit
             Fix.RetryPhoneHelper -> phone.pairing.scope.launch {
+                getSharedPreferences("phone-control",MODE_PRIVATE).edit().putBoolean("enabled",true).apply()
+                phone.shellManager.start()
                 phone.sharedShell.reconnect()
                 phone.shellControl.retry()
+            }
+            Fix.ClosePhoneControl -> {
+                val app = application as VamosApp
+                app.taskState.runs.value.forEach { TaskService.cancel(this,it.key) }
+                getSharedPreferences("phone-control",MODE_PRIVATE).edit().putBoolean("enabled",false).apply()
+                phone.pairing.scope.launch { phone.shellManager.engine.pauseControl() }
+                com.yongpeng.vamos.cap.phone.a11y.ScreenAccessibility.instance.value?.disableSelf()
             }
             Fix.UnpairPhoneHelper -> phone.pairing.scope.launch { phone.recovery.unpair() }
             Fix.OpenAboutPhone -> openFirst(DeveloperSettings.aboutPhone())
@@ -222,6 +231,7 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
     requestedConversation: String?, onConversationOpened: () -> Unit) {
     val nav = rememberNavStack()
     // 从设置页「重新配对」进来时先回到配对一步
+    val context = LocalContext.current
     var setupRepair by rememberSaveable { mutableStateOf(false) }
     // 首次上手正在走哪一步;为空时不在上手流程里。配置模型页从哪儿来就回哪儿去
     var onboarding by rememberSaveable { mutableStateOf<OnboardingStep?>(null) }
@@ -229,6 +239,8 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
         when (fix) {
             Fix.AddModel -> nav.push(Route.Models)
             Fix.OpenPhoneSetup, Fix.RepairPhoneHelper -> {
+                context.getSharedPreferences("phone-control",android.content.Context.MODE_PRIVATE).edit().putBoolean("enabled",true).apply()
+                (context.applicationContext as VamosApp).phone.shellManager.start()
                 setupRepair = fix == Fix.RepairPhoneHelper
                 nav.push(Route.PhoneSetup)
             }
@@ -242,7 +254,6 @@ private fun VamosRoot(store: ProviderStore, monitor: SystemStatusMonitor, activi
     val roles by store.roles.collectAsState()
     val hasMain = roles.main != null
     val check = Prerequisites.check(status, hasMain)
-    val context = LocalContext.current
     val app = context.applicationContext as VamosApp
     // 查到的新版本:侧栏、设置首页、关于页的红点都看它
     val updateState by app.updates.state.collectAsState()

@@ -204,7 +204,7 @@ internal class UserExchange(
         val pending = CompletableDeferred<ConfirmChoice>().also { confirmationReply = it }
         val ask = ask(Delivery.Ask.Kind.Confirm, "${r.action.name}: ${r.target} ${r.content}")
         activeAsk = ask
-        setState(TaskState.WaitingConfirmation(r))
+        setState(TaskState.WaitingConfirmation(r, now() + (confirmTimeoutMs ?: 60_000L).coerceAtMost(60_000L)))
         emit(event(null))
         // 没人回答(不在手机旁)就按不同意,绝不自动同意
         val timeout = (confirmTimeoutMs ?: 60_000L).coerceAtMost(60_000L)

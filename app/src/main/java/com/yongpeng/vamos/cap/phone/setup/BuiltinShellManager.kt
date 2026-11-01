@@ -100,6 +100,7 @@ class BuiltinShellManager(context: Context, private val hub: HelperHub, private 
 
     /** 有人要用助手却没有:看门狗起一个(配对过才行),脚本也备好给电脑用。 */
     fun need() {
+        check(app.getSharedPreferences("phone-control",Context.MODE_PRIVATE).getBoolean("enabled",true)) { "手机控制已关闭，请在设置里重新启用" }
         engine.need()
         usbScript.refresh()
     }
@@ -112,7 +113,7 @@ class BuiltinShellManager(context: Context, private val hub: HelperHub, private 
 
     @Synchronized
     fun start() {
-        if (started || Build.VERSION.SDK_INT < MIN_SDK) return
+        if (started || Build.VERSION.SDK_INT < MIN_SDK || !app.getSharedPreferences("phone-control",Context.MODE_PRIVATE).getBoolean("enabled",true)) return
         started = true
         usbScript.start()
         val e = engine

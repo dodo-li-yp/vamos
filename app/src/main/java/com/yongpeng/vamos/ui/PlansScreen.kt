@@ -95,9 +95,10 @@ fun PlansScreen(context: Context, onBack: () -> Unit, onOpenConversation: (Strin
         error?.let { Text(it, Modifier.padding(top = 8.dp), style = VmType.Caption, color = VmTheme.colors.bad) }
         if (shown.isEmpty()) {
             GroupLabel("")
-            VmEmptyNote(
+            com.yongpeng.vamos.ui.components.VmEmptyState(
                 if (snapshot.triggers.isEmpty()) tr(R.string.plans_empty)
                 else if (segment == 0) tr(R.string.plans_none_running) else tr(R.string.plans_none_stopped),
+                "在对话中告诉 Vamos 什么时候做什么",
             )
         } else {
             GroupLabel(trPlural(R.plurals.settings_count_tasks, shown.size))

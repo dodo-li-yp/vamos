@@ -5,16 +5,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
+import com.yongpeng.vamos.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /** 字号与字重。只定大小、字重、行高,颜色由用的地方给。 */
 object VmType {
+    private val serif = FontFamily(Font(R.font.vamos_serif_medium,FontWeight.Medium),Font(R.font.vamos_serif_semibold,FontWeight.SemiBold))
     /** 大标题:空状态、欢迎页。 */
-    val LargeTitle = TextStyle(fontSize = 28.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Serif)
+    val LargeTitle = TextStyle(fontSize = 28.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold, fontFamily = serif)
     /** 页面标题:顶栏。 */
-    val Title = TextStyle(fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Serif)
+    val Title = TextStyle(fontSize = 20.sp, lineHeight = 28.sp, fontWeight = FontWeight.Medium, fontFamily = serif)
+    val Display get() = LargeTitle
+    val Subtitle = TextStyle(fontSize=16.sp,lineHeight=24.sp,fontWeight=FontWeight.Medium)
+    val Mono = TextStyle(fontSize=13.sp,lineHeight=18.sp,fontFamily=FontFamily.Monospace)
     /** 正文、行标题。 */
     val Body = TextStyle(fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.Normal)
     /** 卡片标题等需要强调的正文。 */

@@ -118,3 +118,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - License: Google APIs Terms of Service / ML Kit terms (not GPL).
 - Terms: https://developers.google.com/ml-kit/terms
 - Usage: existing on-device OCR; bundled Chinese/Latin recognition models and native OCR pipeline. Not introduced as an analytics or crash-reporting SDK.
+
+## Noto Serif SC
+
+- Source: https://github.com/google/fonts/tree/main/ofl/notoserifsc
+- License: SIL Open Font License 1.1; full text: OFL-Noto-Serif.txt.
+- Usage: UI glyph subset at weights 500 and 600, generated with tools/fonts/subset_noto.py; other glyphs fall back to Android fonts. Copyright 2012 Google Inc. All Rights Reserved.

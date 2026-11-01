@@ -88,7 +88,7 @@ fun MemoryScreen(vm: MemoryViewModel, onBack: () -> Unit) {
             Segment.Memories -> {
                 if (ui.rows.isEmpty()) {
                     GroupLabel("")
-                    VmEmptyNote(if (ui.query.isBlank()) stringResource(R.string.memory_empty) else stringResource(R.string.not_found))
+                    com.yongpeng.vamos.ui.components.VmEmptyState(if (ui.query.isBlank()) stringResource(R.string.memory_empty) else stringResource(R.string.not_found),"你允许 Vamos 记住的偏好会出现在这里")
                 }
                 KIND_GROUPS.forEach { (kind, label) ->
                     val rows = ui.rows.filter { it.kind == kind }

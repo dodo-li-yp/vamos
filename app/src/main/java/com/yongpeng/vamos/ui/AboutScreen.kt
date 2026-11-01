@@ -116,6 +116,7 @@ fun AboutScreen(
 
     PageScaffold(AboutCopy.TITLE, onBack) {
         Hero(versionName, build, beta)
+        if(update.status == CheckStatus.Checking) com.yongpeng.vamos.ui.components.VmSkeleton(Modifier.padding(vertical=16.dp))
 
         GroupCard {
             val v = AboutCopy.checkValue(update)

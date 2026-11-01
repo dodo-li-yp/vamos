@@ -100,6 +100,7 @@ class BuiltinShellEngine(
     private var retryJob: Job? = null
     private var discoveryJob: Job? = null
     private var started = false
+    @Volatile private var controlPaused = false
 
     override val paired: Boolean get() = platform.paired()
 
@@ -128,6 +129,7 @@ class BuiltinShellEngine(
         var first = true
         scope.launch {
             helper.collect { h ->
+                if(controlPaused) { if(h != null) withContext(io) { platform.stopHelper() }; return@collect }
                 if (h != null) {
                     synchronized(this@BuiltinShellEngine) { failures = 0; retryJob?.cancel() }
                     autoOn?.reset()
@@ -217,6 +219,7 @@ class BuiltinShellEngine(
 
     @Synchronized
     private fun schedule(delayMs: Long) {
+        if(controlPaused) return
         retryJob?.cancel()
         retryJob = scope.launch {
             delay(delayMs)
@@ -225,6 +228,7 @@ class BuiltinShellEngine(
     }
 
     private suspend fun launchOnce(): Unit = launchLock.withLock {
+        if(controlPaused) return@withLock
         if (helper.value != null) return@withLock
         if (!platform.paired()) {
             _status.value = unpairedStatus()
@@ -293,6 +297,7 @@ class BuiltinShellEngine(
     }
 
     override suspend fun startPairing(code: String, port: Int?) {
+        controlPaused = false
         _status.value = BuiltinShellStatus.Connecting
         val target = port ?: (_discovery.value as? PairingDiscovery.Found)?.port
             ?: withContext(io) { platform.findPairingPort(pairingPortTimeoutMs) }
@@ -323,6 +328,7 @@ class BuiltinShellEngine(
     }
 
     override suspend fun retry() {
+        controlPaused = false
         synchronized(this) {
             failures = 0
             retryJob?.cancel()
@@ -334,6 +340,14 @@ class BuiltinShellEngine(
             return
         }
         launchOnce()
+    }
+
+    /** Stop injection and watchdog retries, retaining the paired identity for explicit re-enabling. */
+    suspend fun pauseControl() {
+        controlPaused = true
+        synchronized(this) { retryJob?.cancel(); discoveryJob?.cancel() }
+        launchLock.withLock { withContext(io) { platform.stopHelper() } }
+        _status.value = BuiltinShellStatus.Failed(BuiltinShellFailure.HelperStartFailed)
     }
 
     override suspend fun unpair() {

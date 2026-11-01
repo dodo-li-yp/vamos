@@ -8,13 +8,14 @@ import android.os.Looper
  * 进程内共用一条 shell 连接,按引用计数绑定/解绑;由 [com.yongpeng.vamos.cap.phone.PhoneServices] 建一份。
  * 解绑会撤掉 shell 一侧的虚拟屏等改动,所以任务和启动恢复不能各自绑一条再各自解绑。[create] 第一次要用时建连接。
  */
-class SharedShell(private val create: () -> ShellBinding) {
+class SharedShell(private val allowed: () -> Boolean = {true}, private val create: () -> ShellBinding) {
     private var connection: ShellBinding? = null
     private var users = 0
     private val main = Handler(Looper.getMainLooper())
 
     @Synchronized
     fun acquire(): ShellBinding {
+        check(allowed()) { "手机控制已关闭，请在设置里重新启用" }
         val c = connection ?: create().also { connection = it }
         if (users++ == 0) onMain { c.bind() }
         return c

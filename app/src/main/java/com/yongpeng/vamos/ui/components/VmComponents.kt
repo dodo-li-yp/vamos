@@ -8,7 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.yongpeng.vamos.ui.theme.*
@@ -16,12 +16,13 @@ import com.yongpeng.vamos.ui.theme.*
 @Composable
 fun VmStopButton(onStop: () -> Unit, modifier: Modifier = Modifier) {
     val c = VmTheme.colors
-    Button(onStop, modifier.heightIn(min = 48.dp), shape = RoundedCornerShape(24.dp),
+    var stopping by remember { mutableStateOf(false) }
+    Button({ stopping=true;onStop() }, modifier.heightIn(min = 48.dp), shape = RoundedCornerShape(24.dp),
         colors = ButtonDefaults.buttonColors(containerColor = c.accentCinnabar, contentColor = c.onAccent),
         contentPadding = PaddingValues(horizontal = 16.dp)) {
         Icon(VamosIcons.Stop, null, Modifier.size(16.dp))
         Spacer(Modifier.width(8.dp))
-        Text("停止", style = VmType.BodyStrong)
+        Text(if(stopping) "停止中…" else "停止", style = VmType.BodyStrong)
     }
 }
 
@@ -47,3 +48,12 @@ fun VmPrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
 @Composable
 fun VmSecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) =
     VmButton(text, onClick, modifier, kind = ButtonKind.Tonal)
+
+@Composable
+fun VmGhostButton(text:String,onClick:()->Unit,modifier:Modifier=Modifier) = VmButton(text,onClick,modifier,kind=ButtonKind.Text)
+
+@Composable
+fun VmDangerButton(text:String,onClick:()->Unit,modifier:Modifier=Modifier) {
+    val c=VmTheme.colors
+    Button(onClick,modifier.heightIn(min=48.dp),shape=RoundedCornerShape(14.dp),colors=ButtonDefaults.buttonColors(containerColor=c.accentCinnabar,contentColor=c.onAccent)){Text(text,style=VmType.Subtitle)}
+}

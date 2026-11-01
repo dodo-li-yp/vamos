@@ -22,6 +22,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import com.yongpeng.vamos.BuildConfig
@@ -157,6 +160,7 @@ fun SettingsScreen(
             onOpenPhoneOps = { page = SettingsPage.PhoneOps },
             onOpenDuringWork = { page = SettingsPage.DuringWork },
             onOpenConfirmation = { page = SettingsPage.Confirmation },
+            onClosePhoneControl = { onFix(Fix.ClosePhoneControl) },
             capsuleMode = capsuleMode, onOpenCapsule = { page = SettingsPage.Capsule },
             onOpenNotifications = { notificationsFrom = SettingsPage.Home; page = SettingsPage.Notifications },
             language = language, onOpenLanguage = { page = SettingsPage.Language },
@@ -239,6 +243,7 @@ fun SettingsContent(
     usageTokens: Long? = null,
     onOpenUsage: () -> Unit = {},
     onOpenPhoneOps: () -> Unit = {},
+    onClosePhoneControl: () -> Unit = {},
     onOpenDuringWork: () -> Unit = {},
     onOpenConfirmation: () -> Unit = {},
     /** 悬浮胶囊此刻的选择,写在「悬浮胶囊」一行的右边。 */
@@ -284,6 +289,7 @@ fun SettingsContent(
                 PhoneOpsPill(status)
                 RowChevron()
             }
+            com.yongpeng.vamos.ui.components.VmDangerButton("一键关闭手机控制",onClosePhoneControl,Modifier.fillMaxWidth().padding(16.dp))
             VmListItem(VamosIcons.Shield, "执行模式与确认规则", "支付锁定 · 五类确认", onClick = onOpenConfirmation) { RowChevron() }
             VmListItem(VamosIcons.Moon, stringResource(R.string.settings_during_work), stringResource(R.string.settings_during_work_sub), onClick = onOpenDuringWork) { RowChevron() }
             VmListItem(VamosIcons.Message, CapsuleSettingsCopy.TITLE, CapsuleSettingsCopy.SUBTITLE, onClick = onOpenCapsule) {

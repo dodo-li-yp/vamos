@@ -159,6 +159,7 @@ class BuiltinShellRecovery(
 
     /** 开机后按已生效的「重启后自动恢复」重新打开无线调试并重起助手;不需要动手时返回 null。 */
     suspend fun restoreAfterBoot(): RestoreOutcome? {
+        if(!app.getSharedPreferences("phone-control",Context.MODE_PRIVATE).getBoolean("enabled",true)) return null
         // 没配对过(助手是电脑经 USB 起的):Vamos 自己起不来助手,不去动无线调试
         if (!control.paired) return null
         val holds = app.checkSelfPermission(PermissionCommands.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED

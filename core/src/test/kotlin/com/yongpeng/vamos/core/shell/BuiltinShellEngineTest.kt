@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -82,6 +83,21 @@ class BuiltinShellEngineTest {
     )
 
     private fun launches() = platform.calls.count { it == "launch" }
+
+    @Test fun closingControlKeepsIdentityAndBlocksWatchdogUntilExplicitRetry() = runTest {
+        platform.pairedFlag=true
+        helper.value="binder"
+        val e=engine()
+        e.start(); runCurrent()
+        e.pauseControl(); runCurrent()
+        e.need(); e.wifiAvailable(); e.wirelessDebuggingChanged()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(0,launches())
+        assertTrue(platform.pairedFlag)
+        assertFalse(platform.calls.contains("forget"))
+        e.retry(); runCurrent()
+        assertEquals(1,launches())
+    }
 
     @Test
     fun backoffDoublesAndStops() {

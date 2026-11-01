@@ -198,7 +198,7 @@ private const val MAX_RECENT = 50
  * 打开和关上由外面的抽屉管,这里只摆内容,点了什么交给回调。
  */
 @Composable
-fun ChatDrawer(
+fun VmDrawer(
     check: Prerequisites.Check,
     sections: DrawerSections,
     canSwitch: Boolean,
@@ -552,7 +552,7 @@ fun ChatWithDrawer(
                 val sections = remember(all, current, others, canSwitch, deleted) {
                     drawerSections(all.filter { it.id !in deleted }, current, others.filter { it !in deleted }, vm::runningGoal, canSwitch, System.currentTimeMillis())
                 }
-                ChatDrawer(
+                VmDrawer(
                     check, sections, canSwitch,
                     onNew = { close { vm.newConversation() } },
                     onPlans = { leave(onPlans) },
