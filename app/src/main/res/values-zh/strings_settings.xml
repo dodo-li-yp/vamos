@@ -18,7 +18,6 @@
         <item quantity="other">%1$d 个</item>
     </plurals>
     <string name="settings_advanced">高级</string>
-    <string name="settings_sandbox">文件与计算环境</string>
     <string name="settings_routes">记住的操作路线</string>
     <plurals name="settings_count_routes">
         <item quantity="other">%1$d 条</item>
@@ -29,9 +28,7 @@
     <string name="pill_unsupported">不支持</string>
     <string name="pill_available">可用</string>
     <string name="pill_needs_attention">需要处理</string>
-    <string name="sandbox_ready">已就绪</string>
-    <string name="sandbox_preparing">准备中</string>
-    <string name="sandbox_not_prepared">未准备</string>
+    <string name="phone_ready">已就绪</string>
     <string name="settings_all_ready_detail">模型已配置 · 手机操作可用</string>
     <string name="settings_status">状态</string>
     <string name="settings_a11y">无障碍服务</string>

@@ -36,8 +36,6 @@
     <string name="chat_view_process">檢視過程</string>
     <string name="chat_unlock_body">手機螢幕鎖定了,解鎖後會自動繼續。</string>
     <string name="chat_input_body">%1$s\n可以點選項,也可以在下面輸入。%2$s</string>
-    <string name="chat_refuse">拒絕</string>
-    <string name="chat_allow_once">允許這一次</string>
     <string name="chat_continue">繼續</string>
     <string name="chat_not_done">沒有完成</string>
     <string name="chat_stopped">已停止。</string>

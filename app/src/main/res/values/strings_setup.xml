@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
-    <string name="welcome_title">Hi, I’m Vamos</string>
-    <string name="welcome_lead">Your personal assistant on your phone.\nTell me what to do and I’ll get it done in the background.</string>
-    <string name="welcome_note">Before you start: set up a model and turn on phone control. About 3 minutes.</string>
-    <string name="welcome_start">Get started</string>
-    <string name="welcome_apps">Use apps</string>
-    <string name="welcome_apps_body">Taps, types and scrolls on a background screen, leaving yours free</string>
-    <string name="welcome_web">Browse the web</string>
-    <string name="welcome_web_body">Built-in browser to read pages, compare prices and look things up</string>
-    <string name="welcome_files">Work with files</string>
-    <string name="welcome_files_body">Spreadsheets, PDFs and data, computed and organized in a separate environment</string>
-    <string name="welcome_schedule">Do it on schedule</string>
-    <string name="welcome_schedule_body">Daily, weekly, or automatically when a condition is met</string>
     <string name="back">Back</string>
     <string name="hide">Hide</string>
     <string name="show">Show</string>
@@ -43,7 +31,6 @@
     <string name="model_probe_timeout">%1$s didn’t answer a test tool call within %2$d seconds</string>
     <string name="model_probe_no_tools">%1$s didn’t call the tool. Vamos needs a model that can call tools to get things done. The provider was saved, but this model wasn’t set as the main model.</string>
     <string name="model_self_hosted_note">127.0.0.1 is this phone. If the server runs on your computer, replace it with the computer’s local network address and let the server accept connections from the network, not only from itself.</string>
-    <string name="preset_custom">Custom</string>
     <string name="model_manual_name">Model name</string>
     <string name="model_no_list_custom">No models could be listed at this address. The provider may not offer a model list, or the address or interface type may be wrong. Enter a model name and tap “Test and save” again; one test call will tell.</string>
     <string name="model_no_list_preset">This provider didn’t list any models. Enter a model name and tap “Test and save” again; it’s saved only if a test call with it works.</string>

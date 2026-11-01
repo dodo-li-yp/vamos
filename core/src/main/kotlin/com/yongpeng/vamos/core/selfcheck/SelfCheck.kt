@@ -100,12 +100,6 @@ enum class Advice {
     NoWebView,
     /** 内置浏览器没读出或没点成。 */
     WebFailed,
-    /** 沙箱只在 arm64 手机上有。 */
-    SandboxUnsupported,
-    /** 运行环境还没准备好。 */
-    SandboxNotPrepared,
-    /** 命令没跑出预期的结果。 */
-    SandboxFailed,
     /** 这一项超时。 */
     TimedOut,
     /** 这一项出错。 */

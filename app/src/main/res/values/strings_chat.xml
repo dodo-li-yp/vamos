@@ -37,8 +37,6 @@
     <string name="chat_view_process">See how it went</string>
     <string name="chat_unlock_body">Your phone is locked. Vamos will continue once you unlock it.</string>
     <string name="chat_input_body">%1$s\nTap an option or type below. %2$s</string>
-    <string name="chat_refuse">Refuse</string>
-    <string name="chat_allow_once">Allow this once</string>
     <string name="chat_continue">Continue</string>
     <string name="chat_not_done">Not finished</string>
     <string name="chat_stopped">Stopped.</string>

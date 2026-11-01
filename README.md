@@ -23,7 +23,7 @@ V1 正在开发，尚未完成真机与逐屏视觉验收。正式 COS 地址、
 
 ## V1 范围
 
-Linux/PRoot/Alpine/Python/Node 运行时与脚本执行工具已移除。附件、私有工作区文件读写/搜索/导出和网页上传仍由 Kotlin 文件接口提供。电脑 CLI/MCP 代码保留，入口默认隐藏；不包含统计或崩溃上报 SDK。
+Linux/PRoot/Alpine/Python/Node 运行时与脚本执行工具已移除。附件、私有工作区文件读写/搜索/导出和网页上传仍由 Kotlin 文件接口提供。电脑 CLI/MCP 代码保留，入口默认隐藏（ENABLE_COMPUTER_ACCESS=false）；执行记录导出入口默认关闭（RunTimelineScreen 的 RECORD_EXPORT_ENABLED=false），实现保留供 V1.1；不包含统计或崩溃上报 SDK。
 
 国产 ROM 图文、执行记录导出、新手示例卡和开放 CLI/MCP 延后到 V1.1；白名单、任务模板市场、崩溃上报和沙箱不属于 V1。
 
@@ -32,3 +32,17 @@ Linux/PRoot/Alpine/Python/Node 运行时与脚本执行工具已移除。附件�
 本项目基于 [Mika](https://github.com/wangzan101/Mika) 二次开发，遵循 Apache-2.0。保留根目录 [LICENSE](LICENSE)、[NOTICE](NOTICE) 和上游署名，修改声明为 `Modified by 永鹏 / Vamos, 2026`；第三方许可见 [licenses](licenses/THIRD_PARTY_NOTICES.md) 和应用「关于 › 开源许可」。
 
 开发约束见 [TASK.md](docs/vamos/TASK.md)，实际完成情况、未测边界与 APK 清单见 [TEST_REPORT.md](TEST_REPORT.md)。
+
+## 开发交付检查
+
+TASK.md 定义的 M1–M4 开发项已收尾；正式配置与真机验收分开管理。完整记录见 [TEST_REPORT.md](TEST_REPORT.md)，逐项执行清单见 [DEVICE_ACCEPTANCE.md](DEVICE_ACCEPTANCE.md)。缺失的 COS 地址、公钥和法律文本保留占位。
+
+不安装 APK 即可复查已知运行时/SDK 排除项、许可和 native/assets 清单：
+
+```sh
+python3 tools/verify_v1_apk.py app/build/outputs/apk/debug/app-debug.apk \
+  --aapt "$ANDROID_HOME/build-tools/34.0.0/aapt" --output /tmp/vamos-apk-audit.json
+python3 -m unittest discover -s tools/release -p 'test_*.py'
+```
+
+审计脚本检查 APK 实际内容和已知禁止项，不能代替第三方依赖的完整法律审查。设备测试包编译通过也不代表真机验收通过；本分支保持 draft，不自动签名发布。

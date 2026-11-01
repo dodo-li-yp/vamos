@@ -128,9 +128,6 @@ object SelfCheckCopy {
             Advice.MainScreenChanged -> R.string.selfcheck_advice_main
             Advice.NoWebView -> R.string.selfcheck_advice_no_webview
             Advice.WebFailed -> R.string.selfcheck_advice_web
-            Advice.SandboxUnsupported -> R.string.selfcheck_advice_sandbox_unsupported
-            Advice.SandboxNotPrepared -> R.string.selfcheck_advice_sandbox_not_prepared
-            Advice.SandboxFailed -> R.string.selfcheck_advice_sandbox_failed
             Advice.TimedOut -> R.string.selfcheck_advice_timeout
             Advice.Error -> R.string.selfcheck_advice_error
             Advice.OutOfTime -> R.string.selfcheck_advice_out_of_time

@@ -36,8 +36,6 @@
     <string name="chat_view_process">查看过程</string>
     <string name="chat_unlock_body">手机锁屏了,解锁后会自动继续。</string>
     <string name="chat_input_body">%1$s\n可以点选项,也可以在下面输入。%2$s</string>
-    <string name="chat_refuse">拒绝</string>
-    <string name="chat_allow_once">允许这一次</string>
     <string name="chat_continue">继续</string>
     <string name="chat_not_done">没有完成</string>
     <string name="chat_stopped">已停止。</string>

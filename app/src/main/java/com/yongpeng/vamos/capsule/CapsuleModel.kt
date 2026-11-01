@@ -344,7 +344,7 @@ class CapsuleModel(private val reasonLabel: (String) -> String? = { null }) {
         const val LINGER_MS = 10_000L
         val HANDED_OVER: String get() = tr(R.string.capsule_you_handle)
         val THINKING: String get() = tr(R.string.capsule_thinking)
-        val PREPARING: String get() = tr(R.string.runtime_preparing)
+        val PREPARING: String get() = tr(R.string.task_preparing)
         val CONTINUING: String get() = tr(R.string.capsule_continuing)
         val KEPT: String get() = tr(R.string.kept_capsule)
 

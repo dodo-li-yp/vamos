@@ -10,6 +10,12 @@
 - 发布辅助脚本拒绝空文件及覆盖 APK、私钥、变更说明等输入。三个 Python 回归测试只生成临时测试密钥，退出即删除。
 - 本段 `SignedUpdateTest` 10 项、`UpdateCheckerTest` 3 项及发布脚本 3 项，合计 **16 项通过，0 失败**。未启动模拟器；M4 后集中生成最终 debug APK 和运行 Lint。
 
+## 开发收尾状态
+
+按最新指示，TASK 定义的 M1–M4 开发项与真机验收分开管理：源码/本地验证收尾完成；真机项不阻塞开发，全部列入 [DEVICE_ACCEPTANCE.md](DEVICE_ACCEPTANCE.md)。没有额外定义 M5，也没有扩展 V1.1/V2 范围。正式签名和发布仍由 Dodo 本地执行。
+
+M4 本段还隐藏了残留的执行记录导出入口（默认关闭，代码保留供 V1.1），移除旧沙箱自检/提示并将通用状态资源改名。清理 Lint 标记且在主代码/测试/XML 中均无引用的资源，新增 `tools/verify_v1_apk.py`，可复现检查已知 Linux/运行器、Compress/XZ 和统计/崩溃 SDK 类排除项及 native/assets/许可清单。保留 Android 系统 helper 操作所需权限，不删除仍被保留能力使用的权限。
+
 ## 完成情况
 
 | 里程碑 | 源码完成项 | 验收边界 |
@@ -20,7 +26,7 @@
 | M3 | 删除 GitHub Releases 更新；COS 清单原始字节 Ed25519 验签、双公钥、缓存与节流、HTTPS/ETag/Range 续传、SHA/大小校验、强更、安装权限与 FileProvider 安装、离线签名脚本 | 正式地址与公钥未提供；线上 COS 和系统安装六场景仍需设备验收 |
 | M4 | 删除 Linux/PRoot/talloc/Alpine、native 运行器、脚本执行工具/桥接/准备服务；保留安全 Kotlin 工作区、附件/上传下载/导出；清理 Compress/XZ、许可及 README；CLI/MCP UI 默认关闭 | APK 清单及针对性回归见下；未引入独立崩溃/统计 SDK |
 
-主要提交：`532a4b3` 五类确认；`393f605` COS 更新；`db53ed2` Linux 移除；`8737ff4` 看门狗暂停、PIN、预览等界面改动。后续修复包含后台确认超时回显、完整 60 秒计时、配对等待 10 秒提供人工确认。
+主要提交：`5a05ee0` M3 收尾；`532a4b3` 五类确认；`393f605` COS 更新；`db53ed2` Linux 移除；`8737ff4` 看门狗暂停、PIN、预览等界面改动。后续修复包含后台确认超时回显、完整 60 秒计时、配对等待 10 秒提供人工确认。
 
 ## M2 设计覆盖与限制
 
@@ -44,13 +50,14 @@
 - 为节省资源，使用单 worker、进程内 Kotlin 编译及缓存；稳定源码后统一检查，不反复运行模拟器。
 - 常规构建命令仍为 `./gradlew assembleDebug`；云环境额外设置 JAVA_HOME、ANDROID_HOME、GRADLE_USER_HOME 和系统 CA trustStore，TLS 校验保持开启。
 
-本次统一命令包含 `assembleDebug :app:lintDebug :core:test :app:testDebugUnitTest :app:assembleDebugAndroidTest`，附下列针对性测试过滤器及 `--offline`，**BUILD SUCCESSFUL**（12m13s；未重跑模拟器）。
+本次统一命令包含 `assembleDebug :app:lintDebug :core:test :app:testDebugUnitTest :app:assembleDebugAndroidTest`，附下列针对性测试过滤器及 `--offline`，**BUILD SUCCESSFUL**（最终检查 10m7s；本轮未运行模拟器）。
 
 - debug APK 编译：通过。
-- Lint：**0 错误、127 警告、6 信息**。之前三个缩进错误未再出现；未使用全局 baseline 或关闭错误检查。警告尚未全部清理，主要类型：UnusedResources 48, ApplySharedPref 17, StringFormatCount 10, ModifierParameter 7。
-- 核心：**83 项通过，0 失败/错误/跳过**。
-- 应用：**49 项通过，0 失败/错误/跳过**，合计 **132 项**。
+- Lint：**0 错误、79 警告、6 信息**。之前三个缩进错误未再出现；未使用全局 baseline 或关闭错误检查。警告尚未全部清理，主要类型：ApplySharedPref 17, StringFormatCount 10, ModifierParameter 7, PluralsCandidate 7；UnusedResources 已清零。
+- 核心：**96 项通过，0 失败/错误/跳过**。
+- 应用：**50 项通过，0 失败/错误/跳过**，JVM/应用合计 **146 项**；另有发布脚本 **3 项**，总计 **149 项通过**。
 - 设备测试 APK：编译通过，**未执行设备测试**，截图夹具未运行。
+- `tools/verify_v1_apk.py` 实际 APK 审计通过；删除已知 Linux/运行器/禁止 SDK 排除项，许可清单齐全。
 - `git diff --check`、APK `apksigner verify`、`aapt dump badging`：通过。
 
 核心测试：
@@ -61,9 +68,10 @@
 | BuiltinShellEngineTest | 34 |
 | VamosConfirmationTest | 3 |
 | ConfirmationGateTest | 15 |
-| SignedUpdateTest | 8 |
+| SignedUpdateTest | 10 |
 | ApprovalPolicyTest | 2 |
 | WorkspaceFileGateTest | 12 |
+| SelfCheckRunnerTest | 11 |
 
 应用测试：
 
@@ -79,8 +87,7 @@
 | VamosLinksTest | 4 |
 | WorkspaceContractTest | 6 |
 | ApkIntegrityTest | 5 |
-| UpdateCheckerTest | 2 |
-
+| UpdateCheckerTest | 3 |
 
 早期 M3 签名脚本使用临时目录生成测试密钥完成冒烟验证，临时私钥已删除；没有将测试私钥作为 App 默认配置。没有声称完整上游测试集、真实模型 API/OAuth 或真机任务测试全部通过。
 
@@ -98,8 +105,8 @@
 ## APK 与合规
 
 - 当前 APK：`app/build/outputs/apk/debug/app-debug.apk`；交付副本 `work/vamos-1.0.0-debug.apk`（忽略文件，不提交二进制）。
-- 大小：**91,436,095 字节**；SHA-256：`9388b54f76945072791fd14cee5ca7c0630d3fdb1e11ba3b7c8d4cc48763b517`。
-- 比移除 Linux 前同环境 debug APK 的 103,249,501 字节下降 **11.44%**。这是移除前后比较；上游正式测试包未提供，不声称已实测上游发布包体积。
+- 大小：**93,051,111 字节**；SHA-256：`9ddfd4987181f42188038cc161b88ec065012567abc3b62fb15f95379a8725aa`。
+- 比移除 Linux 前同环境 debug APK 的 103,249,501 字节下降 **9.88%**。这是移除前后比较；上游正式测试包未提供，不声称已实测上游发布包体积。
 - 实测无 proot/talloc/rootfs/vamosrun/可执行脚本资源。剩余 native 为 AndroidX 图形与现有本地 ML Kit OCR，各组件许可已列明。
 
 - applicationId / FileProvider：`com.yongpeng.vamos` / `com.yongpeng.vamos.fileprovider`；versionName `1.0.0`，versionCode `33`。
@@ -122,6 +129,8 @@ lib/x86_64/libmlkit_google_ocr_pipeline.so
 assets/licenses/Apache-2.0.txt
 assets/licenses/CC0-1.0.txt
 assets/licenses/NOTICE.txt
+assets/licenses/OFL-Noto-Serif.txt
+assets/licenses/THIRD_PARTY_NOTICES.md
 assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_rpn_gcn.binarypb
 assets/mlkit-google-ocr-models/aksara/aksara_page_layout_analysis_ti_rpn_gcn.binarypb
 assets/mlkit-google-ocr-models/gocr/gocr_models/line_recognition_legacy_mobile/Hani_ctc/optical/assets.extra/LabelMap.pb
@@ -154,10 +163,8 @@ assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layou
 assets/mlkit-google-ocr-models/taser_tflite_gocrlatin_mbv2_scriptid_aksara_layout_gcn_mobile_runner_ti.binarypb
 assets/selfcheck/page.html
 assets/web/page.js
-assets/licenses/OFL-Noto-Serif.txt
 res/font/vamos_serif_medium.ttf
 res/font/vamos_serif_semibold.ttf
-assets/licenses/THIRD_PARTY_NOTICES.md
 ```
 
 ## 占位、未完成与延期

@@ -96,7 +96,7 @@ class SelfCheckRunnerTest {
         assertEquals(CheckStatus.Fail, b.status)
         assertEquals(Advice.TimedOut, b.advice)
         assertEquals("timed out after 15 s", b.detail)
-        assertEquals(CheckStatus.Pass, s.of(SelfCheck.BROWSER).status)
+        assertEquals(CheckStatus.Pass, s.of(SelfCheck.APP_COPIES).status)
     }
 
     @Test

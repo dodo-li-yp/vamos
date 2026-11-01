@@ -22,7 +22,6 @@
         <item quantity="other">%1$d sites</item>
     </plurals>
     <string name="settings_advanced">Advanced</string>
-    <string name="settings_sandbox">Files &amp; computing environment</string>
     <string name="settings_routes">Saved routes</string>
     <plurals name="settings_count_routes">
         <item quantity="one">%1$d route</item>
@@ -34,9 +33,7 @@
     <string name="pill_unsupported">Not supported</string>
     <string name="pill_available">Ready</string>
     <string name="pill_needs_attention">Needs attention</string>
-    <string name="sandbox_ready">Ready</string>
-    <string name="sandbox_preparing">Preparing</string>
-    <string name="sandbox_not_prepared">Not set up</string>
+    <string name="phone_ready">Ready</string>
     <string name="settings_all_ready_detail">Model set up · Phone control ready</string>
     <string name="settings_status">Status</string>
     <string name="settings_a11y">Accessibility service</string>

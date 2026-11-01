@@ -851,7 +851,7 @@ class TaskService : Service() {
         private val TAKEOVER_QUEUED: String get() = tr(R.string.task_takeover_queued)
         private const val TAG = "VamosTask"
         val TOO_OLD: String get() = tr(R.string.task_too_old)
-        internal val PREPARING: String get() = tr(R.string.runtime_preparing)
+        internal val PREPARING: String get() = tr(R.string.task_preparing)
         val SHELL_DIED: String get() = tr(R.string.task_shell_died)
 
         /** 循环的状态里哪些可以由发布写出去。 */

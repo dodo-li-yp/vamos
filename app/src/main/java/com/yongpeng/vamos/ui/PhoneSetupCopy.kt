@@ -202,7 +202,7 @@ object PhoneSetupCopy {
         if (restart == HelperRestart.UsbCommand) tr(R.string.phone_usage_note_usb) else tr(R.string.phone_usage_note)
 
     fun statusValue(s: BuiltinShellStatus): Pair<String, ValueTone> = when (s) {
-        BuiltinShellStatus.Running -> tr(R.string.sandbox_ready) to ValueTone.Ok
+        BuiltinShellStatus.Running -> tr(R.string.phone_ready) to ValueTone.Ok
         BuiltinShellStatus.NotPaired -> tr(R.string.settings_not_set) to ValueTone.Bad
         BuiltinShellStatus.WirelessDebuggingOff -> tr(R.string.phone_wireless_off) to ValueTone.Bad
         BuiltinShellStatus.Connecting -> tr(R.string.phone_connecting) to ValueTone.Plain

@@ -26,7 +26,6 @@
     <string name="selfcheck_check_alive">持续运行</string>
     <string name="selfcheck_check_main">不打扰你的屏幕</string>
     <string name="selfcheck_check_browser">内置浏览器</string>
-    <string name="selfcheck_check_sandbox">沙箱</string>
     <string name="selfcheck_check_copies">分身与工作资料</string>
 
     <string name="selfcheck_status_pending">等待</string>
@@ -42,7 +41,7 @@
     <string name="selfcheck_line_needs">跳过:要先通过「%1$s」</string>
     <string name="selfcheck_line_other">没通过,详见报告。</string>
 
-    <string name="selfcheck_advice_too_old">系统低于安卓 12,手机操作用不了;聊天、网页和沙箱照常能用。</string>
+    <string name="selfcheck_advice_too_old">系统低于安卓 12,手机操作用不了;聊天、网页和文件处理照常能用。</string>
     <string name="selfcheck_advice_no_wireless">系统里没有无线调试,可以改用电脑经 USB 启动手机操作。</string>
     <string name="selfcheck_advice_a11y_off">无障碍没开:在设置 › 手机操作里打开 Vamos 的无障碍。</string>
     <string name="selfcheck_advice_a11y_restart">无障碍开着却没在运行:在系统设置里把 Vamos 的无障碍关掉再打开。</string>
@@ -61,9 +60,6 @@
     <string name="selfcheck_advice_main">检查期间你的屏幕换了内容。如果你一直停在这一页,请反馈给我们。</string>
     <string name="selfcheck_advice_no_webview">系统里没有可用的 WebView,内置浏览器用不了。可以安装或更新系统的 WebView 组件。</string>
     <string name="selfcheck_advice_web">内置浏览器没能读出或点到本地测试页,请反馈给我们。</string>
-    <string name="selfcheck_advice_sandbox_unsupported">沙箱只在 64 位 ARM 手机上有。</string>
-    <string name="selfcheck_advice_sandbox_not_prepared">沙箱的运行环境还没准备好,第一次有任务用到时会自动准备;准备好后再查一次。</string>
-    <string name="selfcheck_advice_sandbox_failed">沙箱里的命令没跑出预期的结果。可以在「文件与计算环境」里重置运行环境后再试。</string>
     <string name="selfcheck_advice_timeout">这一项用时太长。再查一次;总是超时请反馈给我们。</string>
     <string name="selfcheck_advice_error">这一项出错了,请反馈给我们。</string>
     <string name="selfcheck_advice_out_of_time">整次自检的时间用完了,这一项没来得及查。</string>

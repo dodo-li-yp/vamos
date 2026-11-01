@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
-    <string name="welcome_title">你好,我是 Vamos</string>
-    <string name="welcome_lead">你手機上的私人助理。\n說要做什麼,我在背景替你辦完。</string>
-    <string name="welcome_note">開始前需要配一個模型、開啟手機操作,約 3 分鐘</string>
-    <string name="welcome_start">開始設定</string>
-    <string name="welcome_apps">操作 App</string>
-    <string name="welcome_apps_body">在背景的一塊螢幕上點、輸入、翻頁,不佔用你的螢幕</string>
-    <string name="welcome_web">上網查</string>
-    <string name="welcome_web_body">內建瀏覽器,讀網頁、比價、查資料</string>
-    <string name="welcome_files">處理檔案</string>
-    <string name="welcome_files_body">表格、PDF、資料,在獨立的環境裡算和整理</string>
-    <string name="welcome_schedule">按時去做</string>
-    <string name="welcome_schedule_body">每天、每週,或者條件滿足時自動去做</string>
     <string name="back">返回</string>
     <string name="hide">隱藏</string>
     <string name="show">顯示</string>
@@ -43,7 +31,6 @@
     <string name="model_probe_timeout">試著讓 %1$s 呼叫一個工具，%2$d 秒沒有回應</string>
     <string name="model_probe_no_tools">%1$s 沒有呼叫工具，Vamos 做事需要會呼叫工具的模型。服務商已儲存，但沒有拿這個模型當主模型。</string>
     <string name="model_self_hosted_note">127.0.0.1 是這臺手機自己。服務跑在電腦上時，把它換成電腦的區域網路 IP 位址，並讓服務接受區域網路的連線（不只本機）。</string>
-    <string name="preset_custom">自定義</string>
     <string name="model_manual_name">模型名</string>
     <string name="model_no_list_custom">這個網址列不出模型：可能這家不提供模型列表，也可能網址或介面型別填錯了。填一個模型名再點「測試並儲存」，用它試呼叫一次就知道。</string>
     <string name="model_no_list_preset">這家沒有列出模型。填一個模型名再點「測試並儲存」，用它試呼叫一次，通了才儲存。</string>

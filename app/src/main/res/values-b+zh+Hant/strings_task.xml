@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
-    <string name="notif_channel_prepare">背景準備</string>
-    <string name="notif_preparing">Vamos 正在準備</string>
     <string name="notif_result_title">Vamos 任務結果</string>
     <string name="parallel_second_display_failed">第二塊虛擬螢幕沒能建起來,這次執行期間一次只進行一個任務</string>
     <string name="parallel_needs_14">Android 14 以上才支援同時進行多個任務</string>

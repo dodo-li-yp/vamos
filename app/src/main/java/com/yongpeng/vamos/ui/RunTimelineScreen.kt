@@ -150,7 +150,7 @@ private fun HeaderGroup(h: TimelineHeader, onExport: () -> Unit) {
         if (h.verdict != stringResource(R.string.verify_none)) VmListItem(null, stringResource(R.string.timeline_check)) { RowValue(h.verdict) }
         // 小结那一行已经写了用时
         if (h.metrics == null) h.duration?.let { d -> VmListItem(null, stringResource(R.string.timeline_duration)) { RowValue(d) } }
-        VmListItem(null, stringResource(R.string.timeline_export), stringResource(R.string.timeline_export_hint), onClick = onExport) { RowChevron() }
+        if (RECORD_EXPORT_ENABLED) VmListItem(null, stringResource(R.string.timeline_export), stringResource(R.string.timeline_export_hint), onClick = onExport) { RowChevron() }
         VmListItem(null, stringResource(R.string.timeline_more), onClick = { more = !more }) {
             RowValue(if (more) stringResource(R.string.collapse) else stringResource(R.string.expand))
             RowChevron()
@@ -273,3 +273,6 @@ private fun Shot(vm: RunTimelineViewModel, id: Int, step: Int) {
         )
     }
 }
+
+// V1.1: retain the exporter implementation, hide its V1 entry point.
+private const val RECORD_EXPORT_ENABLED = false

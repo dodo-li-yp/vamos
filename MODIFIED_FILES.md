@@ -1,12 +1,13 @@
 # Vamos 修改文件清单
 
-相对基线 e17d308；涵盖 M1–M4、M2 续做和 Lint 修复。R 为目录迁移，LICENSE 保留原文。
+相对基线 e17d308；涵盖 M1–M4 开发与最终收尾。R 为目录迁移，LICENSE 保留原文；真机待验项目见 DEVICE_ACCEPTANCE.md。
 
 ```text
 M	.github/CONTRIBUTING.md
 M	.github/CONTRIBUTING.zh-CN.md
 M	.gitignore
 A	CHANGES.md
+A	DEVICE_ACCEPTANCE.md
 A	MODIFIED_FILES.md
 M	NOTICE
 M	README.en.md
@@ -283,7 +284,7 @@ R087	app/src/main/java/com/wangzan101/mika/capsule/CapsuleContent.kt	app/src/mai
 R091	app/src/main/java/com/wangzan101/mika/capsule/CapsuleController.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleController.kt
 R097	app/src/main/java/com/wangzan101/mika/capsule/CapsuleDock.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleDock.kt
 R087	app/src/main/java/com/wangzan101/mika/capsule/CapsuleIdle.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleIdle.kt
-R094	app/src/main/java/com/wangzan101/mika/capsule/CapsuleModel.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleModel.kt
+R093	app/src/main/java/com/wangzan101/mika/capsule/CapsuleModel.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleModel.kt
 R089	app/src/main/java/com/wangzan101/mika/capsule/CapsulePreview.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsulePreview.kt
 R092	app/src/main/java/com/wangzan101/mika/capsule/CapsuleThread.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleThread.kt
 R094	app/src/main/java/com/wangzan101/mika/capsule/CapsuleVoice.kt	app/src/main/java/com/yongpeng/vamos/capsule/CapsuleVoice.kt
@@ -400,7 +401,7 @@ R095	app/src/main/java/com/wangzan101/mika/ui/ModelSetupViewModel.kt	app/src/mai
 R086	app/src/main/java/com/wangzan101/mika/ui/ModelsScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/ModelsScreen.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/Navigation.kt	app/src/main/java/com/yongpeng/vamos/ui/Navigation.kt
 R095	app/src/main/java/com/wangzan101/mika/ui/Onboarding.kt	app/src/main/java/com/yongpeng/vamos/ui/Onboarding.kt
-R096	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupCopy.kt
+R095	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupCopy.kt
 R078	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupScreen.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/PipPhysics.kt	app/src/main/java/com/yongpeng/vamos/ui/PipPhysics.kt
 R079	app/src/main/java/com/wangzan101/mika/ui/PlansScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PlansScreen.kt
@@ -410,7 +411,7 @@ R080	app/src/main/java/com/wangzan101/mika/ui/RunMetricsUi.kt	app/src/main/java/
 R073	app/src/main/java/com/wangzan101/mika/ui/RunTimelineScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/RunTimelineScreen.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/RunTimelineViewModel.kt	app/src/main/java/com/yongpeng/vamos/ui/RunTimelineViewModel.kt
 R087	app/src/main/java/com/wangzan101/mika/ui/ScreenMessage.kt	app/src/main/java/com/yongpeng/vamos/ui/ScreenMessage.kt
-R079	app/src/main/java/com/wangzan101/mika/ui/SelfCheckScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/SelfCheckScreen.kt
+R077	app/src/main/java/com/wangzan101/mika/ui/SelfCheckScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/SelfCheckScreen.kt
 R070	app/src/main/java/com/wangzan101/mika/ui/SettingsScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/SettingsScreen.kt
 R078	app/src/main/java/com/wangzan101/mika/ui/SettingsSubPages.kt	app/src/main/java/com/yongpeng/vamos/ui/SettingsSubPages.kt
 R068	app/src/main/java/com/wangzan101/mika/ui/SkillsSection.kt	app/src/main/java/com/yongpeng/vamos/ui/SkillsSection.kt
@@ -475,6 +476,7 @@ M	app/src/main/res/values-b+zh+Hant/strings_about.xml
 M	app/src/main/res/values-b+zh+Hant/strings_browser.xml
 M	app/src/main/res/values-b+zh+Hant/strings_capsule.xml
 M	app/src/main/res/values-b+zh+Hant/strings_chat.xml
+A	app/src/main/res/values-b+zh+Hant/strings_common.xml
 M	app/src/main/res/values-b+zh+Hant/strings_developer.xml
 M	app/src/main/res/values-b+zh+Hant/strings_mcp.xml
 M	app/src/main/res/values-b+zh+Hant/strings_memory.xml
@@ -483,7 +485,7 @@ M	app/src/main/res/values-b+zh+Hant/strings_models.xml
 M	app/src/main/res/values-b+zh+Hant/strings_phone.xml
 M	app/src/main/res/values-b+zh+Hant/strings_plans.xml
 M	app/src/main/res/values-b+zh+Hant/strings_recovery.xml
-M	app/src/main/res/values-b+zh+Hant/strings_sandbox.xml
+D	app/src/main/res/values-b+zh+Hant/strings_sandbox.xml
 M	app/src/main/res/values-b+zh+Hant/strings_selfcheck.xml
 M	app/src/main/res/values-b+zh+Hant/strings_settings.xml
 M	app/src/main/res/values-b+zh+Hant/strings_setup.xml
@@ -499,6 +501,7 @@ M	app/src/main/res/values-zh/strings_about.xml
 M	app/src/main/res/values-zh/strings_browser.xml
 M	app/src/main/res/values-zh/strings_capsule.xml
 M	app/src/main/res/values-zh/strings_chat.xml
+A	app/src/main/res/values-zh/strings_common.xml
 M	app/src/main/res/values-zh/strings_developer.xml
 M	app/src/main/res/values-zh/strings_mcp.xml
 M	app/src/main/res/values-zh/strings_memory.xml
@@ -507,7 +510,7 @@ M	app/src/main/res/values-zh/strings_models.xml
 M	app/src/main/res/values-zh/strings_phone.xml
 M	app/src/main/res/values-zh/strings_plans.xml
 M	app/src/main/res/values-zh/strings_recovery.xml
-M	app/src/main/res/values-zh/strings_sandbox.xml
+D	app/src/main/res/values-zh/strings_sandbox.xml
 M	app/src/main/res/values-zh/strings_selfcheck.xml
 M	app/src/main/res/values-zh/strings_settings.xml
 M	app/src/main/res/values-zh/strings_setup.xml
@@ -522,6 +525,7 @@ M	app/src/main/res/values/strings_about.xml
 M	app/src/main/res/values/strings_browser.xml
 M	app/src/main/res/values/strings_capsule.xml
 M	app/src/main/res/values/strings_chat.xml
+A	app/src/main/res/values/strings_common.xml
 M	app/src/main/res/values/strings_developer.xml
 M	app/src/main/res/values/strings_mcp.xml
 M	app/src/main/res/values/strings_memory.xml
@@ -530,7 +534,7 @@ M	app/src/main/res/values/strings_models.xml
 M	app/src/main/res/values/strings_phone.xml
 M	app/src/main/res/values/strings_plans.xml
 M	app/src/main/res/values/strings_recovery.xml
-M	app/src/main/res/values/strings_sandbox.xml
+D	app/src/main/res/values/strings_sandbox.xml
 M	app/src/main/res/values/strings_selfcheck.xml
 M	app/src/main/res/values/strings_settings.xml
 M	app/src/main/res/values/strings_setup.xml
@@ -972,7 +976,7 @@ R080	core/src/main/kotlin/com/wangzan101/mika/core/run/RunProvenance.kt	core/src
 R093	core/src/main/kotlin/com/wangzan101/mika/core/run/RunStore.kt	core/src/main/kotlin/com/yongpeng/vamos/core/run/RunStore.kt
 R094	core/src/main/kotlin/com/wangzan101/mika/core/run/SteerSignal.kt	core/src/main/kotlin/com/yongpeng/vamos/core/run/SteerSignal.kt
 R098	core/src/main/kotlin/com/wangzan101/mika/core/script/JsSource.kt	core/src/main/kotlin/com/yongpeng/vamos/core/script/JsSource.kt
-R092	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheck.kt	core/src/main/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheck.kt
+R090	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheck.kt	core/src/main/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheck.kt
 R096	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckReport.kt	core/src/main/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheckReport.kt
 R098	core/src/main/kotlin/com/wangzan101/mika/core/selfcheck/SelfCheckRunner.kt	core/src/main/kotlin/com/yongpeng/vamos/core/selfcheck/SelfCheckRunner.kt
 R091	core/src/main/kotlin/com/wangzan101/mika/core/shell/AccessibilityRepair.kt	core/src/main/kotlin/com/yongpeng/vamos/core/shell/AccessibilityRepair.kt
@@ -1470,6 +1474,7 @@ M	settings.gradle.kts
 A	tools/fonts/subset_noto.py
 A	tools/release/README.md
 A	tools/release/make_version_json.py
+A	tools/release/test_make_version_json.py
 D	tools/sandbox/README.md
 D	tools/sandbox/build-native.sh
 D	tools/sandbox/build-runtime.py
@@ -1481,4 +1486,5 @@ D	tools/sandbox/patches/proot-0004-link2symlink-fstat-nonfile.patch
 D	tools/sandbox/runtime-sources.py
 D	tools/sandbox/runtime/sources.lock
 D	tools/sandbox/sources.lock
+A	tools/verify_v1_apk.py
 ```

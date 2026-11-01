@@ -26,7 +26,6 @@
     <string name="selfcheck_check_alive">Keeps running</string>
     <string name="selfcheck_check_main">Your screen undisturbed</string>
     <string name="selfcheck_check_browser">Built-in browser</string>
-    <string name="selfcheck_check_sandbox">Sandbox</string>
     <string name="selfcheck_check_copies">App copies</string>
 
     <string name="selfcheck_status_pending">Waiting</string>
@@ -42,7 +41,7 @@
     <string name="selfcheck_line_needs">Skipped: “%1$s” has to pass first</string>
     <string name="selfcheck_line_other">Didn’t pass. See the report for details.</string>
 
-    <string name="selfcheck_advice_too_old">This system is older than Android 12, so phone control isn’t available. Chat, web and the sandbox still work.</string>
+    <string name="selfcheck_advice_too_old">This system is older than Android 12, so phone control isn’t available. Chat, web and private files still work.</string>
     <string name="selfcheck_advice_no_wireless">This system has no Wireless debugging. You can start phone control from a computer over USB instead.</string>
     <string name="selfcheck_advice_a11y_off">Accessibility is off. Turn on Vamos’s accessibility in Settings › Phone control.</string>
     <string name="selfcheck_advice_a11y_restart">Accessibility is on but not running. Turn Vamos’s accessibility off and on again in system settings.</string>
@@ -61,9 +60,6 @@
     <string name="selfcheck_advice_main">Your screen changed during the check. If you stayed on this page, please report this.</string>
     <string name="selfcheck_advice_no_webview">There’s no usable WebView on this system, so the built-in browser can’t work. Install or update the system WebView component.</string>
     <string name="selfcheck_advice_web">The built-in browser couldn’t read or tap the local test page. Please report this.</string>
-    <string name="selfcheck_advice_sandbox_unsupported">The sandbox is only available on 64-bit ARM phones.</string>
-    <string name="selfcheck_advice_sandbox_not_prepared">The sandbox isn’t prepared yet. It gets ready the first time a task uses it; then run this again.</string>
-    <string name="selfcheck_advice_sandbox_failed">The sandbox commands didn’t give the expected result. You can reset the environment in Files &amp; computing environment and try again.</string>
     <string name="selfcheck_advice_timeout">This check took too long. Run it again; if it keeps timing out, please report it.</string>
     <string name="selfcheck_advice_error">This check ran into an error. Please report it.</string>
     <string name="selfcheck_advice_out_of_time">The self-check ran out of time before this check.</string>
