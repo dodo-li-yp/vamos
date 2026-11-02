@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -23,7 +24,7 @@ class ProviderSpeechTest {
         override val level: StateFlow<Float> = MutableStateFlow(0f)
         var cancelled = 0
         override fun start() = starts
-        override fun stop() = ShortArray(Wav.RATE * ms / 1000)
+        override suspend fun stop() = ShortArray(Wav.RATE * ms / 1000)
         override fun cancel() { cancelled++ }
     }
 
@@ -31,6 +32,29 @@ class ProviderSpeechTest {
 
     private fun events(s: SpeechSession) = runBlocking {
         withTimeout(5_000) { s.events.filter { it !is SpeechEvent.Level }.toList() }
+    }
+
+    @Test fun releaseReturnsWhileRecorderStopIsSuspended() = kotlinx.coroutines.test.runTest {
+        val stopped = CompletableDeferred<Unit>()
+        val releaseStop = CompletableDeferred<Unit>()
+        val recorder = object : Recorder {
+            override val level = MutableStateFlow(0f)
+            override fun start() = true
+            override suspend fun stop(): ShortArray {
+                stopped.complete(Unit)
+                releaseStop.await()
+                return ShortArray(0)
+            }
+            override fun cancel() = Unit
+        }
+        val session = ProviderSpeech(recorder, { error("short recording must not transcribe") }, backgroundScope)
+        session.release()
+        runCurrent()
+        assertTrue(stopped.isCompleted)
+        assertFalse(releaseStop.isCompleted)
+        // The same caller can continue while audio shutdown is still waiting.
+        releaseStop.complete(Unit)
+        runCurrent()
     }
 
     @Test

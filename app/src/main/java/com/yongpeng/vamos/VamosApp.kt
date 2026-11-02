@@ -127,7 +127,7 @@ class VamosApp : Application(), WebOwner, WorkspaceOwner, TaskEnvironment.Owner,
     val chatGptSignIn by lazy {
         com.yongpeng.vamos.settings.ChatGptSignIns(scope,
             keepAlive = { com.yongpeng.vamos.settings.ChatGptSignInService.start(this) },
-            log = { msg, e -> Log.w("VamosChatGpt", msg, e) })
+            log = { _, _ -> Log.w("VamosChatGpt", "Account operation failed") })
     }
 
     /** 经验路线。 */

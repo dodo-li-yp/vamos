@@ -9,6 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -57,15 +63,19 @@ object Licenses {
 fun LicensesScreen(onBack: () -> Unit) {
     BackHandler(onBack = onBack)
     val context = LocalContext.current
-    val licenseText = remember {
-        runCatching { context.assets.open(LICENSE_ASSET).use { it.readBytes().decodeToString() } }.getOrDefault("")
+    var texts by remember { mutableStateOf(List(3) { "" }) }
+    LaunchedEffect(context) {
+        texts = withContext(Dispatchers.IO) {
+            fun read(name: String) = context.assets.open("licenses/$name").bufferedReader().use { it.readText() }
+            listOf(read("Apache-2.0.txt"), read("NOTICE.txt"),
+                listOf("THIRD_PARTY_NOTICES.md", "OFL-Noto-Serif.txt", "CC0-1.0.txt").joinToString("\n\n", transform = ::read))
+        }
     }
-    val noticeText = remember { context.assets.open("licenses/NOTICE.txt").bufferedReader().use { it.readText() } }
-    val thirdPartyText = remember { context.assets.open("licenses/THIRD_PARTY_NOTICES.md").bufferedReader().use { it.readText() } + "\n\n" + context.assets.open("licenses/OFL-Noto-Serif.txt").bufferedReader().use { it.readText() } }
+    val (licenseText, noticeText, thirdPartyText) = texts
     val thirdParty = Licenses.ENTRIES.filter { it.name != "Vamos" }
     SubPage(AboutCopy.LICENSE_TITLE, onBack) {
         Text(noticeText, Modifier.padding(16.dp), style = VmType.Hint, color = VmTheme.colors.ink)
-        Text(thirdPartyText + "\n\n" + remember { context.assets.open("licenses/CC0-1.0.txt").bufferedReader().use { it.readText() } }, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
+        Text(thirdPartyText, Modifier.padding(16.dp), style = VmType.Caption, color = VmTheme.colors.ink2)
         if (licenseText.isNotEmpty()) {
             VmGlassCard(Modifier.padding(bottom = 12.dp).testTag("license-text")) {
                 Text(

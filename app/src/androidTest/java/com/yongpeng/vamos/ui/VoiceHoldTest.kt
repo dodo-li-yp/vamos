@@ -81,6 +81,17 @@ class VoiceHoldTest {
     private fun waitTag(tag: String) = compose.waitUntil(5_000) { compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
     private fun waitNoTag(tag: String) = compose.waitUntil(5_000) { compose.onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty() }
 
+    @Test fun tappingVoiceOverlayActuallyShowsIme() {
+        composer()
+        // Exercise the pointer overlay, not the text field's semantic click action.
+        compose.onNodeWithTag("composer-field").performTouchInput { down(center); up() }
+        compose.waitUntil(5_000) {
+            androidx.core.view.ViewCompat.getRootWindowInsets(compose.activity.window.decorView)
+                ?.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime()) == true
+        }
+        compose.onNodeWithTag("composer-field").assertIsFocused()
+    }
+
     @Test fun holdShowsTheListenCardAndReleaseFillsTheField() {
         composer("帮我")
         compose.onNodeWithTag("composer-field").performTouchInput { down(center) }

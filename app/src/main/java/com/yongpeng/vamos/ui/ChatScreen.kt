@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -438,7 +439,15 @@ private fun EmptyState(conversation: String?, onPick: (String) -> Unit) {
             Text(ChatCopy.greeting(hour), style = VmType.LargeTitle, color = c.ink)
             Text(ChatCopy.EMPTY_PROMPT, Modifier.padding(top = 6.dp), style = EmptyLead, color = c.ink2)
         }
-        // V1.1 example task cards intentionally have no V1 entry point.
+        Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            ChatCopy.examples.chunked(2).forEach { pair ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    pair.forEach { example ->
+                        VmExampleTaskCard(exampleIcon(example.kind), example.text, Modifier.weight(1f)) { onPick(example.text) }
+                    }
+                }
+            }
+        }
 
     }
 }
@@ -452,22 +461,13 @@ private fun exampleIcon(kind: ChatCopy.ExampleKind): ImageVector = when (kind) {
 }
 
 @Composable
-private fun ExampleRow(icon: ImageVector, text: String, first: Boolean, onClick: () -> Unit) {
+internal fun VmExampleTaskCard(icon: ImageVector, text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val c = VmTheme.colors
-    Row(
-        Modifier.fillMaxWidth()
-            .then(if (first) Modifier else Modifier.drawBehind {
-                val y = 0.25.dp.toPx()
-                drawLine(c.hair, Offset(52.dp.toPx(), y), Offset(size.width, y), strokeWidth = 0.5.dp.toPx())
-            })
-            .clickable(role = Role.Button, onClick = onClick)
-            .heightIn(min = 56.dp)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        Icon(icon, null, Modifier.size(VmSize.Icon), tint = c.ink2)
-        Text(text, Modifier.weight(1f), style = ExampleText, color = c.ink)
+    VmGlassCard(modifier.testTag("example-task-card").clickable(role = Role.Button, onClick = onClick)) {
+        Column(Modifier.heightIn(min = 128.dp).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Icon(icon, null, Modifier.size(VmSize.Icon), tint = c.accent)
+            Text(text, style = ExampleText, color = c.ink)
+        }
     }
 }
 
@@ -1046,6 +1046,7 @@ private enum class Panel { Closed, Open, Yielding }
  * 「＋」点开的附件面板([attachPanel])在输入栏下面、占键盘那块位置,和键盘互换:开面板收键盘,
  * 再点「＋」(这时是 ×)或点输入框就收起面板、换成键盘;返回先收面板。待发的附件在输入栏上方一排([PendingTray])。
  */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 internal fun Composer(
     modifier: Modifier,
@@ -1095,19 +1096,35 @@ internal fun Composer(
     val keyboard = LocalSoftwareKeyboardController.current
     val field = remember { FocusRequester() }
     val ime = WindowInsets.ime
+    val imeVisible = WindowInsets.isImeVisible
+    val currentImeVisible by androidx.compose.runtime.rememberUpdatedState(imeVisible)
     val nav = WindowInsets.navigationBars
+    val inputView = androidx.compose.ui.platform.LocalView.current
+    var keyboardRequest by remember { mutableIntStateOf(0) }
+    LaunchedEffect(keyboardRequest) {
+        if (keyboardRequest > 0) {
+            field.requestFocus()
+            // Let the focus transaction attach the text input session before showing IME.
+            androidx.compose.runtime.withFrameNanos { }
+            keyboard?.show()
+            inputView.post {
+                val imm = inputView.context.getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
+                    as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(inputView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
+    }
     var panel by rememberSaveable { mutableStateOf(Panel.Closed) }
     LaunchedEffect(editRequest) {
         if (editRequest > 0) {
             panel = Panel.Closed
-            field.requestFocus()
-            keyboard?.show()
+            keyboardRequest++
         }
     }
     // 面板和键盘一样高:记下见过的键盘高度(在导航栏之上的那段),没见过时用默认高度
     var keyboardPx by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(ime, nav, density) {
-        snapshotFlow { ime.getBottom(density) - nav.getBottom(density) }.collect { if (it > keyboardPx) keyboardPx = it }
+        snapshotFlow { visibleImeHeight(currentImeVisible, ime.getBottom(density), nav.getBottom(density)) }.collect { if (it > keyboardPx) keyboardPx = it }
     }
     // 输入框聚焦时长按留给系统的选字、粘贴(悬浮、分体、实体键盘也一样);没聚焦时输入框上盖一层按住说话的手势
     val voiceGesture = vh != null && (!fieldFocused || voiceHolding)
@@ -1115,7 +1132,7 @@ internal fun Composer(
     LaunchedEffect(ime, density, vh != null) {
         if (vh == null) return@LaunchedEffect
         var wasUp = false
-        snapshotFlow { ime.getBottom(density) > 0 }.collect { up ->
+        snapshotFlow { currentImeVisible && ime.getBottom(density) > 0 }.collect { up ->
             if (wasUp && !up && fieldFocused) focus.clearFocus()
             wasUp = up
         }
@@ -1139,8 +1156,7 @@ internal fun Composer(
     val togglePanel: () -> Unit = {
         if (panel == Panel.Open) {
             panel = Panel.Yielding
-            field.requestFocus()
-            keyboard?.show()
+            keyboardRequest++
         } else {
             focus.clearFocus()
             keyboard?.hide()
@@ -1151,7 +1167,7 @@ internal fun Composer(
     Box(
         modifier.fillMaxWidth()
             .background(fade)
-            .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
+            .windowInsetsPadding(if (imeVisible) nav.union(ime) else nav)
             .padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 6.dp),
     ) {
         Column(Modifier.fillMaxWidth()) {
@@ -1215,7 +1231,7 @@ internal fun Composer(
                     // 服务商松开后在转:输入框里转圈,转好的字填进来
                     if (converting) VoiceConverting(Modifier.align(Alignment.CenterStart))
                     if (voiceGesture && vh != null) {
-                        Box(Modifier.matchParentSize().holdToTalk(vh) { field.requestFocus(); keyboard?.show() })
+                        Box(Modifier.matchParentSize().holdToTalk(vh) { keyboardRequest++ })
                     }
                 }
                 val canSend = AttachTray.canSend(text, attachments, importing)
@@ -1243,7 +1259,7 @@ internal fun Composer(
                 // 键盘还在(刚开面板时正在收、让给键盘时正在升)的那一段从面板里扣掉:输入栏不跟着上下跳
                 Box(
                     Modifier.fillMaxWidth().clipToBounds().layout { m, cons ->
-                        val keyboardNow = (ime.getBottom(this) - nav.getBottom(this)).coerceAtLeast(0)
+                        val keyboardNow = visibleImeHeight(imeVisible, ime.getBottom(this), nav.getBottom(this))
                         val shown = (panelPx - keyboardNow).coerceAtLeast(0)
                         val p = m.measure(Constraints.fixed(cons.maxWidth, panelPx))
                         layout(cons.maxWidth, shown) { p.place(0, 0) }

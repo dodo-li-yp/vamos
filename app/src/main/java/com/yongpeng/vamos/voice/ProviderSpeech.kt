@@ -16,7 +16,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 interface Recorder {
     val level: StateFlow<Float>
     fun start(): Boolean
-    fun stop(): ShortArray
+    suspend fun stop(): ShortArray
     fun cancel()
 }
 
@@ -53,7 +53,7 @@ class ProviderSpeech(
         if (released || out.finished || out.cancelled) return
         released = true
         levels?.cancel()
-        // stop 会等读循环退出(短暂阻塞),放到后台线程,别卡住主线程
+        // stop suspends while the IO recorder stops and drains; never blocks the caller.
         work = scope.launch {
             val pcm = recorder.stop()
             if (pcm.size < Wav.RATE * MIN_MS / 1000) {

@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * 录 16k 单声道 16 位 PCM。start 后每约 50ms 更新一次 [level](0..1,按每块 RMS 归一化);
  * stop 返回到目前为止的全部 PCM;录满 [maxMs] 自动停止,之后再 stop 仍返回已录的内容。
- * 录音权限由调用方先检查,这里拿不到麦克风就返回 false。stop 会短暂阻塞(等读循环退出),别在主线程调。
+ * 录音权限由调用方先检查,这里拿不到麦克风就返回 false。stop 在 IO 协程停止并等待读循环，不阻塞主线程。
  */
 class PcmRecorder(private val maxMs: Int = 60_000) : Recorder {
     private val _level = MutableStateFlow(0f)
@@ -103,7 +103,7 @@ class PcmRecorder(private val maxMs: Int = 60_000) : Recorder {
     }
 
     /** 停止并返回到目前为止录到的全部 PCM;没在录(含已自动停止)也安全。 */
-    override fun stop(): ShortArray {
+    override suspend fun stop(): ShortArray = withContext(Dispatchers.IO) {
         val (rec, j) = synchronized(lock) {
             val r = record
             record = null
@@ -111,8 +111,8 @@ class PcmRecorder(private val maxMs: Int = 60_000) : Recorder {
             r to job.also { job = null }
         }
         // 等读循环退出,保证之后取到的 PCM 不再变
-        if (rec != null) runBlocking { j?.join() }
-        return synchronized(lock) {
+        if (rec != null) j?.join()
+        synchronized(lock) {
             val out = pcm.copyOf(size)
             pcm = ShortArray(0)
             size = 0

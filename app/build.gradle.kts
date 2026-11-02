@@ -28,6 +28,7 @@ android {
 
     defaultConfig {
         applicationId = "com.yongpeng.vamos"
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         minSdk = 30
         targetSdk = 35
         versionCode = 33
@@ -64,7 +65,14 @@ android {
         }
     }
     buildTypes {
-        getByName("release") { signingConfig = signingConfigs.findByName("vamosRelease") }
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Explicit local verification only; never silently sign a production release with debug.
+            signingConfig = if (providers.gradleProperty("vamosDebugSignRelease").orNull == "true")
+                signingConfigs.getByName("debug") else signingConfigs.findByName("vamosRelease")
+        }
 
         // 看流畅度用的包:和发布版一样不可调试(调试包不做预先编译,界面慢好几倍,手感不作数),
         // 用本机调试签名,能直接覆盖调试包、保留数据;可被性能工具采样。./gradlew :app:assemblePerf
@@ -122,4 +130,33 @@ dependencies {
 // LicensesTest 读仓库的 licenses/THIRD_PARTY_NOTICES.md:让它参与测试的增量判断
 tasks.withType<Test>().configureEach {
     inputs.file(rootProject.file("licenses/THIRD_PARTY_NOTICES.md")).withPropertyName("thirdPartyNotices")
+}
+
+// Android XML has no CIDR matching: allow only explicitly configured RFC1918 literals.
+val lanHttpHosts = providers.gradleProperty("vamosLanHttpHosts").getOrElse("")
+    .split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+lanHttpHosts.forEach { host ->
+    val octets = host.split('.').mapNotNull { it.toIntOrNull()?.takeIf { n -> n in 0..255 } }
+    require(octets.size == 4 && host.split('.').size == 4 &&
+        (octets[0] == 10 || octets[0] == 192 && octets[1] == 168 ||
+            octets[0] == 172 && octets[1] in 16..31)) { "vamosLanHttpHosts must contain RFC1918 IPv4 literals" }
+}
+if (lanHttpHosts.isNotEmpty()) {
+    val generateLanNetworkConfig by tasks.registering {
+        inputs.property("hosts", lanHttpHosts)
+        inputs.file("src/main/res/xml/network_security_config.xml")
+        val output = layout.buildDirectory.dir("generated/lan-network/res")
+        outputs.dir(output)
+        doLast {
+            val template = file("src/main/res/xml/network_security_config.xml").readText()
+            val domains = lanHttpHosts.joinToString("\n") { "<domain includeSubdomains=\"false\">$it</domain>" }
+            output.get().file("xml/network_security_config.xml").asFile.apply {
+                parentFile.mkdirs()
+                writeText(template.replace("</domain-config>", "$domains</domain-config>"))
+            }
+        }
+    }
+    android.buildTypes.forEach { type ->
+        android.sourceSets.getByName(type.name).res.srcDir(generateLanNetworkConfig)
+    }
 }

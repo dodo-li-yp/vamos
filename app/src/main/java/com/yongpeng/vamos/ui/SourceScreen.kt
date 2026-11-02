@@ -99,10 +99,11 @@ fun SourceScreen(vm: SourceViewModel, onBack: () -> Unit) {
 
 @Composable
 private fun SourceShot(vm: SourceViewModel, id: Int) {
+    val widthPx = with(androidx.compose.ui.platform.LocalDensity.current) { androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp.roundToPx() }
     val imageState = remember { mutableStateOf<ImageBitmap?>(null) }
     val image by imageState
-    LaunchedEffect(vm, id) {
-        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
+    LaunchedEffect(vm, id, widthPx) {
+        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { decodeScreenImage(it.path, widthPx) }?.asImageBitmap() }
     }
     var zoomed by remember { mutableStateOf(false) }
     image?.let {

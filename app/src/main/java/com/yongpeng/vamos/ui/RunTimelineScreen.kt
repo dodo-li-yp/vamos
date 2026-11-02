@@ -259,10 +259,11 @@ private fun TagChip(t: Tag) {
 /** 当时的画面:在后台线程解码;文件已被清理时只说一句。 */
 @Composable
 private fun Shot(vm: RunTimelineViewModel, id: Int, step: Int) {
+    val widthPx = with(androidx.compose.ui.platform.LocalDensity.current) { 220.dp.roundToPx() }
     val imageState = remember { mutableStateOf<ImageBitmap?>(null) }
     val image by imageState
-    LaunchedEffect(id) {
-        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { BitmapFactory.decodeFile(it.path) }?.asImageBitmap() }
+    LaunchedEffect(id, widthPx) {
+        imageState.value = withContext(Dispatchers.IO) { vm.screen(id)?.let { decodeScreenImage(it.path, widthPx) }?.asImageBitmap() }
     }
     val shape = RoundedCornerShape(12.dp)
     image?.let {

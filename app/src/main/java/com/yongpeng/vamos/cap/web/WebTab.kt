@@ -325,7 +325,7 @@ class WebTab(
         // 下载交给标签池(落到工作区);文件不打开、不安装
         view.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
             val l = listener
-            if (l == null) Log.i(TAG, "download ignored on tab $id: ${url.take(80)}")
+            if (l == null) Log.i(TAG, "download ignored on tab $id")
             else l.onDownload(this, url, userAgent.orEmpty(), contentDisposition, mimetype)
             // 正在等加载的那次导航变成了下载:页面不会再加载,不用等到超时
             if (pending != null) {
@@ -365,7 +365,7 @@ class WebTab(
             return false
         }
         if (!popupCommitted) listener?.onPopupRefused(this, url)
-        else Log.i(TAG, "popup tab $id kept on its site, refused ${url.take(80)}")
+        else Log.i(TAG, "popup tab $id kept on its site, refused navigation")
         return true
     }
 

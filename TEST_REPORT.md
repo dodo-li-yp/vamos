@@ -1,6 +1,57 @@
 # Vamos V1 开发与测试报告
 
-日期：2026-11-01。分支 `v1-dev`，draft PR [#1](https://github.com/dodo-li-yp/vamos/pull/1)。本报告替代旧的阶段性未完成列表；历史结果可在 Git 提交中查看。仅使用 debug 签名，尚未达到正式发布验收。
+日期：2026-11-02。分支 `v1-dev`，draft PR [#1](https://github.com/dodo-li-yp/vamos/pull/1)。本报告替代旧的阶段性未完成列表；历史结果可在 Git 提交中查看。仅使用 debug 签名，尚未达到正式发布验收。
+
+## 2026-11-02 输入法与性能专项（A/C）
+
+本次只处理最新请求 A/C；B「完成后继续／消耗额度」确认框按用户指示跳过，等待截图。没有修改确认流程、升级依赖或大规模重构。
+
+- A：语音层单击后在协程中 requestFocus，等一帧后请求 Compose 键盘并通过 InputMethodManager.showSoftInput 发起系统请求；输入栏只在 IME 可见时合并 IME inset，附件面板高度缓存/扣减也忽略不可见的假 inset。保留输入栏实测高度驱动消息列表底部留白与跟随最新消息逻辑。
+- C1/2：release 与继承它的 perf 开启 R8/资源收缩，添加 AIDL/Binder、helper 反射入口、JS bridge、ML Kit/Firebase registrar、EdDSA 保留规则，移除 Log.d/Log.i；对 EdDSA 的可选 OpenJDK X509Key 分支仅精确 dontwarn（已核对字节码，Vamos 使用原始 EdDSAPublicKey 路径）；仅保留 arm64-v8a / armeabi-v7a。
+- C3：默认关闭明文；只为 localhost、127.0.0.1、::1、.local 开例外。Android XML 不支持网段匹配，数字 LAN IPv4 通过 `-PvamosLanHttpHosts=<真实RFC1918地址列表>` 构建白名单；未提供地址时不编造。既有 COS 原始清单与 APK HTTPS 校验、拒绝 TLS 降级保持开启。
+- C4/5/6：截图先读取 bounds，按显示宽度计算 2 的幂 inSampleSize 后 IO 解码；许可全文统一在 IO 加载；Recorder.stop 改为 suspend，AudioRecord 停止/释放和等待都在 Dispatchers.IO，删除 runBlocking。
+- C7：扫描显式 token/apiKey/accessToken/authorization/secret 日志，未发现直接打印凭据值；去掉网页 URL 调试输出，账号日志仅记录固定失败说明，不输出异常或原始文本。没有提交实际密钥或地址。
+- C8/9：按最新用户指示提前开放 V1 新手示例卡（按设计稿两列六张 VmExampleTaskCard，仅填草稿，不自动发送）；同步中英繁文案和测试。已移除 PDF/Python 脚本处理无界面入口；保留系统 PdfRenderer 的文件预览，它不运行 Python/脚本、不提供 PDF 提取能力。
+- BETA 保持 true；COS URL、公钥、法律文本继续占位。release 仅使用显式 `-PvamosDebugSignRelease=true` 的 debug 签名验证；默认 release 仍用本地正式签名配置或未签名，不静默回退到 debug。
+
+本次集中验证完成（未启动模拟器）：
+
+- 相关 JVM 回归：应用 37 项 + 核心 10 项，合计 **47 项通过，0 失败/错误/跳过**。新增 IME/采样 2 项与录音异步停止 1 项回归。
+- `lintDebug`、`lintRelease`、`assembleDebug`、`assembleRelease`、`assembleDebugAndroidTest` 均通过：集中命令 BUILD SUCCESSFUL（11m48s）；日志返回值规则补齐后单独 assembleRelease 再次通过（3m43s）。release 明确使用 debug 签名验证 R8，不是正式发布包。
+- Lint debug/release：各 **0 错误、79 警告、6 信息**，数量与基线一致。未新增 baseline 或关闭错误检查。
+- 扩大运行整个 EnglishCopyTest 时有 **1 项现存失败**：settingsAndSetup 期望英文 WelcomeCopy.TITLE，现有实现固定返回中文。该引导界面不在本次范围，未修改或将失败改成通过；最终相关测试只运行其中 chatPage。首次新增测试 API 写法编译错误已修正。
+- 实际触摸语音层并检查系统 IME 可见的设备测试已编译，**未执行**，真实键盘、输入栏/消息遮挡与 R8 后配对/OCR 待真机验收。
+
+| APK | 字节 | MiB | 比本次修改前 debug |
+|---|---:|---:|---:|
+| 修改前 debug（上一阶段交付包） | 93,051,111 | 88.74 | 基线 |
+| 修改后 debug | 65,086,296 | 62.07 | 减少 30.05% |
+| 修改后 release（R8/debug 签名） | 30,419,927 | 29.01 | 减少 67.31% |
+
+没有旧 release 包，因此 release 行是相对旧 debug 的跨构建类型比较，不能归因于 R8 单一因素。
+
+- debug SHA-256：`c0780730fa3d797bf17702e83d7dc190a1345fa1bd30d3edde3aa90a2f00ac67`。
+- release SHA-256：`a042df9bb6812d5b83e15a4c24df8792e3df5c076b9594366c01e670ef90c84b`。
+
+当前产物核查全部通过：
+
+- `tools/verify_v1_apk.py` 对 debug/release 均通过；包名 com.yongpeng.vamos、1.0.0 / code 33。根 LICENSE SHA 与历史基线一致。
+- 两包 apksigner 验证通过，均为同一 Android Debug 证书；DEX 内 HelperMain、IVamosShell、IVamosShell$Stub 入口保留。
+- 最终 release DEX 的 Log.d/Log.i 方法引用为 **0**。规则包含 `return 0`，覆盖 Kotlin 将日志返回值作为表达式结果的情况。
+- 许可/OCR/原有 assets 的路径与 CRC 保留；release 仅额外增加 Android 构建生成的 assets/dexopt/baseline.prof、baseline.profm。
+- 默认拒绝明文的配置已在两包编译 XML 中核对。LAN 白名单生成器：合成的三个 RFC1918 测试地址通过，公网测试 IP 被拒；这些 fixture 仅写入忽略的 generated/，没有进入交付 APK，也不表示提供了真实 LAN 配置。
+- APK 副本：`work/vamos-1.0.0-debug.apk`、`work/vamos-1.0.0-release-debug-signed.apk`；均不提交或发布。审计/构建原始记录位于忽略的 work/input-perf-*。
+
+本次针对性单测范围：InputPerformanceTest、ProviderSpeechTest、LicensesTest、UpdateCheckerTest、WorkspaceContractTest、ChatCopyTest、EnglishCopyTest.chatPage、VamosMilestoneTest，以及核心 SignedUpdateTest。没有声称完整上游测试套件通过。
+
+当前 native 清单（debug/release 相同）：
+
+```text
+lib/arm64-v8a/libandroidx.graphics.path.so
+lib/arm64-v8a/libmlkit_google_ocr_pipeline.so
+lib/armeabi-v7a/libandroidx.graphics.path.so
+lib/armeabi-v7a/libmlkit_google_ocr_pipeline.so
+```
 
 ## M3 收尾补充
 
@@ -12,7 +63,7 @@
 
 ## 开发收尾状态
 
-按最新指示，TASK 定义的 M1–M4 开发项与真机验收分开管理：源码/本地验证收尾完成；真机项不阻塞开发，全部列入 [DEVICE_ACCEPTANCE.md](DEVICE_ACCEPTANCE.md)。没有额外定义 M5，也没有扩展 V1.1/V2 范围。正式签名和发布仍由 Dodo 本地执行。
+按最新指示，TASK 定义的 M1–M4 开发项与真机验收分开管理：源码/本地验证收尾完成；真机项不阻塞开发，全部列入 [DEVICE_ACCEPTANCE.md](DEVICE_ACCEPTANCE.md)。没有额外定义 M5；按 2026-11-02 最新用户指示，仅将新手示例任务卡提前到 V1，其余 V1.1/V2 保持原范围。正式签名和发布仍由 Dodo 本地执行。
 
 M4 本段还隐藏了残留的执行记录导出入口（默认关闭，代码保留供 V1.1），移除旧沙箱自检/提示并将通用状态资源改名。清理 Lint 标记且在主代码/测试/XML 中均无引用的资源，新增 `tools/verify_v1_apk.py`，可复现检查已知 Linux/运行器、Compress/XZ 和统计/崩溃 SDK 类排除项及 native/assets/许可清单。保留 Android 系统 helper 操作所需权限，不删除仍被保留能力使用的权限。
 
@@ -50,7 +101,7 @@ M4 本段还隐藏了残留的执行记录导出入口（默认关闭，代码�
 - 为节省资源，使用单 worker、进程内 Kotlin 编译及缓存；稳定源码后统一检查，不反复运行模拟器。
 - 常规构建命令仍为 `./gradlew assembleDebug`；云环境额外设置 JAVA_HOME、ANDROID_HOME、GRADLE_USER_HOME 和系统 CA trustStore，TLS 校验保持开启。
 
-本次统一命令包含 `assembleDebug :app:lintDebug :core:test :app:testDebugUnitTest :app:assembleDebugAndroidTest`，附下列针对性测试过滤器及 `--offline`，**BUILD SUCCESSFUL**（最终检查 10m7s；本轮未运行模拟器）。
+上一阶段（2026-11-01）统一命令包含 `assembleDebug :app:lintDebug :core:test :app:testDebugUnitTest :app:assembleDebugAndroidTest`，附下列针对性测试过滤器及 `--offline`，**BUILD SUCCESSFUL**（最终检查 10m7s；本轮未运行模拟器）。
 
 - debug APK 编译：通过。
 - Lint：**0 错误、79 警告、6 信息**。之前三个缩进错误未再出现；未使用全局 baseline 或关闭错误检查。警告尚未全部清理，主要类型：ApplySharedPref 17, StringFormatCount 10, ModifierParameter 7, PluralsCandidate 7；UnusedResources 已清零。
@@ -102,7 +153,7 @@ M4 本段还隐藏了残留的执行记录导出入口（默认关闭，代码�
 | 强制更新 | versionCode/force/minSupported 判定单测；不可返回/遮罩关闭，执行中延后弹窗 | 设备交互 |
 | 无安装权限 | 授权检查、设置页与返回后安装入口已接通 | 系统授权页、安装成功/取消、包名/证书冲突的设备流程 |
 
-## APK 与合规
+## 上一阶段 APK 与合规（2026-11-01 历史基线）
 
 - 当前 APK：`app/build/outputs/apk/debug/app-debug.apk`；交付副本 `work/vamos-1.0.0-debug.apk`（忽略文件，不提交二进制）。
 - 大小：**93,051,111 字节**；SHA-256：`9ddfd4987181f42188038cc161b88ec065012567abc3b62fb15f95379a8725aa`。
@@ -115,7 +166,7 @@ M4 本段还隐藏了残留的执行记录导出入口（默认关闭，代码�
 - EdDSA-Java：CC0-1.0；Noto Serif SC：SIL OFL 1.1，保留全文，UI 字形子集总计约 1.3MB；其他字形由 Android 回退字体补足。现有 Google ML Kit OCR 许可也已列明。
 - 当前云环境没有可写的聊天附件输出目录；APK 保留在构建目录及忽略的 work/ 下，未作为二进制提交或发布到 Releases。
 
-### 最终 APK 内 native / assets 清单
+### 2026-11-01 基线 APK 内 native / assets 清单
 
 ```text
 lib/arm64-v8a/libandroidx.graphics.path.so
@@ -172,5 +223,5 @@ res/font/vamos_serif_semibold.ttf
 1. 正式 COS 桶地址、公钥、三份正式法律文本由产品/运维提供；保持占位，未配置更新时 fail closed。没有索取或提交正式私钥、keystore、API Key、token、COS SecretId/SecretKey。
 2. 逐屏日夜截图、视觉对照、真机配对/后台操作/停止时延，以及真实模型/OAuth 和更新安装六场景仍需完成。源码覆盖不等于设备验收通过。
 3. 正式签名与发布由 Dodo 本地完成；本次不构建正式签名包，不上架、不发布、不合并 PR。
-4. V1.1 延期：国产 ROM 图文、执行记录导出、新手示例任务卡、开放 CLI/MCP。V2：免确认白名单、模板市场、崩溃上报、沙箱。
+4. V1.1 延期：国产 ROM 图文、执行记录导出、开放 CLI/MCP。V2：免确认白名单、模板市场、崩溃上报、沙箱。
 5. 随 Linux 一并移除的 PDF/Python 脚本提取不可用；普通附件和文件工具保留，不能仅凭二进制文件名声称已读取内容。

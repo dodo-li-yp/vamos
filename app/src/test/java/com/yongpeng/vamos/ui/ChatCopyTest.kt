@@ -30,7 +30,7 @@ class ChatCopyTest {
     @Test fun sixDistinctNonBlankExamples() {
         assertEquals(6, ChatCopy.examples.size)
         assertEquals(6, ChatCopy.examples.map { it.text }.filter { it.isNotBlank() }.toSet().size)
-        assertEquals("打开微信，给王赞发消息，让他拉我进Vamos内测体验群", ChatCopy.examples.first().text)
+        assertEquals("打开微信，给小李发消息，问他明天几点开会", ChatCopy.examples.first().text)
         assertEquals("帮我订明天早上9:40、9:50、10:00 的闹钟", ChatCopy.examples[4].text)
     }
 

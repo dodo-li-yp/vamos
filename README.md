@@ -25,7 +25,7 @@ V1 正在开发，尚未完成真机与逐屏视觉验收。正式 COS 地址、
 
 Linux/PRoot/Alpine/Python/Node 运行时与脚本执行工具已移除。附件、私有工作区文件读写/搜索/导出和网页上传仍由 Kotlin 文件接口提供。电脑 CLI/MCP 代码保留，入口默认隐藏（ENABLE_COMPUTER_ACCESS=false）；执行记录导出入口默认关闭（RunTimelineScreen 的 RECORD_EXPORT_ENABLED=false），实现保留供 V1.1；不包含统计或崩溃上报 SDK。
 
-国产 ROM 图文、执行记录导出、新手示例卡和开放 CLI/MCP 延后到 V1.1；白名单、任务模板市场、崩溃上报和沙箱不属于 V1。
+按最新需求，新手示例卡已提前到 V1（仅填入输入框，用户确认后发送）。国产 ROM 图文、执行记录导出和开放 CLI/MCP 延后到 V1.1；白名单、任务模板市场、崩溃上报和沙箱不属于 V1。
 
 ## 开源许可与致谢
 
@@ -46,3 +46,14 @@ python3 -m unittest discover -s tools/release -p 'test_*.py'
 ```
 
 审计脚本检查 APK 实际内容和已知禁止项，不能代替第三方依赖的完整法律审查。设备测试包编译通过也不代表真机验收通过；本分支保持 draft，不自动签名发布。
+
+### 本地性能与网络验证
+
+release/perf 启用 R8 与资源收缩，仅打包 arm64-v8a、armeabi-v7a。验证 release 可显式传
+`-PvamosDebugSignRelease=true`，只用于本地测试；不传时仍读取本地正式签名配置或生成未签名包。
+BETA 保持 true，不用于正式发布。
+
+默认拒绝公网明文 HTTP；localhost、127.0.0.1、::1 与 `.local` 可使用 HTTP。
+Android 网络安全 XML 不支持 CIDR：数字局域网 IP 必须在构建时通过
+`-PvamosLanHttpHosts=<逗号分隔的实际局域网IPv4地址>` 显式白名单配置（仅接受 RFC1918）。
+没有提供真实 LAN 地址时不臆造白名单；HTTPS 不受此限制。COS 清单和 APK 始终要求 HTTPS。

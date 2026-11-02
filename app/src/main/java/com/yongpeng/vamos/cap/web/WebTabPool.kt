@@ -417,7 +417,7 @@ class WebTabPool(
     }
 
     override fun onPopupRefused(tab: WebTab, url: String) {
-        Log.i(TAG, "popup ${tab.id} refused: other site ${url.take(80)}")
+        Log.i(TAG, "popup ${tab.id} refused: other site")
         main.post { remove(tab.id, PoolEvent.Closed(tab.id, "popup_other_site")) }
     }
 
