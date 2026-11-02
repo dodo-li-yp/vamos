@@ -1,3 +1,6 @@
+// Modified by Vamos (2026): brand and package migration.
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,27 +12,39 @@ val gitHash: String = runCatching {
     providers.exec { commandLine("git", "rev-parse", "--short=7", "HEAD") }.standardOutput.asText.get().trim()
 }.getOrNull()?.takeIf { it.isNotEmpty() } ?: "dev"
 
+val releaseProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+}
+fun signingValue(env: String, key: String): String? = providers.environmentVariable(env).orNull
+    ?: releaseProperties.getProperty(key)
+val releaseStore = signingValue("VAMOS_STORE_FILE", "storeFile")
+val releasePassword = signingValue("VAMOS_STORE_PASSWORD", "storePassword")
+val releaseAlias = signingValue("VAMOS_KEY_ALIAS", "keyAlias")
+val releaseKeyPassword = signingValue("VAMOS_KEY_PASSWORD", "keyPassword")
+
 android {
-    namespace = "com.wangzan101.mika"
+    namespace = "com.yongpeng.vamos"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.wangzan101.mika"
+        applicationId = "com.yongpeng.vamos"
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
         minSdk = 30
         targetSdk = 35
-        versionCode = 32
-        versionName = "0.1.31"
+        versionCode = 33
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Production URL/public keys are supplied at build time; no invented live configuration.
+        val updateUrl = providers.gradleProperty("vamosUpdateUrl").getOrElse("https://<bucket>.cos.ap-guangzhou.myqcloud.com/vamos/version.json")
+        val updateKeys = providers.gradleProperty("vamosUpdatePublicKeys").getOrElse("")
+        fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        buildConfigField("String", "UPDATE_MANIFEST_URL", quoted(updateUrl))
+        buildConfigField("String", "UPDATE_PUBLIC_KEYS", quoted(updateKeys))
         buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
         // 关于页版本号后的 Beta 标记;出正式版时改成 false
         buildConfigField("boolean", "BETA", "true")
+        buildConfigField("boolean", "ENABLE_COMPUTER_ACCESS", "false")
     }
-
-    // 沙箱程序只有 arm64 版本(jniLibs/arm64-v8a);APK 不限 ABI,别的设备照常安装、显示「此设备不支持沙箱」。
-    // 沙箱程序要从 nativeLibraryDir 直接执行,安装时必须解到磁盘
-    packaging { jniLibs { useLegacyPackaging = true } }
-    // 自带的运行环境(assets/runtime/rootfs.tar.xz,tools/sandbox/build-runtime.py 生成)已是 xz,不再压一遍
-    androidResources { noCompress += "xz" }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -39,7 +54,26 @@ android {
     // 评测任务集(仓库根目录 eval/tasks)打进测试包的 assets,真机评测跑器从那里读题
     sourceSets.getByName("androidTest").assets.srcDir(rootProject.file("eval/tasks"))
 
+    signingConfigs {
+        if (listOf(releaseStore, releasePassword, releaseAlias, releaseKeyPassword).all { !it.isNullOrBlank() }) {
+            create("vamosRelease") {
+                storeFile = rootProject.file(releaseStore!!)
+                storePassword = releasePassword
+                keyAlias = releaseAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Explicit local verification only; never silently sign a production release with debug.
+            signingConfig = if (providers.gradleProperty("vamosDebugSignRelease").orNull == "true")
+                signingConfigs.getByName("debug") else signingConfigs.findByName("vamosRelease")
+        }
+
         // 看流畅度用的包:和发布版一样不可调试(调试包不做预先编译,界面慢好几倍,手感不作数),
         // 用本机调试签名,能直接覆盖调试包、保留数据;可被性能工具采样。./gradlew :app:assemblePerf
         create("perf") {
@@ -71,7 +105,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.xz)
     implementation(libs.commonmark)
     implementation(libs.commonmark.ext.gfm.tables)
     implementation(libs.commonmark.ext.gfm.strikethrough)
@@ -97,4 +130,33 @@ dependencies {
 // LicensesTest 读仓库的 licenses/THIRD_PARTY_NOTICES.md:让它参与测试的增量判断
 tasks.withType<Test>().configureEach {
     inputs.file(rootProject.file("licenses/THIRD_PARTY_NOTICES.md")).withPropertyName("thirdPartyNotices")
+}
+
+// Android XML has no CIDR matching: allow only explicitly configured RFC1918 literals.
+val lanHttpHosts = providers.gradleProperty("vamosLanHttpHosts").getOrElse("")
+    .split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+lanHttpHosts.forEach { host ->
+    val octets = host.split('.').mapNotNull { it.toIntOrNull()?.takeIf { n -> n in 0..255 } }
+    require(octets.size == 4 && host.split('.').size == 4 &&
+        (octets[0] == 10 || octets[0] == 192 && octets[1] == 168 ||
+            octets[0] == 172 && octets[1] in 16..31)) { "vamosLanHttpHosts must contain RFC1918 IPv4 literals" }
+}
+if (lanHttpHosts.isNotEmpty()) {
+    val generateLanNetworkConfig by tasks.registering {
+        inputs.property("hosts", lanHttpHosts)
+        inputs.file("src/main/res/xml/network_security_config.xml")
+        val output = layout.buildDirectory.dir("generated/lan-network/res")
+        outputs.dir(output)
+        doLast {
+            val template = file("src/main/res/xml/network_security_config.xml").readText()
+            val domains = lanHttpHosts.joinToString("\n") { "<domain includeSubdomains=\"false\">$it</domain>" }
+            output.get().file("xml/network_security_config.xml").asFile.apply {
+                parentFile.mkdirs()
+                writeText(template.replace("</domain-config>", "$domains</domain-config>"))
+            }
+        }
+    }
+    android.buildTypes.forEach { type ->
+        android.sourceSets.getByName(type.name).res.srcDir(generateLanNetworkConfig)
+    }
 }

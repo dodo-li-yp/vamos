@@ -34,7 +34,6 @@
 - 仓库有两个模块：`:core` 是纯 Kotlin，主循环、工具、提示词、知识都在这里，可以在电脑上用单测和假模型跑；`:app` 是安卓宿主。
 - README 里夹在 `generated` 标记之间的段落由 `./gradlew updateReadme` 生成，不要手改；单元测试会检查它们没过期。
 - README 有几种语言：仓库根目录的英文 `README.md` 是原文，译文都在 `docs/readme/`。其中简体中文 `README.zh-CN.md` 和 `README.md` 一样带生成段落；`README.zh-Hant.md`、`README.ja.md`、`README.ko.md`、`README.es.md` 的生成段落换成一句指向英文或简体中文 README 的话。根目录的 `README.en.md` 只是一句指向 `README.md` 的话，留着让旧链接还能用。每份译文开头有 `<!-- translated-from: README.md @ <指纹> -->`，指纹是根目录 README.md 去掉生成段落后的 SHA-256 前 12 位。改了 README.md 以后，`ReadmeTranslationsTest` 会列出过期的译文并给出新指纹：照着改动更新译文，再把开头的指纹换成新的。译文还要和 README.md 的 `## ` 小节数、本地图片保持一致。欢迎母语使用者直接提 PR 改进译文。
-- 沙箱的原生程序和自带运行环境已在仓库里；重新构建见 [`tools/sandbox/README.md`](../tools/sandbox/README.md)。
 - 真机评测见 [`eval/README.md`](../eval/README.md)。
 
 ### 模型配置细节
@@ -51,7 +50,6 @@
 - [`docs/dev/architecture.md`](../docs/dev/architecture.md)：整体结构。
 - [`docs/dev/roadmap.md`](../docs/dev/roadmap.md)：已完成、接下来、已知问题与暂缓。
 - [`docs/dev/knowledge-format.md`](../docs/dev/knowledge-format.md)（[English](../docs/dev/knowledge-format.en.md)）：App、网站知识与技能的格式。
-- [`docs/dev/skill-scripts.md`](../docs/dev/skill-scripts.md)：知识与技能自带的沙箱脚本。
 - 面向用户的说明：[功能详细说明](../docs/features.md)、[模型与登录](../docs/models.md)、[询问与自主](../docs/modes.md)、[手机操作设置指南](../docs/setup-guide.md)、[常见问题](../docs/faq.md)、[从电脑使用 Mika](../docs/computer.md)、[电脑端 CLI / Skill](../docs/computer-install.md)、[电脑连接（MCP）](../docs/mcp.md)、[免责声明与数据隐私](../docs/disclaimer.md)。
 
 ### 发布与更新（维护者）

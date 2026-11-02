@@ -21,3 +21,10 @@ CLAUDE.md
 __pycache__/
 *.py[cod]
 *.egg-info/
+
+# Local signing material and task scratch files
+*.jks
+*.keystore
+keystore.properties
+*.pem
+work/

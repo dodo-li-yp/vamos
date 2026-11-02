@@ -1,187 +1,59 @@
-<div align="center">
+# Vamos
 
-<img src="docs/media/logo.png" alt="Mika" width="88" />
+Vamos 是 Android 手机 AI 智能体：用自然语言发起任务，在后台屏操作 App，支持内置浏览器、定时任务、记忆与技能、多模型及账号登录。敏感操作按支付、消息/邮件、删除、系统设置、对外发布分类确认；支付确认始终开启。随时可用界面、通知或胶囊停止任务。
 
-# Mika
+V1 正在开发，尚未完成真机与逐屏视觉验收。正式 COS 地址、公钥和法律文本仍待提供；不能把 debug 包当作正式发布版本。
 
-**An AI assistant on your phone: say what you need, and it works your apps and the web until it's done.**
+## 构建
 
-It works on a hidden background screen, so you can keep using your phone.
+需要 JDK 17、Android SDK（compileSdk 36 / build-tools 34.0.0）和网络依赖缓存。Android 11 可安装，手机自动操作的完整能力需要 Android 12 及以上；按应用向导启用所需权限。
 
-<a href="https://github.com/wangzan101/Mika/releases/latest"><img src="https://img.shields.io/badge/Download%20APK-Android%2011%2B-2ea043?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" /></a>
+```sh
+./gradlew assembleDebug
+./gradlew :app:lintDebug
+```
 
-<a href="https://github.com/wangzan101/Mika/stargazers"><img src="https://img.shields.io/github/stars/wangzan101/Mika?style=flat&logo=github&label=Star&color=1f6feb" alt="stars" /></a>
-<a href="https://github.com/wangzan101/Mika/releases"><img src="https://img.shields.io/github/downloads/wangzan101/Mika/total?label=downloads&color=2ea043" alt="downloads" /></a>
-<a href="https://github.com/wangzan101/Mika/releases/latest"><img src="https://img.shields.io/github/v/release/wangzan101/Mika?include_prereleases&label=version" alt="version" /></a>
-<a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-lightgrey" alt="license" /></a>
+输出：`app/build/outputs/apk/debug/app-debug.apk`，applicationId `com.yongpeng.vamos`，versionName `1.0.0`，versionCode `33`。调试签名用于开发验证，与上游应用包名不同。
 
-English · [简体中文](docs/readme/README.zh-CN.md) · [繁體中文](docs/readme/README.zh-Hant.md) · [日本語](docs/readme/README.ja.md) · [한국어](docs/readme/README.ko.md) · [Español](docs/readme/README.es.md)
+## 更新与正式签名
 
-<br/>
+更新只读腾讯云 COS 的公开 HTTPS URL；不需要在 App 中放 COS SecretId/SecretKey。清单在解析前校验 Ed25519 原始字节签名，APK 下载后校验大小、SHA-256，安装前复核包名、版本和证书。未配置正式公钥时拒绝更新。
 
-<img src="docs/media/wechat-send-side.gif" alt="From one sentence, Mika opens WeChat on its background screen, finds the contact and sends the message" width="640" />
+详见 [发布辅助说明](tools/release/README.md)。私钥、keystore、API Key 和 token 不得提交。release 签名只由 Dodo 在本地完成；Gradle 从 `keystore.properties` 或 `VAMOS_STORE_FILE`、`VAMOS_STORE_PASSWORD`、`VAMOS_KEY_ALIAS`、`VAMOS_KEY_PASSWORD` 环境变量读取，缺失时保留未签名 release，debug 构建不受影响。每次正式发版 versionCode 必须递增。
 
-<sub>"Send a message to File Transfer": Mika's chat on the left, each step on its background screen on the right (4× speed; chat list blurred)</sub>
+## V1 范围
 
-</div>
+Linux/PRoot/Alpine/Python/Node 运行时与脚本执行工具已移除。附件、私有工作区文件读写/搜索/导出和网页上传仍由 Kotlin 文件接口提供。电脑 CLI/MCP 代码保留，入口默认隐藏（ENABLE_COMPUTER_ACCESS=false）；执行记录导出入口默认关闭（RunTimelineScreen 的 RECORD_EXPORT_ENABLED=false），实现保留供 V1.1；不包含统计或崩溃上报 SDK。
 
-## Get things done with one sentence
+按最新需求，新手示例卡已提前到 V1（仅填入输入框，用户确认后发送）。国产 ROM 图文、执行记录导出和开放 CLI/MCP 延后到 V1.1；白名单、任务模板市场、崩溃上报和沙箱不属于 V1。
 
-<table>
-<tr>
-<td align="center" width="33%"><img src="docs/media/wechat-group.gif" width="230" alt="Reads through a WeChat group and summarizes today's chat" /><br/><b>"What did the group talk about today?"</b><br/><sub>Scrolls through the chat in the background, then sums it up</sub></td>
-<td align="center" width="33%"><img src="docs/media/amazon-cart.gif" width="230" alt="Picks a charger on a shopping site and adds it to the cart" /><br/><b>"A charger under $30, rated 4.5 stars or more"</b><br/><sub>Adds the pick to the cart and stops before checkout</sub></td>
-<td align="center" width="33%"><img src="docs/media/xhs-summary.gif" width="230" alt="Summarizes a creator's recent posts" /><br/><b>"What has this creator posted lately?"</b><br/><sub>Opens the app, reads post by post, then sums it up</sub></td>
-</tr>
-</table>
+## 开源许可与致谢
 
-<details>
-<summary>More demos</summary>
+本项目基于 [Mika](https://github.com/wangzan101/Mika) 二次开发，遵循 Apache-2.0。保留根目录 [LICENSE](LICENSE)、[NOTICE](NOTICE) 和上游署名，修改声明为 `Modified by 永鹏 / Vamos, 2026`；第三方许可见 [licenses](licenses/THIRD_PARTY_NOTICES.md) 和应用「关于 › 开源许可」。
 
-<table>
-<tr>
-<td align="center" width="33%"><img src="docs/media/boss-greet.gif" width="230" alt="Greets recruiters for 3 jobs on a job site" /><br/>Greets recruiters for 3 jobs on a job site</td>
-<td align="center" width="33%"><img src="docs/media/google-flights.gif" width="230" alt="Finds the cheapest nonstop flight" /><br/>Finds the cheapest nonstop from San Francisco to New York</td>
-<td align="center" width="33%"><img src="docs/media/hacker-news.gif" width="230" alt="Reads out the top 5 stories and their points" /><br/>Reads out the top 5 stories on a news site</td>
-</tr>
-<tr>
-<td align="center"><img src="docs/media/job-greet.jpg" width="230" alt="Finds jobs and greets recruiters" /><br/>Finds jobs and greets recruiters</td>
-<td align="center"><img src="docs/media/music-vip.jpg" width="230" alt="Watches ads to unlock music perks" /><br/>Watches ads to unlock music perks</td>
-<td align="center"><img src="docs/media/food-order.jpg" width="230" alt="Orders takeout with stacked discounts and asks you before paying" /><br/>Orders takeout with stacked discounts, asks before paying</td>
-</tr>
-</table>
+开发约束见 [TASK.md](docs/vamos/TASK.md)，实际完成情况、未测边界与 APK 清单见 [TEST_REPORT.md](TEST_REPORT.md)。
 
-</details>
+## 开发交付检查
 
-<sub>Several demos use apps popular in China: WeChat is the main messaging app there, and Xiaohongshu (RED) is a lifestyle and social platform. Mika isn't tied to them; it works with any app or website on your phone.</sub>
+TASK.md 定义的 M1–M4 开发项已收尾；正式配置与真机验收分开管理。完整记录见 [TEST_REPORT.md](TEST_REPORT.md)，逐项执行清单见 [DEVICE_ACCEPTANCE.md](DEVICE_ACCEPTANCE.md)。缺失的 COS 地址、公钥和法律文本保留占位。
 
-## Why Mika
+不安装 APK 即可复查已知运行时/SDK 排除项、许可和 native/assets 清单：
 
-| | |
-|---|---|
-| 📱 **Leaves your screen alone** | Opens apps, taps, types and scrolls on a separate background screen while you use your phone as usual; tap the small live view whenever you want to watch |
-| 🧩 **Works with any app** | Looks at the screen and finds buttons the way a person does: no app APIs, no per-app integration |
-| 🌐 **Call it from any web page** | In the built-in browser, say what you want on the page you're reading and it works right there; touch the page and it stops |
-| 🧠 **Gets better with use** | Remembers the preferences you tell it, and turns tasks it finishes into skills so next time is faster and steadier |
-| 🔒 **Your data stays on your phone** | There is no Mika server; use your own model API key, or sign in with a ChatGPT, xAI or OpenRouter account |
-| 🆓 **Open source and free** | Apache-2.0, all code public |
+```sh
+python3 tools/verify_v1_apk.py app/build/outputs/apk/debug/app-debug.apk \
+  --aapt "$ANDROID_HOME/build-tools/34.0.0/aapt" --output /tmp/vamos-apk-audit.json
+python3 -m unittest discover -s tools/release -p 'test_*.py'
+```
 
-## Get started in three steps
+审计脚本检查 APK 实际内容和已知禁止项，不能代替第三方依赖的完整法律审查。设备测试包编译通过也不代表真机验收通过；本分支保持 draft，不自动签名发布。
 
-1. **Install**: download the APK from [Releases](https://github.com/wangzan101/Mika/releases/latest).
-2. **Connect a model**: in Settings › Model, pick a provider and enter an API key, or just sign in with an account ([models and sign-in](docs/models.en.md)).
-3. **To operate phone apps**: follow the "Set up phone control" wizard in Settings and pair wireless debugging on the phone once ([setup guide](docs/setup-guide.en.md)). Skip this if you only want chat, web and files.
+### 本地性能与网络验证
 
-Then try saying: "Set alarms for 9:40 and 10:00 tomorrow morning" or "Check the weather at 8 every morning and tell me only if it will rain".
+release/perf 启用 R8 与资源收缩，仅打包 arm64-v8a、armeabi-v7a。验证 release 可显式传
+`-PvamosDebugSignRelease=true`，只用于本地测试；不传时仍读取本地正式签名配置或生成未签名包。
+BETA 保持 true，不用于正式发布。
 
-> 💡 Have a computer handy? Send this to the AI agent on it and it will set everything up for you:<br/>
-> `Follow https://github.com/wangzan101/Mika/blob/main/docs/install-with-agent.en.md to install Mika on the Android phone connected over USB.`
-
-## What it can do
-
-| | |
-|---|---|
-| **Operate apps** | Reads long lists and chat histories, taps and types, shares text into apps; hands logins, verification codes and payments to you |
-| **Browse the web** | A built-in desktop-class browser that keeps you signed in, reads pages, downloads and uploads; paces itself and hands block pages to you |
-| **Your current screen** | Double-tap the floating capsule to send the screen you're looking at: "how should I reply?", "note this down" |
-| **Schedules and conditions** | "Remind me at 9 tomorrow", "do this every Friday"; runs on time in the original conversation |
-| **Jump in or stop anytime** | Keep talking while a task runs to add or correct things (long-press to withdraw or edit one Mika hasn't picked up yet); after a stop it reports where it got to, and "continue" picks up from there |
-| **Hold to talk** | Hold the chat input to speak and edit the words before sending; long-press the floating capsule to speak and release to send. Uses the phone’s built-in speech recognition, or a provider’s speech model if it has none |
-| **Files and computing** | A Linux sandbox per conversation runs Python, Node and shell on the files you send (arm64) |
-| **From your computer** | AI tools on your computer can hand Mika tasks through CLI + Skill or MCP ([use Mika from a computer](docs/computer.en.md)) |
-
-By default Mika runs in **Ask mode**: it checks with you only before spending money (placing orders, paying) and just does everything else. You can switch to **Autonomous mode** instead. See [Ask and Autonomous](docs/modes.en.md).
-
-For how each of these works and the finer details, see [features in detail](docs/features.en.md).
-
-<details>
-<summary>Apps and websites with built-in usage knowledge (anything not listed still works)</summary>
-
-The names are shown as they appear in the knowledge files.
-
-<!-- generated:knowledge:start -->
-<!-- Generated by ./gradlew updateReadme; do not edit by hand -->
-| Category | Built in |
-|---|---|
-| **Apps** | Android 设置, 百家号, 哔哩哔哩, BOSS直聘, Chrome, 得到, 抖音, 飞书, Gmail, 即刻, 快手, 领英, QQ邮箱, Telegram, 今日头条, Uber, Uber Eats, 微信, 微博, WhatsApp, 闲鱼, 小红书, 知乎 |
-| **Websites** | Amazon, 哔哩哔哩, Google Calendar, 豆瓣, 抖音, Instagram, Gmail, Google Maps, Telegram, 百度贴吧, 微博, 搜狗微信, WhatsApp, 小红书, 小宇宙, YouTube, 知乎, BOSS直聘 |
-| **How-to skills** | 把内容整理成文字, 处理 PDF 文档, 查清一件事, 消息与邮件, 写技能 |
-<!-- generated:knowledge:end -->
-
-</details>
-
-<details>
-<summary>Supported model providers</summary>
-
-<!-- generated:providers:start -->
-<!-- Generated by ./gradlew updateReadme; do not edit by hand -->
-Presets for DeepSeek, 通义千问, Kimi, 智谱, 硅基流动, 火山方舟, MiniMax, 阶跃星辰, 腾讯混元, 百度千帆, OpenRouter, OpenCode Go, Anthropic, Gemini, OpenAI, xAI, Mistral, Groq, Ollama, LM Studio and more; for any other provider pick Custom (自定义), which takes any OpenAI-compatible, Anthropic, Gemini or OpenAI Responses endpoint.
-<!-- generated:providers:end -->
-
-You can also skip the key and sign in with a ChatGPT (Plus / Pro), xAI / Grok or OpenRouter account. Steps for adding a model, and what to know about each sign-in, are in [models and sign-in](docs/models.en.md).
-
-</details>
-
-## Which phones
-
-| | Requirement |
-|---|---|
-| Chat, web, files | Android 11 or later |
-| Operating phone apps | Android 12 or later; **Android 14+ recommended** (the background screen has its own focus, so it doesn't get in the way of your typing on the main screen) |
-| Linux sandbox | arm64 devices |
-
-Not sure your phone is up to it? Run Settings › Recovery & repair › **Compatibility self-check**: 12 checks in about a minute, and you can [send us the results](https://github.com/wangzan101/Mika/issues/new?template=device-report.yml) in one tap.
-
-## Privacy & safety
-
-- **There is no Mika server**: what you say and what's on your screen go only to the model provider you set up.
-- API keys and memories are stored encrypted on the phone; conversations and run records stay on the device; update checks only contact GitHub.
-- Operating third-party apps and websites automatically may break their terms of service, so use your own judgment. For anything important, use Ask mode and check the results. See the [disclaimer](docs/disclaimer.en.md).
-
-<details>
-<summary><b>FAQ</b></summary>
-
-**Wireless debugging turned itself off?** Android turns it off when you change Wi-Fi or restart. With your permission, Mika turns it back on by itself; if it still can't connect, go back to "Set up phone control" and pair again.
-
-**Can't find wireless debugging on my phone?** Some phone systems leave it out. You can start the phone helper from a computer over USB instead; see the [setup guide](docs/setup-guide.en.md).
-
-**Some screens can't be read or captured?** Pages like payments and password entry block screenshots, so Mika asks you to take over there.
-
-**Can I use a model running on my own computer?** Yes: pick "Custom" as the provider and enter its address on your local network.
-
-**Is the app in English?** Yes. The app UI comes in English, Simplified Chinese and Traditional Chinese, follows your system language, and can be switched in Settings › Language. The built-in app and website knowledge is written in Chinese, but that doesn't limit you: the model reads it fine, and you can talk to Mika in English.
-
-**Where do updates come from?** Only from this repository's [Releases](https://github.com/wangzan101/Mika/releases); you can also upgrade in the app from About › Check for updates.
-
-More answers are in the [FAQ](docs/faq.en.md).
-
-</details>
-
-## Community & contributing
-
-- **Docs**: all docs and a suggested reading order are in the [docs index](docs/README.en.md)
-- **Community**: join the [X group chat](https://x.com/i/chat/group_join/g2116500883139862983/xP74Qyff3X); to reach the author on WeChat, scan the QR code in the app under About › Contact the author (mention Mika in your request)
-- **Follow the author**: X [@wangzan101](https://x.com/wangzan101)
-- **Report a problem**: [open an issue](https://github.com/wangzan101/Mika/issues/new/choose); About › Send feedback in the app can attach diagnostics
-- **Contribute**: add usage knowledge for an app or website (plain text, no code needed), or contribute code; see the [contributing guide](.github/CONTRIBUTING.md)
-
-## Star History
-
-<a href="https://star-history.com/#wangzan101/Mika&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=wangzan101/Mika&type=Date&theme=dark&v=20261101-0434" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=wangzan101/Mika&type=Date&v=20261101-0434" width="600" />
-  </picture>
-</a>
-
-## Contributors
-
-Thanks to everyone who has helped build Mika:
-
-<a href="https://github.com/wangzan101/Mika/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=wangzan101/Mika&max=100&columns=12" alt="Contributors" />
-</a>
-
-## License
-
-[Apache-2.0](LICENSE) · [NOTICE](NOTICE) · [Third-party components](licenses/THIRD_PARTY_NOTICES.md)
+默认拒绝公网明文 HTTP；localhost、127.0.0.1、::1 与 `.local` 可使用 HTTP。
+Android 网络安全 XML 不支持 CIDR：数字局域网 IP 必须在构建时通过
+`-PvamosLanHttpHosts=<逗号分隔的实际局域网IPv4地址>` 显式白名单配置（仅接受 RFC1918）。
+没有提供真实 LAN 地址时不臆造白名单；HTTPS 不受此限制。COS 清单和 APK 始终要求 HTTPS。

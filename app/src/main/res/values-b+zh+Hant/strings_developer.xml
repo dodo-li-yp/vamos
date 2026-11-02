@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Modified by Vamos (2026): brand and package migration. -->
 <resources>
     <string name="dev_adaptive">先讀元素，必要時看圖</string>
     <string name="dev_adaptive_sub">控制項資訊夠用時不把圖片交給模型，讀不清時再補圖</string>
@@ -18,8 +19,8 @@
     <string name="dev_compaction_sub">步驟多了要壓縮時,按目標、事實、進展、下一步記下來</string>
     <string name="dev_group">做事方式</string>
     <string name="dev_autonomy">自主模式</string>
-    <string name="dev_autonomy_sub">開啟後連付款也不先問你，Mika 直接做完；關著時只有付款先問</string>
-    <string name="dev_note">這些開關影響 Mika 做事的方式和速度，一般保持預設。</string>
+    <string name="dev_autonomy_sub">開啟後連付款也不先問你，Vamos 直接做完；關著時只有付款先問</string>
+    <string name="dev_note">這些開關影響 Vamos 做事的方式和速度，一般保持預設。</string>
     <string name="dev_grounding">看圖定位已驗證</string>
     <string name="dev_grounding_sub">看圖模型 %1$s 實測過框得準再開啟；關著時，它框出的位置要另有佐證才會去點。</string>
     <string name="dev_speed">速度</string>

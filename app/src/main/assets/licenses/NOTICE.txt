@@ -1,0 +1,6 @@
+Mika
+Copyright 2026 wangzan101
+
+Modified by 永鹏 / Vamos, 2026
+
+Upstream: https://github.com/wangzan101/Mika

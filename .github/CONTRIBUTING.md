@@ -34,7 +34,6 @@ The debug build is not precompiled and its UI is several times slower; use the p
 - The repository has two modules: `:core` is pure Kotlin and holds the main loop, tools, prompts and knowledge, and can be run on a computer with unit tests and a fake model; `:app` is the Android host.
 - README sections between the `generated` markers are produced by `./gradlew updateReadme`; don't edit them by hand. Unit tests check that they are up to date.
 - The README comes in several languages. The English `README.md` at the repository root is the original; the translations are in `docs/readme/`. `README.zh-CN.md` (Simplified Chinese) has the same generated sections as `README.md`; in `README.zh-Hant.md`, `README.ja.md`, `README.ko.md` and `README.es.md` the generated sections are replaced by one sentence pointing to the English or Simplified Chinese README. `README.en.md` at the root only points to `README.md`, kept so old links still work. Each translation starts with `<!-- translated-from: README.md @ <fingerprint> -->`, where the fingerprint is the first 12 hex digits of the SHA-256 of the root README.md with the generated sections removed. After you change README.md, `ReadmeTranslationsTest` lists the stale translations and prints the new fingerprint: update the translations to match, then replace the fingerprint at the top. Translations must also keep the same number of `## ` sections and the same local images as README.md. Native speakers are welcome to improve a translation with a PR.
-- The sandbox's native binaries and bundled runtime are checked into the repository; to rebuild them see [`tools/sandbox/README.md`](../tools/sandbox/README.md).
 - For on-device evaluation see [`eval/README.md`](../eval/README.md).
 
 ### Model configuration details
@@ -51,7 +50,6 @@ The developer docs index and reading order are in [`docs/dev/README.en.md`](../d
 - [`docs/dev/architecture.md`](../docs/dev/architecture.md): overall structure.
 - [`docs/dev/roadmap.md`](../docs/dev/roadmap.md): done, next, known issues and deferred items.
 - [`docs/dev/knowledge-format.en.md`](../docs/dev/knowledge-format.en.md): format of app and website knowledge and skills.
-- [`docs/dev/skill-scripts.md`](../docs/dev/skill-scripts.md): sandbox scripts that come with knowledge and skills.
 - User-facing guides: [features in detail](../docs/features.en.md), [models and sign-in](../docs/models.en.md), [Ask and Autonomous](../docs/modes.en.md), [phone control setup](../docs/setup-guide.en.md), [FAQ](../docs/faq.en.md), [use Mika from a computer](../docs/computer.en.md), [computer CLI / Skill](../docs/computer-install.en.md), [computer access (MCP)](../docs/mcp.en.md), [disclaimer, data and privacy](../docs/disclaimer.en.md).
 
 ### Releases and updates (maintainers)
