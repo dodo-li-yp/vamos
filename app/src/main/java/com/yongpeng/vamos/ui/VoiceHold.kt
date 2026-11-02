@@ -23,6 +23,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -619,11 +621,13 @@ internal fun VoiceSheetHost(vh: VoiceHold, onPickSpeech: () -> Unit) {
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     ) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 18.dp).testTag("voice-sheet")) {
-            Text(title, style = VmType.Title, color = c.ink)
-            Text(body, Modifier.padding(top = 8.dp), style = SheetBody, color = c.ink2)
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                Text(title, style = VmType.Title, color = c.ink)
+                Text(body, Modifier.padding(top = 8.dp), style = SheetBody, color = c.ink2)
+            }
             Row(Modifier.fillMaxWidth().padding(top = 18.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                VmButton(stringResource(R.string.ok_got_it), { vh.sheet = null }, Modifier.weight(1f), kind = ButtonKind.Tonal, size = ButtonSize.Medium)
-                VmButton(action, { vh.sheet = null; go() }, Modifier.weight(1f), size = ButtonSize.Medium)
+                VmButton(stringResource(R.string.ok_got_it), { vh.sheet = null }, Modifier.weight(1f), kind = ButtonKind.Tonal, size = ButtonSize.Medium, allowMultiline = true)
+                VmButton(action, { vh.sheet = null; go() }, Modifier.weight(1f), size = ButtonSize.Medium, allowMultiline = true)
             }
         }
     }

@@ -1,6 +1,6 @@
 # Vamos 修改文件清单
 
-相对基线 e17d308；涵盖 M1–M4 与 2026-11-02 输入法/性能专项。R 为目录迁移，LICENSE 保留原文；真机待验项目见 DEVICE_ACCEPTANCE.md。
+相对基线 e17d308；涵盖 M1–M4、输入法/性能专项与确认面板安全区修复。R 为目录迁移，LICENSE 保留原文；真机待验项目见 DEVICE_ACCEPTANCE.md。
 
 ```text
 M	.github/CONTRIBUTING.md
@@ -127,6 +127,7 @@ R088	app/src/androidTest/java/com/wangzan101/mika/ui/UsageScreenTest.kt	app/src/
 A	app/src/androidTest/java/com/yongpeng/vamos/ui/VmDesignScreenshotsTest.kt
 R084	app/src/androidTest/java/com/wangzan101/mika/ui/VoiceHoldTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/VoiceHoldTest.kt
 R093	app/src/androidTest/java/com/wangzan101/mika/ui/WebSitesSectionTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/WebSitesSectionTest.kt
+A	app/src/androidTest/java/com/yongpeng/vamos/ui/components/ConfirmSheetLayoutTest.kt
 R089	app/src/androidTest/java/com/wangzan101/mika/ui/viewer/FileViewerScreenTest.kt	app/src/androidTest/java/com/yongpeng/vamos/ui/viewer/FileViewerScreenTest.kt
 R093	app/src/androidTest/java/com/wangzan101/mika/vision/BitmapImageOpsTest.kt	app/src/androidTest/java/com/yongpeng/vamos/vision/BitmapImageOpsTest.kt
 R085	app/src/androidTest/java/com/wangzan101/mika/vision/LocateDeviceTest.kt	app/src/androidTest/java/com/yongpeng/vamos/vision/LocateDeviceTest.kt
@@ -368,12 +369,12 @@ A	app/src/main/java/com/yongpeng/vamos/task/VolumeStopChord.kt
 R093	app/src/main/java/com/wangzan101/mika/task/WebPreview.kt	app/src/main/java/com/yongpeng/vamos/task/WebPreview.kt
 R088	app/src/main/java/com/wangzan101/mika/ui/AboutCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/AboutCopy.kt
 R066	app/src/main/java/com/wangzan101/mika/ui/AboutScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/AboutScreen.kt
-R089	app/src/main/java/com/wangzan101/mika/ui/AccountSignIn.kt	app/src/main/java/com/yongpeng/vamos/ui/AccountSignIn.kt
+R087	app/src/main/java/com/wangzan101/mika/ui/AccountSignIn.kt	app/src/main/java/com/yongpeng/vamos/ui/AccountSignIn.kt
 R090	app/src/main/java/com/wangzan101/mika/ui/AgentPip.kt	app/src/main/java/com/yongpeng/vamos/ui/AgentPip.kt
 R092	app/src/main/java/com/wangzan101/mika/ui/AttachSources.kt	app/src/main/java/com/yongpeng/vamos/ui/AttachSources.kt
 R093	app/src/main/java/com/wangzan101/mika/ui/AttachmentMessage.kt	app/src/main/java/com/yongpeng/vamos/ui/AttachmentMessage.kt
 R079	app/src/main/java/com/wangzan101/mika/ui/BrowserPageAsk.kt	app/src/main/java/com/yongpeng/vamos/ui/BrowserPageAsk.kt
-R072	app/src/main/java/com/wangzan101/mika/ui/BrowserPageParts.kt	app/src/main/java/com/yongpeng/vamos/ui/BrowserPageParts.kt
+R071	app/src/main/java/com/wangzan101/mika/ui/BrowserPageParts.kt	app/src/main/java/com/yongpeng/vamos/ui/BrowserPageParts.kt
 R092	app/src/main/java/com/wangzan101/mika/ui/BrowserScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/BrowserScreen.kt
 R081	app/src/main/java/com/wangzan101/mika/ui/BrowserStart.kt	app/src/main/java/com/yongpeng/vamos/ui/BrowserStart.kt
 R091	app/src/main/java/com/wangzan101/mika/ui/ChatAttachments.kt	app/src/main/java/com/yongpeng/vamos/ui/ChatAttachments.kt
@@ -385,7 +386,7 @@ A	app/src/main/java/com/yongpeng/vamos/ui/ConfirmationRulesScreen.kt
 R088	app/src/main/java/com/wangzan101/mika/ui/ConversationMenu.kt	app/src/main/java/com/yongpeng/vamos/ui/ConversationMenu.kt
 R074	app/src/main/java/com/wangzan101/mika/ui/DeveloperOptionsScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/DeveloperOptionsScreen.kt
 R074	app/src/main/java/com/wangzan101/mika/ui/DeviceAccessSection.kt	app/src/main/java/com/yongpeng/vamos/ui/DeviceAccessSection.kt
-R089	app/src/main/java/com/wangzan101/mika/ui/DiagnosticsSheet.kt	app/src/main/java/com/yongpeng/vamos/ui/DiagnosticsSheet.kt
+R066	app/src/main/java/com/wangzan101/mika/ui/DiagnosticsSheet.kt	app/src/main/java/com/yongpeng/vamos/ui/DiagnosticsSheet.kt
 R082	app/src/main/java/com/wangzan101/mika/ui/KeptPageCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/KeptPageCopy.kt
 R077	app/src/main/java/com/wangzan101/mika/ui/KeptPageRow.kt	app/src/main/java/com/yongpeng/vamos/ui/KeptPageRow.kt
 R088	app/src/main/java/com/wangzan101/mika/ui/LearningNotes.kt	app/src/main/java/com/yongpeng/vamos/ui/LearningNotes.kt
@@ -403,7 +404,7 @@ R086	app/src/main/java/com/wangzan101/mika/ui/ModelsScreen.kt	app/src/main/java/
 R097	app/src/main/java/com/wangzan101/mika/ui/Navigation.kt	app/src/main/java/com/yongpeng/vamos/ui/Navigation.kt
 R095	app/src/main/java/com/wangzan101/mika/ui/Onboarding.kt	app/src/main/java/com/yongpeng/vamos/ui/Onboarding.kt
 R095	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupCopy.kt
-R078	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupScreen.kt
+R077	app/src/main/java/com/wangzan101/mika/ui/PhoneSetupScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PhoneSetupScreen.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/PipPhysics.kt	app/src/main/java/com/yongpeng/vamos/ui/PipPhysics.kt
 R079	app/src/main/java/com/wangzan101/mika/ui/PlansScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/PlansScreen.kt
 R091	app/src/main/java/com/wangzan101/mika/ui/ReasoningControl.kt	app/src/main/java/com/yongpeng/vamos/ui/ReasoningControl.kt
@@ -422,14 +423,14 @@ R088	app/src/main/java/com/wangzan101/mika/ui/SourceViewModel.kt	app/src/main/ja
 R082	app/src/main/java/com/wangzan101/mika/ui/SpeechModelScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/SpeechModelScreen.kt
 R084	app/src/main/java/com/wangzan101/mika/ui/StatusCopy.kt	app/src/main/java/com/yongpeng/vamos/ui/StatusCopy.kt
 R098	app/src/main/java/com/wangzan101/mika/ui/StreamingMarkdown.kt	app/src/main/java/com/yongpeng/vamos/ui/StreamingMarkdown.kt
-R058	app/src/main/java/com/wangzan101/mika/ui/UpdateDownloadControls.kt	app/src/main/java/com/yongpeng/vamos/ui/UpdateDownloadControls.kt
+R057	app/src/main/java/com/wangzan101/mika/ui/UpdateDownloadControls.kt	app/src/main/java/com/yongpeng/vamos/ui/UpdateDownloadControls.kt
 R090	app/src/main/java/com/wangzan101/mika/ui/UsageScreen.kt	app/src/main/java/com/yongpeng/vamos/ui/UsageScreen.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/VmAppUpdatePrompt.kt
-R093	app/src/main/java/com/wangzan101/mika/ui/VoiceHold.kt	app/src/main/java/com/yongpeng/vamos/ui/VoiceHold.kt
+R092	app/src/main/java/com/wangzan101/mika/ui/VoiceHold.kt	app/src/main/java/com/yongpeng/vamos/ui/VoiceHold.kt
 R077	app/src/main/java/com/wangzan101/mika/ui/WebSitesSection.kt	app/src/main/java/com/yongpeng/vamos/ui/WebSitesSection.kt
 A	app/src/main/java/com/yongpeng/vamos/ui/WelcomeScreen.kt
-R084	app/src/main/java/com/wangzan101/mika/ui/components/ActionSheet.kt	app/src/main/java/com/yongpeng/vamos/ui/components/ActionSheet.kt
-R086	app/src/main/java/com/wangzan101/mika/ui/components/Controls.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Controls.kt
+R076	app/src/main/java/com/wangzan101/mika/ui/components/ActionSheet.kt	app/src/main/java/com/yongpeng/vamos/ui/components/ActionSheet.kt
+R083	app/src/main/java/com/wangzan101/mika/ui/components/Controls.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Controls.kt
 R097	app/src/main/java/com/wangzan101/mika/ui/components/KeyboardDismiss.kt	app/src/main/java/com/yongpeng/vamos/ui/components/KeyboardDismiss.kt
 R056	app/src/main/java/com/wangzan101/mika/ui/components/Logo.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Logo.kt
 R072	app/src/main/java/com/wangzan101/mika/ui/components/Page.kt	app/src/main/java/com/yongpeng/vamos/ui/components/Page.kt

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -266,13 +267,17 @@ fun PhoneSetupContent(
         view.marks.getValue(step) in setOf(StepMark.Done, StepMark.Skipped, StepMark.Failed)
     val c = VmTheme.colors
     var skipping by remember { mutableStateOf(false) }
-    if(skipping) androidx.compose.ui.window.Dialog(onDismissRequest={skipping=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false)) {
-        Box(Modifier.fillMaxSize(),contentAlignment=Alignment.BottomCenter) {
+    if(skipping) androidx.compose.ui.window.Dialog(onDismissRequest={skipping=false},properties=androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth=false,decorFitsSystemWindows=false)) {
+        Box(Modifier.fillMaxSize().safeDrawingPadding(),contentAlignment=Alignment.BottomCenter) {
             Column(Modifier.fillMaxWidth().background(c.surface,RoundedCornerShape(topStart=28.dp,topEnd=28.dp)).padding(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
-                Text("暂时跳过手机控制？",style=VmType.Title,color=c.textInk)
-                Text("仍可对话和浏览网页。操作手机 App 前，需要返回设置完成配对。",style=VmType.Body,color=c.textInk2)
-                VmButton("继续设置",{skipping=false},Modifier.fillMaxWidth())
-                VmButton("暂时跳过",{skipping=false;onClose()},Modifier.fillMaxWidth(),kind=ButtonKind.Text)
+                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()), verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                    Text("暂时跳过手机控制？",style=VmType.Title,color=c.textInk)
+                    Text("仍可对话和浏览网页。操作手机 App 前，需要返回设置完成配对。",style=VmType.Body,color=c.textInk2)
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                    VmButton("继续设置",{skipping=false},Modifier.weight(1f),allowMultiline=true)
+                    VmButton("暂时跳过",{skipping=false;onClose()},Modifier.weight(1f),kind=ButtonKind.Text,allowMultiline=true)
+                }
             }
         }
     }

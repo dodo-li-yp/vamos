@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui.components
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -34,7 +36,7 @@ fun ActionSheet(title: String?, actions: List<SheetAction>, onDismiss: () -> Uni
         containerColor = c.surface,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
     ) {
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 8.dp)) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(bottom = 8.dp)) {
             if (!title.isNullOrEmpty()) {
                 Text(
                     title, Modifier.padding(horizontal = 16.dp, vertical = 4.dp),

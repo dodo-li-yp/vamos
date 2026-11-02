@@ -115,7 +115,7 @@ internal fun UpdateDownloadControls(release: ReleaseInfo) {
             }
         },
     )
-    if(state.phase == DownloadPhase.Downloading) VmButton("暂停", { updater.pause() }, Modifier.fillMaxWidth().padding(top = 8.dp), kind = ButtonKind.Tonal)
+    if(state.phase == DownloadPhase.Downloading) VmButton("暂停", { updater.pause() }, Modifier.fillMaxWidth().padding(top = 8.dp), kind = ButtonKind.Tonal, allowMultiline = true)
     if(installing) Text("正在系统安装器中安装，完成后数据会保留", style = VmType.Caption)
     state.error?.let { Text(it, color = VmTheme.colors.accentCinnabar, style = VmType.Body) }
     if(mobilePrompt) AlertDialog(onDismissRequest = { mobilePrompt = false }, title = { Text("正在使用移动网络") },
@@ -150,10 +150,10 @@ internal fun UpdateDownloadActions(
         androidx.compose.material3.LinearProgressIndicator(progress={ (state.percent ?: 0)/100f },modifier=Modifier.fillMaxWidth().height(8.dp),color=if(state.phase==DownloadPhase.Paused)VmTheme.colors.textInk2 else VmTheme.colors.brandDai,trackColor=VmTheme.colors.tone2)
     }
     VmButton(text, if (state.phase == DownloadPhase.Ready) onInstall else onDownload,
-        Modifier.fillMaxWidth().padding(top = 14.dp), enabled = !busy && !active)
+        Modifier.fillMaxWidth().padding(top = 14.dp), enabled = !busy && !active, allowMultiline = true)
     if (active || state.phase == DownloadPhase.Ready || state.phase == DownloadPhase.Paused) {
         VmButton(stringResource(R.string.about_update_cancel), onCancel,
-            Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.Tonal, enabled = !busy)
+            Modifier.fillMaxWidth().padding(top = 10.dp), kind = ButtonKind.Tonal, enabled = !busy, allowMultiline = true)
     }
     if(state.total > 0) Text("${state.bytes / 1024 / 1024} / ${state.total / 1024 / 1024} MB · ${state.speed / 1024} KB/s", style = VmType.Caption)
     val note = error ?: if (state.phase == DownloadPhase.Failed) R.string.about_update_error else R.string.about_update_install_hint

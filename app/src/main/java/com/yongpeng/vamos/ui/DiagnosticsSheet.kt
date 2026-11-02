@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,29 +55,31 @@ fun DiagnosticsSheet(load: () -> String, onDismiss: () -> Unit) {
             runCatching(load).getOrElse { Diagnostics.sanitize("${Diagnostics.HEADER}\n(failed to collect: ${it.javaClass.simpleName})\n") }
         }
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = c.surface, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = c.surface, shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 16.dp, end = 16.dp, bottom = 16.dp).testTag("diagnostics-sheet")) {
-            Text(AboutCopy.DIAGNOSTICS_TITLE, style = VmType.Title, color = c.ink)
-            Text(AboutCopy.DIAGNOSTICS_NOTE, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
-            Box(
-                Modifier.padding(top = 12.dp).fillMaxWidth().heightIn(min = 120.dp, max = 360.dp)
-                    .background(c.fill, RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState())
-                    .horizontalScroll(rememberScrollState()).padding(12.dp),
-            ) {
-                Text(
-                    text ?: AboutCopy.DIAGNOSTICS_LOADING, Modifier.testTag("diagnostics-text"),
-                    fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp, color = if (text == null) c.ink3 else c.ink2,
-                )
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                Text(AboutCopy.DIAGNOSTICS_TITLE, style = VmType.Title, color = c.ink)
+                Text(AboutCopy.DIAGNOSTICS_NOTE, Modifier.padding(top = 2.dp), style = VmType.Caption, color = c.ink3)
+                Box(
+                    Modifier.padding(top = 12.dp).fillMaxWidth().heightIn(max = 360.dp)
+                        .background(c.fill, RoundedCornerShape(12.dp)).verticalScroll(rememberScrollState())
+                        .horizontalScroll(rememberScrollState()).padding(12.dp),
+                ) {
+                    Text(
+                        text ?: AboutCopy.DIAGNOSTICS_LOADING, Modifier.testTag("diagnostics-text"),
+                        fontFamily = FontFamily.Monospace, fontSize = 12.sp, lineHeight = 17.sp, color = if (text == null) c.ink3 else c.ink2,
+                    )
+                }
             }
             Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 val ready = text != null
                 VmButton(
                     AboutCopy.DIAGNOSTICS_COPY, { text?.let { copyDiagnostics(context, it) } },
-                    Modifier.weight(1f).testTag("diagnostics-copy"), enabled = ready,
+                    Modifier.weight(1f).testTag("diagnostics-copy"), enabled = ready, allowMultiline = true,
                 )
                 VmButton(
                     AboutCopy.DIAGNOSTICS_SHARE, { text?.let { shareDiagnostics(context, it) } },
-                    Modifier.weight(1f).testTag("diagnostics-share"), kind = ButtonKind.Tonal, enabled = ready,
+                    Modifier.weight(1f).testTag("diagnostics-share"), kind = ButtonKind.Tonal, enabled = ready, allowMultiline = true,
                 )
             }
         }

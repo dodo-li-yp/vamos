@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -137,6 +138,7 @@ fun VmButton(
     kind: ButtonKind = ButtonKind.Primary,
     size: ButtonSize = ButtonSize.Large,
     enabled: Boolean = true,
+    allowMultiline: Boolean = false,
 ) {
     val c = VmTheme.colors
     val shape = size.shape
@@ -152,11 +154,11 @@ fun VmButton(
             .clip(shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .alpha(if (enabled) 1f else 0.45f)
-            .height(size.height)
-            .padding(horizontal = size.padding),
+            .then(if (allowMultiline) Modifier.heightIn(min = size.height) else Modifier.height(size.height))
+            .padding(horizontal = size.padding, vertical = if (allowMultiline) 12.dp else 0.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = size.text, color = fg, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, style = size.text, color = fg, textAlign = TextAlign.Center, maxLines = if (allowMultiline) Int.MAX_VALUE else 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

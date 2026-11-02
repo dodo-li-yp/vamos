@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -138,7 +140,7 @@ internal fun SignInSheet(ui: ModelSetupUi, kind: SignInKind, actions: SignInShee
 internal fun SignInSheetBody(ui: ModelSetupUi, kind: SignInKind, actions: SignInSheetActions) {
     val (_, running, failure) = ui.signInState(kind)
     val code = ui.accountSignIn.userCode.takeIf { running && kind == SignInKind.Xai && it.isNotBlank() }
-    Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(start = 20.dp, end = 20.dp, bottom = 20.dp).testTag("signin-sheet-${kind.tag}")) {
+    Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(start = 20.dp, end = 20.dp, bottom = 20.dp).testTag("signin-sheet-${kind.tag}")) {
         when {
             code != null -> DeviceCodeBody(ui.accountSignIn, code) { actions.cancel(kind) }
             // 同一时刻只有一次登录:别家正在登录时这里不能开始

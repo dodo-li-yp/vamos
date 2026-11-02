@@ -1,6 +1,8 @@
 // Modified by Vamos (2026): brand and package migration.
 package com.yongpeng.vamos.ui
 
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import com.yongpeng.vamos.R
 import com.yongpeng.vamos.i18n.tr
 import android.graphics.BitmapFactory
@@ -292,7 +294,7 @@ fun BrowserMoreSheet(
 ) {
     val c = VmTheme.colors
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true), containerColor = c.surface, shape = RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp)) {
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = 8.dp).testTag("browser-more")) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(bottom = 8.dp).testTag("browser-more")) {
             if (face != null && host != null) {
                 Row(
                     Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 10.dp),

@@ -2,6 +2,25 @@
 
 日期：2026-11-02。分支 `v1-dev`，draft PR [#1](https://github.com/dodo-li-yp/vamos/pull/1)。本报告替代旧的阶段性未完成列表；历史结果可在 Git 提交中查看。仅使用 debug 签名，尚未达到正式发布验收。
 
+## 2026-11-02 手势导航下确认面板被截断修复
+
+复现来源：用户在 4aed2b8 测试包的 Android 真机截图；全面屏手势导航，「要你同意：发送」底部按钮被屏幕底边/手势区截断。设备型号、Android 版本未提供。
+
+- 原确认面板虽有 navigationBarsPadding，但 Dialog 未显式以 edge-to-edge 接收安全区，且内容列没有滚动/高度约束，操作行排在正文后。改为 decorFitsSystemWindows=false，顶部/左右及底部使用 safeDrawing inset；正文占受限剩余高度并滚动，拒绝/允许行固定在滚动区外。
+- 保留确认内容、真实截图、60 秒倒计时、禁止外部/返回关闭、一次授权和回调语义。大字体按钮可换行并保持至少 48dp 点击区，只对相关面板显式启用，多余页面按钮保持原行为。
+- 同类修复：配对「继续设置/暂时跳过」、语音权限说明、更新说明、诊断面板改为受限滚动正文与独立操作区；诊断面板直接展开，避免默认半展开将底部操作藏到屏幕外。浏览器/模型用途/通用操作/账号登录长列表支持滚动，保留原有导航区 padding。
+- 已检查标准 Material AlertDialog（包括继续下载等确认）；仍由其系统安全区/按钮槽处理。先前含「完成后继续／消耗额度」的弹窗仍未在仓库中匹配，不猜测修改其卡顿逻辑。本段不涉及依赖升级、网络/密钥/确认规则改动。
+- 新增 ConfirmSheetLayoutTest 三个 Compose 回归场景：320×360 + 36dp 手势区；320×400 + 2 倍字体；360×280 横屏 + 2.5 倍字体 + 48dp 导航区。检查两个按钮完整位于安全区、48dp 点击区、正文滚动后操作行不移动，以及两个回调可点击。
+
+验证结果：
+
+- 应用 ConfirmationCopyTest、ApprovalStoreTest、DiagnosticsTest：**27 项通过**；核心 ConfirmationGateTest、VamosConfirmationTest：**18 项通过**；合计 **45 项通过，0 失败/错误/跳过**。
+- `assembleDebug`、`assembleDebugAndroidTest`、`lintDebug` 集中检查 **BUILD SUCCESSFUL（7m57s）**；最后诊断面板展开设置的增量 `assembleDebug` 再次 **BUILD SUCCESSFUL（2m20s）**。
+- Lint：**0 错误、79 警告、6 信息**，与上轮数量一致；未新增 baseline 或关闭检查。
+- 新增三项 ConfirmSheetLayoutTest 已编译，但 **未执行**：`adb devices -l` 无连接设备；未启动模拟器。实际手势/三键导航、横屏和大字体复验见 DEVICE_ACCEPTANCE.md，没有宣称真机已通过。
+- debug 签名和包身份验证通过：com.yongpeng.vamos / 1.0.0 / code 33；大小 **69,153,951 字节**，SHA-256 `0a611add2f567c99d33794e7be71b8ab208613c60634249c4cd2df6ab626a8e6`。本次只生成 debug，之前的 release 产物不包含本段修复。
+- 当前 debug 副本：`work/vamos-1.0.0-debug.apk`；本段原始验证记录为忽略的 `work/sheet-safe-area-*`，APK/日志不提交仓库。
+
 ## 2026-11-02 输入法与性能专项（A/C）
 
 本次只处理最新请求 A/C；B「完成后继续／消耗额度」确认框按用户指示跳过，等待截图。没有修改确认流程、升级依赖或大规模重构。
