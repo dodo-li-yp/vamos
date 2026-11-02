@@ -13,6 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -28,11 +32,32 @@ fun VmConfirmSheet(title: String, body: String, onDeny: () -> Unit, onAllow: () 
         while (remaining > 0) { delay(250); remaining=((deadline-System.currentTimeMillis()+999)/1000).toInt().coerceIn(0,60) }
         timeout()
     }
+    // The Dialog is its own window; on Compose UI 1.7 (BOM 2024.12) + MIUI that window is laid out
+    // to the physical bottom while the insets dispatched to its DialogLayout report bottom = 0.
+    // So take the safe area from the host activity window (edge-to-edge, reliable) and union it
+    // with whatever the dialog window reports; max-per-side never double counts.
+    val hostView = LocalView.current
+    val hostInsets = WindowInsets.safeDrawing
+    val rootInsets = hostRootInsets(hostView)
     Dialog(onDismissRequest = {}, properties = DialogProperties(
         dismissOnBackPress = false, dismissOnClickOutside = false,
         usePlatformDefaultWidth = false, decorFitsSystemWindows = false,
     )) {
-        VmConfirmSheetContent(title, body, remaining, onDeny, onAllow)
+        VmConfirmSheetContent(title, body, remaining, onDeny, onAllow,
+            insets = WindowInsets.safeDrawing.union(hostInsets).union(rootInsets))
+    }
+}
+
+/** Snapshot of the activity window's safe area, read straight from the host view as a fallback. */
+@Composable
+private fun hostRootInsets(view: android.view.View): WindowInsets {
+    val density = LocalDensity.current
+    val root = ViewCompat.getRootWindowInsets(view) ?: return WindowInsets(0, 0, 0, 0)
+    val safe = root.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime())
+    // Navigation bar height even if MIUI reports it hidden/transient (gesture pill still overlaps).
+    val nav = root.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars())
+    return with(density) {
+        WindowInsets(safe.left.toDp(), safe.top.toDp(), safe.right.toDp(), maxOf(safe.bottom, nav.bottom).toDp())
     }
 }
 
